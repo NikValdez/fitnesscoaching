@@ -1,0 +1,559 @@
+.intake-page {
+  min-height: 100dvh;
+  background: var(--paper);
+}
+.intake-fields > .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.intake-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 25px 5%;
+  border-bottom: 1px solid var(--line);
+  gap: 20px;
+}
+.intake-header > button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.intake-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.8fr) minmax(0, 1.6fr);
+  max-width: 1500px;
+  margin: auto;
+}
+.intake-aside {
+  padding: 67px 45px 55px;
+  background: #f0f1eb;
+  border-right: 1px solid var(--line);
+}
+.intake-aside > .eyebrow {
+  font-size: 9px;
+  color: #697563;
+}
+.intake-aside h1 {
+  font-size: clamp(34px, 3.4vw, 48px);
+  line-height: 1.14;
+  letter-spacing: -1.8px;
+  font-weight: 550;
+  margin: 25px 0;
+}
+.intake-aside h1 span {
+  color: var(--navy);
+}
+.intake-aside > p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.8;
+  max-width: 340px;
+}
+.intake-selection-summary {
+  border-block: 1px solid #d5d9ce;
+  padding-block: 25px;
+  margin-block: 33px;
+}
+.intake-selection-summary > .eyebrow {
+  font-size: 9px;
+}
+.intake-selection-summary ul {
+  padding: 0;
+  margin: 20px 0 0;
+  display: grid;
+  gap: 19px;
+  list-style: none;
+}
+.intake-selection-summary li {
+  display: flex;
+  gap: 11px;
+  align-items: flex-start;
+  color: var(--navy);
+  font-size: 13px;
+}
+.intake-selection-summary li svg {
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+.intake-selection-summary small {
+  display: block;
+  color: var(--muted);
+  margin-top: 5px;
+  font-size: 11px;
+}
+.intake-selection-summary > p {
+  font-size: 12px;
+  line-height: 1.7;
+  margin-top: 16px;
+  color: var(--muted);
+}
+.intake-aside .intake-small {
+  font-size: 11px;
+}
+.intake-content {
+  padding: 46px clamp(25px, 4vw, 60px) 65px;
+  min-width: 0;
+}
+.intake-progress {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 46px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+.intake-progress li {
+  font-size: 10px;
+  color: #777e85;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.intake-progress li > span {
+  width: 25px;
+  height: 25px;
+  border: 1px solid #d7dadd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: 10px var(--mono);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.intake-progress li.is-current {
+  color: var(--navy);
+}
+.intake-progress li.is-current > span {
+  background: var(--navy);
+  color: #fff;
+  border-color: var(--navy);
+}
+.intake-step-label {
+  color: var(--navy);
+  font-size: 9px;
+}
+.intake-content h2 {
+  font-size: 32px;
+  line-height: 1.17;
+  letter-spacing: -1px;
+  font-weight: 550;
+  margin-top: 15px;
+  scroll-margin-top: 20px;
+}
+.intake-content h2:focus {
+  outline: none;
+}
+.intake-lead {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.8;
+  margin: 15px 0 28px;
+  max-width: 570px;
+}
+.intake-fields {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+.intake-service-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.intake-service,
+.intake-tier,
+.intake-contact {
+  position: relative;
+  border: 1px solid #d8dcd6;
+  background: #fff;
+  cursor: pointer;
+}
+.intake-service {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 25px 22px;
+  min-height: 190px;
+  gap: 0;
+}
+.intake-service > svg {
+  color: var(--navy);
+  margin-bottom: 22px;
+}
+.intake-service strong {
+  font-size: 16px;
+  font-weight: 550;
+  margin-bottom: 9px;
+}
+.intake-service > span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+.intake-service input,
+.intake-tier input {
+  position: absolute;
+  right: 17px;
+  top: 19px;
+  width: 17px;
+  height: 17px;
+  margin: 0;
+  accent-color: var(--navy);
+  cursor: pointer;
+}
+.intake-service:has(input:focus-visible),
+.intake-tier:has(input:focus-visible),
+.intake-contact:has(input:focus-visible) {
+  outline: 2px solid var(--navy);
+  outline-offset: 3px;
+}
+.intake-service.is-selected,
+.intake-tier.is-selected,
+.intake-contact.is-selected {
+  border-color: var(--navy);
+  background: #edf1f7;
+  box-shadow: inset 0 0 0 1px var(--navy);
+}
+.intake-tier-groups {
+  display: grid;
+  gap: 29px;
+}
+.intake-tier-group {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+.intake-tier-group legend {
+  margin-bottom: 14px;
+  padding: 0;
+  font-size: 17px;
+  font-weight: 550;
+}
+.intake-tier-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.intake-tier {
+  padding: 18px 14px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.intake-tier input {
+  width: 15px;
+  height: 15px;
+  top: 16px;
+  right: 12px;
+}
+.intake-tier > .eyebrow {
+  font-size: 8px;
+  color: var(--navy);
+  padding-right: 19px;
+}
+.intake-tier strong {
+  font-size: 14px;
+  font-weight: 550;
+  margin: 17px 0 7px;
+}
+.tier-subtitle {
+  font-size: 9px;
+  color: var(--navy);
+  line-height: 1.6;
+}
+.intake-tier p {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.75;
+  margin-top: 12px;
+}
+.intake-contact-options {
+  display: grid;
+  gap: 12px;
+}
+.intake-contact {
+  display: flex;
+  align-items: center;
+  gap: 17px;
+  padding: 19px;
+}
+.intake-contact input {
+  accent-color: var(--navy);
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+  margin: 0;
+}
+.intake-contact > svg {
+  color: var(--navy);
+  flex-shrink: 0;
+}
+.intake-contact strong {
+  display: block;
+  font-weight: 550;
+  font-size: 14px;
+}
+.intake-contact small {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  margin-top: 6px;
+}
+.intake-contact-note {
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--muted);
+  margin-top: 20px;
+  overflow-wrap: anywhere;
+}
+.intake-text-field {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 25px;
+  font-size: 13px;
+}
+.intake-text-field input,
+.intake-text-field textarea {
+  width: 100%;
+  border: 1px solid #d3d8df;
+  padding: 13px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  border-radius: 0;
+}
+.intake-text-field textarea {
+  resize: vertical;
+  line-height: 1.6;
+}
+.intake-text-field > .form-note {
+  font-size: 10px;
+  line-height: 1.7;
+}
+.intake-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding-top: 26px;
+  margin-top: 28px;
+  border-top: 1px solid var(--line);
+}
+.intake-actions .button {
+  white-space: normal;
+  text-align: center;
+}
+.intake-save-note {
+  max-width: 150px;
+  font-size: 10px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+.intake-error {
+  margin-top: 20px;
+}
+.preferences-panel {
+  margin-bottom: 28px;
+}
+.preferences-panel .workspace-section-heading {
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.preferences-panel .workspace-section-heading h2 {
+  margin-top: 9px;
+}
+.preferences-panel .text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.preferences-services {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.preferences-services > div {
+  min-width: 130px;
+  flex: 1;
+  border: 1px solid #dce2ec;
+  background: #f1f4f8;
+  padding: 14px 16px;
+}
+.preferences-services strong {
+  display: block;
+  font-size: 12px;
+  font-weight: 550;
+}
+.preferences-services span {
+  display: block;
+  font-size: 11px;
+  color: var(--navy);
+  margin-top: 7px;
+}
+.preferences-contact {
+  display: flex;
+  gap: 12px;
+  margin-top: 23px;
+  color: var(--navy);
+}
+.preferences-contact > svg {
+  flex-shrink: 0;
+}
+.preferences-contact .eyebrow,
+.preferences-goals .eyebrow {
+  font-size: 8px;
+}
+.preferences-contact p {
+  color: var(--muted);
+  font-size: 12px;
+  margin: 7px 0;
+  overflow-wrap: anywhere;
+}
+.preferences-goals {
+  border-top: 1px solid var(--line);
+  margin-top: 17px;
+  padding-top: 17px;
+}
+.preferences-goals p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  line-height: 1.8;
+  margin-top: 10px;
+}
+.preferences-panel > .form-note {
+  margin-top: 15px;
+  font-size: 10px;
+  line-height: 1.7;
+}
+@media (max-width: 1000px) {
+  .intake-aside {
+    padding: 50px 27px;
+  }
+  .intake-content {
+    padding-inline: 28px;
+  }
+  .intake-layout {
+    grid-template-columns: minmax(230px, 0.7fr) minmax(0, 1.4fr);
+  }
+  .intake-tier-options {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .intake-tier {
+    padding: 18px;
+  }
+  .intake-tier strong {
+    margin-top: 9px;
+  }
+  .intake-tier p {
+    margin-top: 7px;
+  }
+}
+@media (max-width: 700px) {
+  .intake-header {
+    padding: 22px;
+  }
+  .intake-header .brand {
+    font-size: 17px;
+  }
+  .intake-header button {
+    font-size: 11px;
+  }
+  .intake-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .intake-aside {
+    padding: 28px 22px;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .intake-aside h1 {
+    font-size: 28px;
+    margin: 14px 0;
+    letter-spacing: -0.7px;
+  }
+  .intake-aside h1 br {
+    display: initial;
+  }
+  .intake-aside h1 span {
+    margin-left: 0;
+  }
+  .intake-aside h1 {
+    max-width: 320px;
+  }
+  .intake-aside > p {
+    font-size: 12px;
+    max-width: none;
+  }
+  .intake-selection-summary {
+    display: none;
+  }
+  .intake-aside .intake-small {
+    margin-top: 15px;
+    font-size: 10px;
+  }
+  .intake-content {
+    padding: 28px 22px 40px;
+  }
+  .intake-progress {
+    margin-bottom: 29px;
+    gap: 9px;
+  }
+  .intake-progress li {
+    font-size: 9px;
+    gap: 5px;
+  }
+  .intake-progress li > span {
+    width: 21px;
+    height: 21px;
+    font-size: 9px;
+  }
+  .intake-content h2 {
+    font-size: 28px;
+  }
+  .intake-service-grid {
+    gap: 10px;
+  }
+  .intake-service {
+    padding: 21px 15px;
+    min-height: 215px;
+  }
+  .intake-service strong {
+    font-size: 14px;
+  }
+  .intake-service > span {
+    font-size: 11px;
+  }
+  .intake-service input {
+    right: 12px;
+    top: 15px;
+  }
+  .intake-service > svg {
+    margin-bottom: 22px;
+  }
+  .intake-actions {
+    gap: 12px;
+    align-items: stretch;
+  }
+  .intake-actions .button {
+    padding-inline: 15px;
+    font-size: 11px;
+  }
+  .intake-save-note {
+    max-width: 100px;
+    align-self: center;
+  }
+  .intake-text-field input,
+  .intake-text-field textarea {
+    font-size: 16px;
+  }
+}

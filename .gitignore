@@ -1,0 +1,15 @@
+node_modules/
+.env
+.env.*
+!.env.example
+.output/
+dist/
+.tanstack/
+src/generated/
+test-results/
+playwright-report/
+*.log
+.DS_Store
+.wrangler/
+.dev.vars
+.dev.vars.*

@@ -1,0 +1,299 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+  runtime  = "cloudflare"
+}
+
+generator nodeClient {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma-node"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Purchase {
+  id              String    @id @default(cuid())
+  stripeSessionId String    @unique
+  productId       String
+  amountCents     Int
+  currency        String
+  livemode        Boolean
+  email           String?
+  paidAt          DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@map("rossiter_purchase")
+}
+
+model User {
+  id               String          @id
+  name             String
+  email            String          @unique
+  emailVerified    Boolean         @default(false)
+  image            String?
+  role             Role            @default(CLIENT)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  sessions         Session[]
+  accounts         Account[]
+  workouts         Workout[]
+  checkIns         CheckIn[]
+  enquiries        Enquiry[]
+  programs         Program[]       @relation("ClientPrograms")
+  authoredPrograms Program[]       @relation("CoachPrograms")
+  events           ScheduleEvent[] @relation("ClientEvents")
+  authoredEvents   ScheduleEvent[] @relation("CoachEvents")
+  nutritionLogs    NutritionLog[]
+  intake           ClientIntake?
+
+  @@map("rossiter_user")
+}
+
+enum CoachingService {
+  FITNESS
+  NUTRITION
+  ACCOUNTABILITY
+  LIFESTYLE
+
+  @@map("rossiter_coaching_service")
+}
+
+enum CoachingTier {
+  ESSENTIAL
+  ONGOING
+  IN_PERSON
+
+  @@map("rossiter_coaching_tier")
+}
+
+enum ContactChannel {
+  VOICE_CALL
+  TEXT_MESSAGE
+  EMAIL
+
+  @@map("rossiter_contact_channel")
+}
+
+model ClientIntake {
+  userId    String            @id
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  interests ServiceInterest[]
+  channels  ContactChannel[]
+  phone     String?
+  goals     String            @default("")
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  @@map("rossiter_client_intake")
+}
+
+model ServiceInterest {
+  userId  String
+  intake  ClientIntake    @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  service CoachingService
+  tier    CoachingTier
+
+  @@id([userId, service])
+  @@map("rossiter_service_interest")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("rossiter_session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@unique([providerId, accountId])
+  @@index([userId])
+  @@map("rossiter_account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("rossiter_verification")
+}
+
+model Enquiry {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  interest  String
+  notes     String?
+  status    String   @default("REQUESTED")
+  createdAt DateTime @default(now())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@map("rossiter_enquiry")
+}
+
+model Workout {
+  id              String   @id @default(cuid())
+  title           String
+  date            String
+  durationMinutes Int
+  notes           String?
+  createdAt       DateTime @default(now())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, date])
+  @@map("rossiter_workout")
+}
+
+model CheckIn {
+  id         String    @id @default(cuid())
+  weekOf     String
+  energy     Int
+  sleepHours Float
+  weightKg   Float?
+  notes      String
+  reviewedAt DateTime?
+  coachNote  String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, weekOf])
+  @@map("rossiter_check_in")
+}
+
+enum Role {
+  CLIENT
+  ADMIN
+
+  @@map("rossiter_role")
+}
+
+enum ProgramKind {
+  FITNESS
+  NUTRITION
+
+  @@map("rossiter_program_kind")
+}
+
+enum EventKind {
+  WORKOUT
+  CHECK_IN
+  NUTRITION
+  COACH_TASK
+
+  @@map("rossiter_event_kind")
+}
+
+model Program {
+  id           String            @id @default(cuid())
+  title        String
+  kind         ProgramKind
+  description  String
+  startDate    String
+  endDate      String?
+  calories     Int?
+  proteinGrams Int?
+  carbsGrams   Int?
+  fatsGrams    Int?
+  archived     Boolean           @default(false)
+  clientId     String
+  client       User              @relation("ClientPrograms", fields: [clientId], references: [id], onDelete: Cascade)
+  coachId      String
+  coach        User              @relation("CoachPrograms", fields: [coachId], references: [id], onDelete: Restrict)
+  exercises    ProgramExercise[]
+  events       ScheduleEvent[]
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  @@index([clientId, archived, startDate])
+  @@map("rossiter_program")
+}
+
+model ProgramExercise {
+  id        String  @id @default(cuid())
+  programId String
+  program   Program @relation(fields: [programId], references: [id], onDelete: Cascade)
+  name      String
+  sets      Int
+  reps      String
+  notes     String?
+  position  Int
+
+  @@index([programId, position])
+  @@map("rossiter_program_exercise")
+}
+
+model ScheduleEvent {
+  id              String    @id @default(cuid())
+  title           String
+  kind            EventKind
+  date            String
+  time            String?
+  durationMinutes Int       @default(30)
+  notes           String?
+  completedAt     DateTime?
+  clientId        String
+  client          User      @relation("ClientEvents", fields: [clientId], references: [id], onDelete: Cascade)
+  coachId         String
+  coach           User      @relation("CoachEvents", fields: [coachId], references: [id], onDelete: Restrict)
+  programId       String?
+  program         Program?  @relation(fields: [programId], references: [id], onDelete: SetNull)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([clientId, date])
+  @@index([date, completedAt])
+  @@map("rossiter_schedule_event")
+}
+
+model NutritionLog {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date         String
+  calories     Int
+  proteinGrams Int
+  carbsGrams   Int
+  fatsGrams    Int
+  waterLitres  Float
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([userId, date])
+  @@map("rossiter_nutrition_log")
+}

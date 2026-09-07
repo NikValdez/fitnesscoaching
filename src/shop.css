@@ -1,0 +1,475 @@
+.shop-page {
+  background: var(--paper);
+  min-height: 100dvh;
+}
+.shop-header,
+.shop-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 25px;
+  padding-block: 26px;
+}
+.shop-header .text-link {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.shop-breadcrumb {
+  display: flex;
+  gap: 14px;
+  padding-top: 32px;
+  color: var(--muted);
+  font: 10px var(--mono);
+}
+.shop-breadcrumb a {
+  color: var(--ink);
+}
+.product-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 86px;
+  padding-top: 35px;
+  padding-bottom: 85px;
+  align-items: start;
+}
+.product-art {
+  background: #eeeee8;
+  border: 1px solid #dfdfd7;
+  padding: 30px 40px 24px;
+  position: sticky;
+  top: 110px;
+}
+.product-art-label {
+  display: block;
+  text-align: center;
+  color: #737970;
+  font-size: 8px;
+}
+.program-book {
+  position: relative;
+  margin: 38px auto 40px;
+  max-width: 330px;
+  aspect-ratio: 0.72;
+  background: linear-gradient(105deg, #213a65 0%, #2e4a7d 7%, #304f82 100%);
+  color: #fff;
+  padding: 28px 30px;
+  box-shadow:
+    12px 18px 27px #26354422,
+    5px 4px 0 #d6d8d2;
+  border-left: 5px solid #1d3459;
+  display: flex;
+  flex-direction: column;
+  transform: rotate(-3deg);
+}
+.book-brand {
+  font-size: 8px;
+  letter-spacing: 1.2px;
+  line-height: 1.7;
+  color: #e0e7f0;
+}
+.book-title {
+  margin-top: 35px;
+  font-size: clamp(65px, 8vw, 115px);
+  font-weight: 650;
+  letter-spacing: -6px;
+  line-height: 0.91;
+}
+.book-title span {
+  font-weight: 450;
+}
+.book-rule {
+  margin-top: auto;
+  border-top: 1px solid #ffffff55;
+  padding-top: 14px;
+}
+.book-subtitle {
+  font-size: 12px;
+}
+.book-bottom {
+  display: flex;
+  justify-content: space-between;
+  font: 7px var(--mono);
+  color: #d1dcee;
+  text-transform: uppercase;
+  margin-top: 30px;
+  gap: 10px;
+}
+.product-art-footer {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font: 9px var(--mono);
+  color: #697068;
+}
+.product-art-footer span:last-child {
+  margin-left: auto;
+}
+.product-copy {
+  padding-top: 16px;
+}
+.product-copy > .eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 9px;
+  color: var(--navy);
+}
+.product-copy h1 {
+  margin: 24px 0 20px;
+  font-size: clamp(60px, 6vw, 84px);
+  letter-spacing: -4px;
+  line-height: 1;
+  font-weight: 600;
+}
+.product-title-dot {
+  color: var(--navy);
+}
+.product-intro {
+  font-size: 25px;
+  line-height: 1.35;
+  letter-spacing: -0.6px;
+  margin-bottom: 17px;
+}
+.product-description {
+  color: var(--muted);
+  line-height: 1.75;
+  font-size: 14px;
+  max-width: 440px;
+}
+.product-benefits {
+  list-style: none;
+  padding: 23px 0;
+  margin: 0;
+  display: grid;
+  gap: 12px;
+}
+.product-benefits li {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-size: 12px;
+}
+.product-benefits svg {
+  color: var(--navy);
+}
+.product-price {
+  border-top: 1px solid var(--line);
+  padding-top: 23px;
+  display: flex;
+  align-items: baseline;
+  gap: 15px;
+  margin-bottom: 23px;
+}
+.product-price strong {
+  font-size: 30px;
+  font-weight: 550;
+  letter-spacing: -1px;
+}
+.product-price span {
+  font-size: 11px;
+  color: var(--muted);
+}
+.sample-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  border: 1px solid #d9e0eb;
+  background: #edf1f7;
+  color: #405477;
+  padding: 14px;
+  margin-bottom: 20px;
+}
+.sample-note > svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.sample-note p {
+  font-size: 11px;
+  line-height: 1.65;
+  margin: 0;
+}
+.sample-note strong {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 3px;
+}
+.product-buy {
+  width: 100%;
+  justify-content: center;
+  gap: 16px;
+  min-height: 53px;
+}
+.product-buy:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.checkout-caption {
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.65;
+  text-align: center;
+  margin: 11px 0 0;
+}
+.stripe-reassurance {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  color: var(--muted);
+  margin-top: 23px;
+  font-size: 10px;
+}
+.stripe-reassurance strong {
+  color: var(--ink);
+  font-size: 16px;
+  letter-spacing: -0.6px;
+  margin-left: 2px;
+}
+.checkout-notice {
+  font-size: 12px;
+  padding: 13px;
+  background: #f4eddf;
+  border: 1px solid #e6d9c0;
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+.shop-how {
+  background: #f1f1ec;
+  border-block: 1px solid var(--line);
+  padding: 65px 0;
+}
+.shop-section-heading h2 {
+  margin-top: 13px;
+  font-size: 32px;
+  font-weight: 550;
+  letter-spacing: -1px;
+}
+.shop-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 48px;
+  margin-top: 42px;
+}
+.shop-steps article > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--navy);
+  padding-bottom: 19px;
+  border-bottom: 1px solid #d4d8d0;
+}
+.shop-steps h3 {
+  font-size: 18px;
+  margin-top: 19px;
+  font-weight: 550;
+}
+.shop-steps p {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.8;
+  margin-top: 10px;
+  max-width: 270px;
+}
+.program-coaching-note {
+  padding-block: 65px;
+  display: flex;
+  gap: 50px;
+  justify-content: space-between;
+  align-items: center;
+}
+.program-coaching-note h2 {
+  font-size: 28px;
+  font-weight: 550;
+  letter-spacing: -0.8px;
+  margin: 12px 0;
+}
+.program-coaching-note p {
+  max-width: 560px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.8;
+}
+.program-coaching-note .button {
+  flex-shrink: 0;
+}
+.purchase-page {
+  padding-block: 75px;
+}
+.purchase-card {
+  max-width: 570px;
+  margin-inline: auto;
+  border: 1px solid var(--line);
+  padding: 42px;
+  background: #fff;
+  text-align: center;
+}
+.purchase-icon {
+  display: flex;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 25px;
+  align-items: center;
+  justify-content: center;
+  color: var(--navy);
+  background: #edf1f7;
+  border-radius: 50%;
+}
+.purchase-card h1 {
+  font-size: 37px;
+  line-height: 1.13;
+  letter-spacing: -1.2px;
+  margin: 17px 0;
+  font-weight: 550;
+}
+.purchase-card > p {
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--muted);
+}
+.purchase-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  text-align: left;
+  padding: 20px 0;
+  margin: 24px 0;
+  border-block: 1px solid var(--line);
+  color: var(--navy);
+}
+.purchase-item div {
+  display: grid;
+  gap: 5px;
+  flex: 1;
+}
+.purchase-item strong {
+  color: var(--ink);
+  font-size: 17px;
+}
+.purchase-item span {
+  color: var(--muted);
+  font-size: 11px;
+}
+.purchase-card > .text-link {
+  display: inline-block;
+  margin-top: 25px;
+}
+.purchase-card > button {
+  margin-top: 20px;
+}
+.purchase-help {
+  border-top: 1px solid var(--line);
+  padding-top: 20px;
+  margin-top: 28px;
+  font-size: 11px !important;
+}
+.purchase-help a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+@media (max-width: 1000px) {
+  .product-grid {
+    gap: 40px;
+  }
+  .product-art {
+    padding-inline: 26px;
+  }
+  .book-title {
+    font-size: 88px;
+  }
+  .program-book {
+    padding-inline: 23px;
+    min-height: 375px;
+  }
+  .shop-footer .eyebrow {
+    display: none;
+  }
+}
+@media (max-width: 700px) {
+  .shop-header {
+    padding-block: 20px;
+    gap: 14px;
+  }
+  .shop-header .brand {
+    font-size: 16px;
+  }
+  .shop-header .text-link {
+    font-size: 10px;
+  }
+  .shop-header .text-link svg {
+    display: none;
+  }
+  .shop-breadcrumb {
+    padding-top: 24px;
+    font-size: 9px;
+  }
+  .product-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 34px;
+    padding-top: 23px;
+    padding-bottom: 44px;
+  }
+  .product-art {
+    position: static;
+    padding: 22px 35px;
+  }
+  .program-book {
+    max-width: 270px;
+    margin-block: 30px;
+    min-height: 335px;
+    padding: 24px;
+  }
+  .book-title {
+    font-size: 90px;
+    margin-top: 25px;
+  }
+  .book-bottom {
+    margin-top: 20px;
+  }
+  .product-copy {
+    padding-top: 0;
+  }
+  .product-copy h1 {
+    font-size: 68px;
+  }
+  .shop-how {
+    padding: 44px 0;
+  }
+  .shop-section-heading h2 {
+    font-size: 27px;
+  }
+  .shop-steps {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 30px;
+    margin-top: 30px;
+  }
+  .shop-steps p {
+    max-width: none;
+  }
+  .program-coaching-note {
+    display: block;
+    padding-block: 44px;
+  }
+  .program-coaching-note .button {
+    margin-top: 23px;
+  }
+  .shop-footer {
+    gap: 20px;
+    padding-block: 22px;
+  }
+  .shop-footer .brand {
+    font-size: 16px;
+  }
+  .shop-footer > .text-link {
+    font-size: 11px;
+  }
+  .purchase-page {
+    padding-block: 35px;
+  }
+  .purchase-card {
+    padding: 30px 22px;
+  }
+  .purchase-card h1 {
+    font-size: 31px;
+  }
+}

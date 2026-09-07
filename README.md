@@ -10,6 +10,7 @@ Requires Node.js 22.12 or later.
 npm ci
 cp .env.example .env # Only for a fresh checkout; preserve your existing .env.
 # Add your database URL, direct database URL, and a random auth secret.
+cp .env .dev.vars # Worker runtime secrets; both files are ignored by Git.
 npm run db:generate
 npm run db:migrate
 npm run dev
@@ -95,7 +96,7 @@ The placeholder can be rebuilt with `scripts/create-sample-program.py` using Pyt
 
 ## Google authentication
 
-Google OAuth is configured locally in the dedicated `steve-rossiter-coaching` Google Cloud project. The web client is named **Steve Rossiter Coaching — Local web**. Its client ID and secret are stored in the git-ignored `.env`; the downloaded credential backup is `.env.google-oauth.json`, also ignored. Both files have owner-only permissions. The consent screen uses Steve Rossiter Coaching, with `nikcochran@gmail.com` as the support/developer contact, and currently remains in testing mode. The app requests only `openid`, `email`, and `profile`.
+Google OAuth is configured in the dedicated `steve-rossiter-coaching` Google Cloud project. The web client is named **Steve Rossiter Coaching — Web**. Local credentials are stored in ignored `.env` and `.dev.vars` files. Production credentials are encrypted Cloudflare Worker secrets. The consent screen uses Steve Rossiter Coaching, with `nikcochran@gmail.com` as the support/developer contact. The app requests only `openid`, `email`, and `profile`.
 
 Existing password accounts can open **Account → Connect Google** while signed in. Google must return a verified email matching that account. This explicitly links the provider while retaining the password, user ID, coaching records, and role. Better Auth's default protection against automatically linking an unverified local email remains enabled; an initial Google sign-in for such an account explains how to connect it. New Google users enter the normal client questionnaire. Authentication errors return to the app with a readable message.
 
@@ -104,10 +105,10 @@ For a new environment:
 1. Create a **Web application** OAuth client in the [Google Cloud console](https://console.cloud.google.com/apis/credentials).
 2. Configure `http://localhost:3000` as an authorized JavaScript origin.
 3. Add `http://localhost:3000/api/auth/callback/google` as an authorized redirect URI.
-4. Set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in `.env`, then restart the server.
+4. Set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in `.env` and `.dev.vars`, then restart the server.
 5. For production, use the HTTPS application origin in `BETTER_AUTH_URL`, Google’s origin list, and its callback URI. Add test users to the OAuth consent screen if the Google app is in testing mode.
 
-The Google button explains its unavailability when credentials are absent. For deployment, configure the final HTTPS domain and callback before using Google sign-in on that domain. See [Better Auth’s Google integration](https://better-auth.com/docs/authentication/google), [account linking](https://better-auth.com/docs/concepts/users-accounts#account-linking), and [TanStack integration](https://better-auth.com/docs/integrations/tanstack).
+The production origin is `https://steve-rossiter-coaching.nikcochran.workers.dev`; its authorized callback is `/api/auth/callback/google`. The original localhost:3000 origin and callback remain authorized. The public privacy notice is `/privacy`. When adding a custom domain, update both origin secrets, the Google origin and callback allowlists, and the Google branding links and authorized domain. See [Better Auth’s Google integration](https://better-auth.com/docs/authentication/google) and [account linking](https://better-auth.com/docs/concepts/users-accounts#account-linking).
 
 ## Database and server architecture
 
@@ -117,7 +118,7 @@ The Google button explains its unavailability when credentials are absent. For d
 
 `src/lib/access.server.ts` centralizes live account/role guards. `src/lib/coaching.ts` implements portal reads and coach/client mutations. Shared Zod schemas in `src/lib/coaching-validation.ts` validate plan dates, exercises, scheduling times, and nutrition logs. Client mutations include ownership predicates; only coach mutations accept a target client ID, which must belong to a client account. No frontend visibility check is used as the authorization boundary.
 
-For enquiries, the application records a request only; it does not book a calendar slot or send an email. View and follow up on requests using `npm run db:studio` and the Enquiry model. The form has a honeypot and limits requests to three per email per hour. Add shared, infrastructure-level abuse protection before running a high-volume public campaign. Better Auth’s default rate-limit store is in-memory; configure a shared store when running multiple instances. The local Node server has no trusted proxy IP headers, so Better Auth falls back to a shared per-path limit. Configure trusted client IP forwarding for your chosen production host rather than trusting arbitrary incoming headers.
+For enquiries, the application records a request only; it does not book a calendar slot or send an email. View and follow up on requests using `npm run db:studio` and the Enquiry model. The form has a honeypot and limits requests to three per email per hour. Better Auth uses Cloudflare's `cf-connecting-ip` header for authentication throttling. Its in-memory rate limits are local to each Worker isolate; use a shared store or Cloudflare rate limiting if stronger global limits are needed.
 
 Email verification, forgotten-password email delivery, newsletters, automated invitations, chat messaging, and external scheduling-service integrations are not configured. Email/password login works without an email delivery provider. Coaching plans and schedules are stored and managed directly in this application. Stripe configuration for PDF purchases is described above.
 
@@ -144,14 +145,15 @@ The browser suite checks landing-page interactions, enquiry persistence, mobile 
 
 ```sh
 npm ci
-npm run db:generate
 npm run db:migrate
 npm run build
-npm start
+npm run deploy
 ```
 
-Nitro produces a Node server in `.output/server/index.mjs` and assets in `.output/public`. Build on your deployment target, supply the environment variables through your host’s secret settings, and set `BETTER_AUTH_URL` to the public HTTPS origin. `npm start` loads `.env` if present and otherwise uses the host’s environment. `PORT` controls the listening port. No deployment is performed automatically.
+The Cloudflare Vite plugin produces the Worker in `dist/server` and public assets in `dist/client`. `npm run preview` serves the built Worker locally on port 3001; `npm start` uses port 3000. Local runtime variables come from `.dev.vars`; Prisma CLI scripts read `.env`. Match `APP_URL` and `BETTER_AUTH_URL` to the local port you are using. The build generates both the Cloudflare Prisma client and a separate Node client for administrative scripts and test fixtures. Database clients are created within the TanStack request middleware and disconnected after each request, so Neon WebSocket connections are never reused across Worker requests.
 
-The lockfile pins the tested dependency graph. Overrides select patched `deepmerge-ts` and `mysql2` transitive dependencies used by Prisma tooling. Nitro’s current Vite integration is a beta package; keep the tested lockfile when deploying.
+Production runs in the `steve-rossiter-coaching` Worker in Cloudflare account `41526feba51ca99b6c0005c25ebad09b`, at [the temporary production address](https://steve-rossiter-coaching.nikcochran.workers.dev). Its runtime secrets are `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `APP_URL`, `GOOGLE_CLIENT_ID`, and `GOOGLE_CLIENT_SECRET`. An ignored `.env.cloudflare.json` file contains the local backup; never commit or publish it. The production auth secret is separate from local development.
 
-Framework references: [TanStack Start setup](https://tanstack.com/start/latest/docs/framework/react/build-from-scratch), [TanStack Node/Nitro hosting](https://tanstack.com/start/latest/docs/framework/react/guide/hosting), and [Prisma with Neon](https://www.prisma.io/docs/orm/v6/overview/databases/neon).
+The lockfile pins the tested dependency graph. Database migrations are applied with `npm run db:migrate` using the private direct Neon connection; client generation and application builds do not require database credentials. Stripe checkout remains unavailable until Stripe credentials and the final program PDF are configured.
+
+Framework references: [TanStack on Cloudflare](https://developers.cloudflare.com/workers/framework-guides/web-apps/tanstack-start/) and [Prisma with Neon](https://www.prisma.io/docs/orm/v6/overview/databases/neon).
