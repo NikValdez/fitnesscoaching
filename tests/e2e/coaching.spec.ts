@@ -1,3 +1,4 @@
+import { waitForHydration } from './hydration'
 import { test, expect, type BrowserContext, type Request } from '@playwright/test'
 import { randomUUID } from 'node:crypto'
 import { db } from '../../scripts/db'
@@ -86,6 +87,7 @@ test('coach programs, private client calendars, nutrition, check-in review, and 
   page.on('pageerror', (error) => errors.push(error.message))
   clientPage.on('pageerror', (error) => errors.push(error.message))
   await page.goto('/portal')
+  await waitForHydration(page)
   await page.waitForLoadState('networkidle')
   await expect(page).toHaveURL(/\/coach/)
   await expect(page.getByRole('heading', { name: 'A clear view of the week.' })).toBeVisible()
@@ -157,6 +159,7 @@ test('coach programs, private client calendars, nutrition, check-in review, and 
   })
 
   await clientPage.goto('/portal')
+  await waitForHydration(clientPage)
   await clientPage.waitForLoadState('networkidle')
   await expect(clientPage.getByRole('heading', { name: 'Good to see you, Avery.' })).toBeVisible()
   await expect(clientPage.getByText('Avery strength foundation', { exact: true })).toBeVisible()
@@ -179,6 +182,7 @@ test('coach programs, private client calendars, nutrition, check-in review, and 
   ).toBeNull()
 
   await otherPage.goto('/coach')
+  await waitForHydration(otherPage)
   await expect(otherPage).toHaveURL(/\/portal/)
   await expect(otherPage.getByText('Avery strength foundation')).toHaveCount(0)
   await otherContext.request.post('/api/auth/update-user', {
@@ -201,10 +205,12 @@ test('coach programs, private client calendars, nutrition, check-in review, and 
   await clientPage.getByRole('button', { name: 'Save nutrition log' }).click()
   await expect(clientPage.getByRole('dialog')).not.toBeVisible()
   await clientPage.reload()
+  await waitForHydration(clientPage)
   await expect(clientPage.getByText('2100 kcal', { exact: true })).toBeVisible()
   expect(await db.nutritionLog.count({ where: { userId: client.id } })).toBe(1)
 
   await clientPage.goto('/dashboard')
+  await waitForHydration(clientPage)
   await clientPage.getByRole('button', { name: 'Write your check-in' }).click()
   await clientPage
     .getByLabel('How did your week go?')
@@ -212,6 +218,7 @@ test('coach programs, private client calendars, nutrition, check-in review, and 
   await clientPage.getByRole('button', { name: 'Save check-in' }).click()
   await expect(clientPage.getByRole('dialog')).not.toBeVisible()
   await page.reload()
+  await waitForHydration(page)
   await page
     .getByRole('navigation', { name: 'Coach navigation' })
     .getByRole('button', { name: 'Check-ins', exact: true })
@@ -226,6 +233,7 @@ test('coach programs, private client calendars, nutrition, check-in review, and 
     (await db.checkIn.findFirstOrThrow({ where: { userId: client.id } })).reviewedAt,
   ).not.toBeNull()
   await clientPage.goto('/portal')
+  await waitForHydration(clientPage)
   await expect(
     clientPage.getByText('Good consistency. Add an easier day after your lower body session.'),
   ).toBeVisible()
@@ -235,6 +243,7 @@ test('coach programs, private client calendars, nutrition, check-in review, and 
     .getByRole('button', { name: 'Calendar', exact: true })
     .click()
   await page.reload()
+  await waitForHydration(page)
   await expect(
     page.getByRole('button', { name: 'Private coach preparation', exact: false }),
   ).toBeVisible()
@@ -243,6 +252,7 @@ test('coach programs, private client calendars, nutrition, check-in review, and 
   await expect(page.getByRole('dialog')).not.toBeVisible()
   await page.screenshot({ path: 'test-results/coach-calendar-desktop.png', fullPage: true })
   await clientPage.goto(`/portal?tab=calendar&month=${localDate().slice(0, 7)}`)
+  await waitForHydration(clientPage)
   await expect(clientPage.getByText('Private coach preparation')).toHaveCount(0)
   await expect(clientPage.getByText('Blake private session')).toHaveCount(0)
   await clientPage.screenshot({ path: 'test-results/client-calendar-desktop.png', fullPage: true })
@@ -258,6 +268,7 @@ test('coach programs, private client calendars, nutrition, check-in review, and 
   // Updates reach the client; archiving keeps linked calendar history intact.
   await page.setViewportSize({ width: 1440, height: 1000 })
   await page.goto('/coach?tab=programs')
+  await waitForHydration(page)
   await page.getByRole('button', { name: /Avery strength foundation/ }).click()
   await page.getByRole('button', { name: 'Edit plan', exact: true }).click()
   await page.getByLabel('Plan title').fill('Avery updated strength plan')
@@ -265,6 +276,7 @@ test('coach programs, private client calendars, nutrition, check-in review, and 
   await page.getByRole('button', { name: 'Save plan', exact: true }).click()
   await expect(page.getByRole('dialog')).not.toBeVisible()
   await clientPage.goto('/portal?tab=workouts')
+  await waitForHydration(clientPage)
   await clientPage.getByRole('button', { name: /Avery updated strength plan/ }).click()
   await expect(clientPage.getByRole('heading', { name: 'Front squat', exact: true })).toBeVisible()
   await page.getByRole('button', { name: /Avery updated strength plan/ }).click()
@@ -272,13 +284,14 @@ test('coach programs, private client calendars, nutrition, check-in review, and 
   await page.getByRole('button', { name: 'Archive plan', exact: true }).click()
   await expect(page.getByRole('dialog')).not.toBeVisible()
   await clientPage.reload()
+  await waitForHydration(clientPage)
   await expect(clientPage.getByRole('button', { name: /Avery updated strength plan/ })).toHaveCount(
     0,
   )
   expect(await db.scheduleEvent.count({ where: { programId: fitness.id } })).toBe(1)
 
   await page.goto('/coach?tab=calendar')
-  await expect(page.locator('html')).toHaveAttribute('data-hydrated', 'true')
+  await waitForHydration(page)
   await page.getByRole('button', { name: /Private coach preparation/ }).click()
   await page.getByRole('button', { name: 'Edit', exact: true }).click()
   await page

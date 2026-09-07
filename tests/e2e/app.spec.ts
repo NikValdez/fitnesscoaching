@@ -1,3 +1,4 @@
+import { waitForHydration } from './hydration'
 import { test, expect } from '@playwright/test'
 import { db } from '../../scripts/db'
 import { randomUUID } from 'node:crypto'
@@ -15,6 +16,7 @@ test('landing page, mobile navigation, and pricing selection', async ({ page }) 
   page.on('pageerror', (error) => errors.push(error.message))
   await page.setViewportSize({ width: 1440, height: 1000 })
   await page.goto('/')
+  await waitForHydration(page)
   await page.waitForLoadState('networkidle')
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     'Personal coaching, built around you.',
@@ -32,6 +34,7 @@ test('landing page, mobile navigation, and pricing selection', async ({ page }) 
   expect(await db.enquiry.count({ where: { email, interest: 'Hybrid coaching' } })).toBe(1)
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/')
+  await waitForHydration(page)
   await page.waitForLoadState('networkidle')
   await page.getByRole('button', { name: 'Open menu' }).click()
   await page.getByRole('navigation').getByRole('link', { name: 'Services' }).click()
@@ -48,6 +51,7 @@ test('landing page, mobile navigation, and pricing selection', async ({ page }) 
 
 test('protected dashboard redirects visitors', async ({ page }) => {
   await page.goto('/dashboard')
+  await waitForHydration(page)
   await expect(page).toHaveURL(/\/login/)
   await expect(page.getByRole('heading', { name: 'Good to have you back.' })).toBeVisible()
 })
@@ -76,6 +80,7 @@ test('accounts persist workouts and check-ins, isolate records, and sign out', a
   testEmails.push(email)
   const password = `Test-${randomUUID()}!`
   await page.goto('/signup')
+  await waitForHydration(page)
   await page.getByLabel('Your name').fill('Alex Test')
   await page.getByLabel('Email address').fill(email)
   await page.getByLabel('Password', { exact: true }).fill(password)
@@ -83,8 +88,8 @@ test('accounts persist workouts and check-ins, isolate records, and sign out', a
   await expect(page).toHaveURL(/\/onboarding/)
   await completeBasicIntake(page)
   await page.goto('/dashboard')
+  await waitForHydration(page)
   await expect(page.getByRole('heading', { name: 'Keep going, Alex.' })).toBeVisible()
-  await expect(page.locator('html')).toHaveAttribute('data-hydrated', 'true')
   await page.getByRole('button', { name: 'Log a workout', exact: true }).click()
   await page.getByLabel('Workout name').fill('Lower body strength')
   await page.getByLabel('Duration (minutes)').fill('50')
@@ -92,6 +97,7 @@ test('accounts persist workouts and check-ins, isolate records, and sign out', a
   await page.getByRole('button', { name: 'Save workout' }).click()
   await expect(page.getByRole('heading', { name: 'Lower body strength' })).toBeVisible()
   await page.reload()
+  await waitForHydration(page)
   await expect(page.getByRole('heading', { name: 'Lower body strength' })).toBeVisible()
   await page.getByRole('button', { name: 'Write your check-in' }).click()
   await page.getByLabel('How did your week go?').fill('A good week with consistent sleep.')
@@ -119,6 +125,7 @@ test('accounts persist workouts and check-ins, isolate records, and sign out', a
   const secondPage = await other.newPage()
   await completeBasicIntake(secondPage)
   await secondPage.goto('/dashboard')
+  await waitForHydration(secondPage)
   await expect(
     secondPage.getByRole('heading', { name: 'Your first session starts here.' }),
   ).toBeVisible()
@@ -144,5 +151,6 @@ test('accounts persist workouts and check-ins, isolate records, and sign out', a
   await page.getByRole('button', { name: 'Sign in', exact: true }).click()
   await expect(page).toHaveURL(/\/portal/)
   await page.goto('/dashboard')
+  await waitForHydration(page)
   await expect(page.getByRole('heading', { name: 'Your week, reflected.' })).toBeVisible()
 })

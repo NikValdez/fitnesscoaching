@@ -1,3 +1,4 @@
+import { waitForHydration } from './hydration'
 import { test, expect, type BrowserContext, type Request } from '@playwright/test'
 import { randomUUID } from 'node:crypto'
 import { db } from '../../scripts/db'
@@ -58,6 +59,7 @@ test('service questionnaire, mixed tiers, contact preferences, editing, and coac
   const errors: string[] = []
   page.on('pageerror', (e) => errors.push(e.message))
   await page.goto('/dashboard')
+  await waitForHydration(page)
   await expect(page).toHaveURL(/\/onboarding/)
   await page.getByRole('button', { name: 'Continue', exact: true }).click()
   await expect(page.getByRole('alert')).toContainText('Choose at least one service')
@@ -103,6 +105,7 @@ test('service questionnaire, mixed tiers, contact preferences, editing, and coac
   const captured = await saveRequest
   await expect(page).toHaveURL(/\/portal/)
   await page.reload()
+  await waitForHydration(page)
   await expect(page.getByRole('heading', { name: 'Your coaching preferences' })).toBeVisible()
   await expect(
     page.getByText('Build consistent habits around a changing work schedule.', { exact: true }),
@@ -118,6 +121,7 @@ test('service questionnaire, mixed tiers, contact preferences, editing, and coac
   expect(await db.clientIntake.count({ where: { userId: user.id } })).toBe(1)
   const otherPage = await otherContext.newPage()
   await otherPage.goto(`/onboarding?userId=${user.id}`)
+  await waitForHydration(otherPage)
   await expect(
     otherPage.getByRole('checkbox', { name: 'Fitness coaching', exact: true }),
   ).not.toBeChecked()
@@ -149,8 +153,10 @@ test('service questionnaire, mixed tiers, contact preferences, editing, and coac
 
   await db.user.update({ where: { id: other.id }, data: { role: 'ADMIN' } })
   await otherPage.goto('/onboarding')
+  await waitForHydration(otherPage)
   await expect(otherPage).toHaveURL(/\/coach/)
   await otherPage.goto(`/coach?tab=overview&clientId=${user.id}`)
+  await waitForHydration(otherPage)
   await expect(
     otherPage.getByRole('heading', { name: 'Client coaching preferences' }),
   ).toBeVisible()

@@ -1,3 +1,4 @@
+import { waitForHydration } from './hydration'
 import { test, expect } from '@playwright/test'
 
 test('public PDF product, guest navigation, mobile layout and payment guards', async ({
@@ -5,6 +6,7 @@ test('public PDF product, guest navigation, mobile layout and payment guards', a
   request,
 }) => {
   await page.goto('/')
+  await waitForHydration(page)
   await page
     .getByRole('navigation', { name: 'Main navigation' })
     .getByRole('link', { name: '69 easy', exact: true })
@@ -18,8 +20,10 @@ test('public PDF product, guest navigation, mobile layout and payment guards', a
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   }
   await page.goto('/program?checkout=cancelled')
+  await waitForHydration(page)
   await expect(page.getByRole('status')).toContainText('Checkout was cancelled')
   await page.goto('/purchase/success?session_id=forged')
+  await waitForHydration(page)
   await expect(page.getByRole('link', { name: 'Download your PDF' })).toHaveCount(0)
   const denied = await request.get('/api/program/download?session_id=forged')
   expect(denied.status()).toBe(403)

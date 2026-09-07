@@ -1,7 +1,9 @@
+import { waitForHydration } from './hydration'
 import { expect, type Page } from '@playwright/test'
 
 export async function completeBasicIntake(page: Page) {
   await page.goto('/onboarding')
+  await waitForHydration(page)
   await page.getByRole('checkbox', { name: 'Fitness coaching', exact: true }).check()
   await page.getByRole('button', { name: 'Continue', exact: true }).click()
   await page.getByRole('radio', { name: 'Fitness coaching: Essential', exact: true }).check()

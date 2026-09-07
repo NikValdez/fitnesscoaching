@@ -143,6 +143,8 @@ The browser suite checks landing-page interactions, enquiry persistence, mobile 
 
 ## Production build
 
+This app needs **Cloudflare Workers Paid** for reliable production authentication. Live testing on the Free plan confirmed that secure password hashing can exceed its 10 ms CPU limit and return HTTP 503. Do not lower password hashing costs to fit the free allowance. The plan upgrade and GitHub integration require completion in the account dashboard before production setup is finished.
+
 ```sh
 npm ci
 npm run db:migrate
