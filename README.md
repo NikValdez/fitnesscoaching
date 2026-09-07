@@ -108,7 +108,7 @@ For a new environment:
 4. Set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in `.env` and `.dev.vars`, then restart the server.
 5. For production, use the HTTPS application origin in `BETTER_AUTH_URL`, Google’s origin list, and its callback URI. Add test users to the OAuth consent screen if the Google app is in testing mode.
 
-The production origin is `https://steve-rossiter-coaching.nikcochran.workers.dev`; its authorized callback is `/api/auth/callback/google`. The original localhost:3000 origin and callback remain authorized. The public privacy notice is `/privacy`. When adding a custom domain, update both origin secrets, the Google origin and callback allowlists, and the Google branding links and authorized domain. See [Better Auth’s Google integration](https://better-auth.com/docs/authentication/google) and [account linking](https://better-auth.com/docs/concepts/users-accounts#account-linking).
+The production origin is `https://steve-rossiter-coaching.nikcochran.workers.dev`; its authorized callback is `/api/auth/callback/google`. The Google consent app is published in production mode, and a live Google sign-in to the coach account was verified on September 7, 2026. The original localhost:3000 origin and callback remain authorized. The public privacy notice is `/privacy`. When adding a custom domain, update both origin secrets, the Google origin and callback allowlists, and the Google branding links and authorized domain. See [Better Auth’s Google integration](https://better-auth.com/docs/authentication/google) and [account linking](https://better-auth.com/docs/concepts/users-accounts#account-linking).
 
 ## Database and server architecture
 
@@ -143,7 +143,7 @@ The browser suite checks landing-page interactions, enquiry persistence, mobile 
 
 ## Production build
 
-This app needs **Cloudflare Workers Paid** for reliable production authentication. Live testing on the Free plan confirmed that secure password hashing can exceed its 10 ms CPU limit and return HTTP 503. Do not lower password hashing costs to fit the free allowance. The plan upgrade and GitHub integration require completion in the account dashboard before production setup is finished.
+Production currently uses **Cloudflare Workers Free**. Reusing Better Auth configuration within each Worker isolate removes repeated setup while preserving request-scoped database connections and the existing password hashing settings. After this change, all eight live browser tests passed on September 7, 2026, and the captured Worker tail contained 145 successful request outcomes with no CPU-limit errors. Earlier runs exceeded the Free plan's CPU allowance; this successful run does not guarantee that every future request will fit its limits. Keep password hashing settings intact if resource limits recur.
 
 ```sh
 npm ci
@@ -157,5 +157,7 @@ The Cloudflare Vite plugin produces the Worker in `dist/server` and public asset
 Production runs in the `steve-rossiter-coaching` Worker in Cloudflare account `41526feba51ca99b6c0005c25ebad09b`, at [the temporary production address](https://steve-rossiter-coaching.nikcochran.workers.dev). Its runtime secrets are `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `APP_URL`, `GOOGLE_CLIENT_ID`, and `GOOGLE_CLIENT_SECRET`. An ignored `.env.cloudflare.json` file contains the local backup; never commit or publish it. The production auth secret is separate from local development.
 
 The lockfile pins the tested dependency graph. Database migrations are applied with `npm run db:migrate` using the private direct Neon connection; client generation and application builds do not require database credentials. Stripe checkout remains unavailable until Stripe credentials and the final program PDF are configured.
+
+Cloudflare Workers Builds is connected to `NikValdez/fitnesscoaching`, with `main` as the production branch and other branch builds disabled. Pushes to `main` run `npm run build && npm run typecheck && npm test`, followed by `npx wrangler deploy`. Cloudflare manages the deployment token, and runtime secrets remain encrypted on the Worker. Builds do not run database migrations: apply any required migrations before deploying code that depends on them.
 
 Framework references: [TanStack on Cloudflare](https://developers.cloudflare.com/workers/framework-guides/web-apps/tanstack-start/) and [Prisma with Neon](https://www.prisma.io/docs/orm/v6/overview/databases/neon).

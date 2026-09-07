@@ -2,7 +2,7 @@ import 'dotenv/config'
 import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { tanstackStartCookies } from 'better-auth/tanstack-start'
-import { getDb } from './db.server'
+import { db } from './db.server'
 
 export const isGoogleEnabled = () => Boolean(
   process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET,
@@ -14,7 +14,7 @@ return betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
   secret: process.env.BETTER_AUTH_SECRET,
   advanced: { ipAddress: { ipAddressHeaders: ['cf-connecting-ip'] } },
-  database: prismaAdapter(getDb(), { provider: 'postgresql' }),
+  database: prismaAdapter(db, { provider: 'postgresql' }),
   user: {
     additionalFields: {
       role: { type: ['CLIENT', 'ADMIN'], defaultValue: 'CLIENT', input: false, required: false },
@@ -35,13 +35,9 @@ return betterAuth({
 })
 }
 
-const instances = new WeakMap<ReturnType<typeof getDb>, ReturnType<typeof createAuth>>()
+// Auth configuration can be reused across requests. The database proxy still
+// resolves every operation to the current request's own Prisma connection.
+let instance: ReturnType<typeof createAuth> | undefined
 export function getAuth() {
-  const db = getDb()
-  let auth = instances.get(db)
-  if (!auth) {
-    auth = createAuth()
-    instances.set(db, auth)
-  }
-  return auth
+  return (instance ??= createAuth())
 }
