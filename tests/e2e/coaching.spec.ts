@@ -64,7 +64,7 @@ async function replay(context: BrowserContext, request: Request) {
 test('coach programs, private client calendars, nutrition, check-in review, and server permissions', async ({
   browser,
 }) => {
-  test.setTimeout(120_000)
+  test.setTimeout(180_000)
   const coachContext = await browser.newContext({
     baseURL: base,
     viewport: { width: 1440, height: 1000 },
@@ -305,6 +305,150 @@ test('coach programs, private client calendars, nutrition, check-in review, and 
   await page.getByRole('button', { name: 'Remove item', exact: true }).click()
   await expect(page.getByRole('dialog')).not.toBeVisible()
   expect(await db.scheduleEvent.count({ where: { coachId: coach.id, kind: 'COACH_TASK' } })).toBe(0)
+
+  // A coach can schedule, edit, complete and stop a series across calendar months.
+  await page.goto('/coach?tab=checkins&month=2026-09')
+  await waitForHydration(page)
+  await page.getByRole('button', { name: 'Schedule a check-in', exact: true }).click()
+  await page.getByLabel('Client', { exact: true }).selectOption(client.id)
+  await expect(page.getByLabel('Type', { exact: true })).toHaveValue('CHECK_IN')
+  await page.getByLabel('Title', { exact: true }).fill('Recurring recovery check-in')
+  await page.getByLabel('Date', { exact: true }).fill('2026-09-28')
+  await page.getByLabel('Time (Los Angeles)').fill('09:15')
+  await page.getByLabel('Repeats', { exact: true }).selectOption('WEEKLY')
+  await page.getByLabel('Number of check-ins').fill('4')
+  await expect(page.getByText(/Last check-in: 2026-10-19/)).toBeVisible()
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.screenshot({ path: 'test-results/recurring-checkin-mobile.png', fullPage: true })
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  const repeatRequestPromise = page.waitForRequest(
+    (r) => r.method() === 'POST' && r.url().includes('/_serverFn/'),
+  )
+  await page.getByRole('button', { name: 'Save scheduled item' }).click()
+  const repeatRequest = await repeatRequestPromise
+  await expect(page.getByRole('dialog')).not.toBeVisible()
+  const series = await db.scheduleEvent.findMany({
+    where: { clientId: client.id, title: 'Recurring recovery check-in' },
+    orderBy: { date: 'asc' },
+  })
+  expect(series.map((e) => e.date)).toEqual([
+    '2026-09-28',
+    '2026-10-05',
+    '2026-10-12',
+    '2026-10-19',
+  ])
+  expect(new Set(series.map((e) => e.seriesId)).size).toBe(1)
+  expect(series[0].seriesId).not.toBeNull()
+  expect(series.every((e) => e.time === '09:15' && e.completedAt === null)).toBe(true)
+  await replay(clientContext, repeatRequest)
+  await replay(anonymous, repeatRequest)
+  expect(
+    await db.scheduleEvent.count({
+      where: { clientId: client.id, title: 'Recurring recovery check-in' },
+    }),
+  ).toBe(4)
+
+  await clientPage.goto('/portal?tab=calendar&month=2026-10')
+  await waitForHydration(clientPage)
+  await expect(clientPage.getByText('Recurring recovery check-in', { exact: true })).toHaveCount(3)
+  await otherPage.goto('/portal?tab=calendar&month=2026-10')
+  await waitForHydration(otherPage)
+  await expect(otherPage.getByText('Recurring recovery check-in')).toHaveCount(0)
+
+  await page.setViewportSize({ width: 1440, height: 1000 })
+  await page.goto('/coach?tab=calendar&month=2026-09')
+  await waitForHydration(page)
+  await page.getByRole('button', { name: /Sep 28, 2026,/ }).click()
+  await page.getByRole('button', { name: /Recurring recovery check-in/ }).click()
+  await page.getByRole('button', { name: 'Mark as done', exact: true }).click()
+  await expect(page.getByRole('dialog')).not.toBeVisible()
+  expect(
+    await db.scheduleEvent.count({
+      where: { seriesId: series[0].seriesId, completedAt: { not: null } },
+    }),
+  ).toBe(1)
+  await page.goto('/coach?tab=calendar&month=2026-10')
+  await waitForHydration(page)
+  await page.getByRole('button', { name: /Oct 5, 2026,/ }).click()
+  await page
+    .getByRole('button', { name: /Recurring recovery check-in/ })
+    .first()
+    .click()
+  await page.getByRole('button', { name: 'Edit', exact: true }).click()
+  await expect(page.getByText(/this check-in only/)).toBeVisible()
+  await page.getByLabel('Title', { exact: true }).fill('Adjusted recovery check-in')
+  await page.getByRole('button', { name: 'Save scheduled item' }).click()
+  await expect(page.getByRole('dialog')).not.toBeVisible()
+  expect(await db.scheduleEvent.count({ where: { seriesId: series[0].seriesId } })).toBe(4)
+  expect(
+    await db.scheduleEvent.count({
+      where: { seriesId: series[0].seriesId, title: 'Recurring recovery check-in' },
+    }),
+  ).toBe(3)
+  await page.getByRole('button', { name: /Oct 12, 2026,/ }).click()
+  await page
+    .getByRole('button', { name: /Recurring recovery check-in/ })
+    .first()
+    .click()
+  await page.getByRole('button', { name: 'Delete scheduled item' }).click()
+  await page.getByRole('button', { name: 'Remove item', exact: true }).click()
+  await expect(page.getByRole('dialog')).not.toBeVisible()
+  expect(await db.scheduleEvent.count({ where: { seriesId: series[0].seriesId } })).toBe(3)
+  // Completed occurrences remain even when they fall after the selected cutoff.
+  await db.scheduleEvent.update({ where: { id: series[3].id }, data: { completedAt: new Date() } })
+  await page.getByRole('button', { name: /Oct 5, 2026,/ }).click()
+  await page.getByRole('button', { name: /Adjusted recovery check-in/ }).click()
+  await page.getByRole('button', { name: 'Remove this and future check-ins' }).click()
+  await page.getByRole('button', { name: 'Remove remaining check-ins', exact: true }).click()
+  await expect(page.getByRole('dialog')).not.toBeVisible()
+  expect(
+    (
+      await db.scheduleEvent.findMany({
+        where: { seriesId: series[0].seriesId },
+        orderBy: { date: 'asc' },
+      })
+    ).map((e) => e.id),
+  ).toEqual([series[0].id, series[3].id])
+  await clientPage.reload()
+  await waitForHydration(clientPage)
+  await expect(clientPage.getByText('Recurring recovery check-in', { exact: true })).toHaveCount(1)
+  await expect(clientPage.getByText('Adjusted recovery check-in', { exact: true })).toHaveCount(0)
+
+  // Turning a one-time check-in into a series retains its identity and completion.
+  const once = await db.scheduleEvent.create({
+    data: {
+      clientId: client.id,
+      coachId: coach.id,
+      title: 'Monthly recovery review',
+      kind: 'CHECK_IN',
+      date: '2028-01-31',
+      time: '10:00',
+      completedAt: new Date(),
+    },
+  })
+  await page.goto('/coach?tab=calendar&month=2028-01')
+  await waitForHydration(page)
+  await page.getByRole('button', { name: /Jan 31, 2028,/ }).click()
+  await page.getByRole('button', { name: /Monthly recovery review/ }).click()
+  await page.getByRole('button', { name: 'Edit', exact: true }).click()
+  await page.getByLabel('Repeats', { exact: true }).selectOption('MONTHLY')
+  await page.getByLabel('Number of check-ins').fill('3')
+  const convertPromise = page.waitForRequest(
+    (r) => r.method() === 'POST' && r.url().includes('/_serverFn/'),
+  )
+  await page.getByRole('button', { name: 'Save scheduled item' }).click()
+  const convertRequest = await convertPromise
+  await expect(page.getByRole('dialog')).not.toBeVisible()
+  const converted = await db.scheduleEvent.findMany({
+    where: { clientId: client.id, title: once.title },
+    orderBy: { date: 'asc' },
+  })
+  expect(converted.map((e) => e.date)).toEqual(['2028-01-31', '2028-02-29', '2028-03-31'])
+  expect(converted[0].id).toBe(once.id)
+  expect(converted[0].completedAt).not.toBeNull()
+  expect(converted.slice(1).every((e) => e.completedAt === null)).toBe(true)
+  await replay(coachContext, convertRequest)
+  expect(await db.scheduleEvent.count({ where: { seriesId: converted[0].seriesId } })).toBe(3)
 
   // Revocation takes effect immediately even with an existing authenticated session.
   await db.user.update({ where: { id: coach.id }, data: { role: 'CLIENT' } })

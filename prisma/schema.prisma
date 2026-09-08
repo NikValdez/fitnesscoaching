@@ -266,6 +266,8 @@ model ScheduleEvent {
   durationMinutes Int       @default(30)
   notes           String?
   completedAt     DateTime?
+  seriesId        String?
+  repeatEvery     String?
   clientId        String
   client          User      @relation("ClientEvents", fields: [clientId], references: [id], onDelete: Cascade)
   coachId         String
@@ -277,6 +279,7 @@ model ScheduleEvent {
 
   @@index([clientId, date])
   @@index([date, completedAt])
+  @@index([seriesId, date])
   @@map("rossiter_schedule_event")
 }
 

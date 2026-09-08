@@ -24,6 +24,7 @@ import {
   deleteEvent,
 } from '../lib/coaching'
 import { localDate } from '../lib/coaching-validation'
+import { repeatOptions, type RepeatEvery } from '../lib/recurrence'
 import {
   Workspace,
   Calendar,
@@ -87,6 +88,7 @@ function CoachWorkspace() {
     type: 'archive' | 'delete'
     id: string
     title: string
+    scope?: 'ONE' | 'FOLLOWING'
   } | null>(null)
   const client = data.clients.find((client) => client.id === search.clientId)
   const pending = data.clients
@@ -178,7 +180,7 @@ function CoachWorkspace() {
           onClick={() => setEventForm('new')}
         >
           <Plus size={17} />
-          Schedule an item
+          {search.tab === 'checkins' ? 'Schedule a check-in' : 'Schedule an item'}
         </button>
       </div>
       <div className="workspace-filter-bar">
@@ -448,6 +450,7 @@ function CoachWorkspace() {
           clientId={search.clientId}
           today={data.today}
           onClose={() => setEventForm(null)}
+          defaultKind={search.tab === 'checkins' ? 'CHECK_IN' : 'WORKOUT'}
           onSaved={() => refresh('Schedule updated.')}
         />
       )}
@@ -494,6 +497,12 @@ function CoachWorkspace() {
               Los Angeles time{event.kind === 'COACH_TASK' ? ' · Visible only to coaches' : ''}
             </span>
             <p className="preserve-lines">{event.notes}</p>
+            {event.seriesId && (
+              <p className="form-note">
+                Repeating check-in ·{' '}
+                {repeatOptions[event.repeatEvery as RepeatEvery] || 'Scheduled series'}
+              </p>
+            )}
             {event.program && <p className="form-note">Linked plan: {event.program.title}</p>}
             <div className="button-row workspace-spaced">
               <button
@@ -541,6 +550,24 @@ function CoachWorkspace() {
               >
                 <Trash2 size={17} />
               </button>
+              {event.seriesId && (
+                <button
+                  className="button button-outline"
+                  disabled={busy}
+                  onClick={() => {
+                    setError('')
+                    setConfirm({
+                      type: 'delete',
+                      id: event.id,
+                      title: event.title,
+                      scope: 'FOLLOWING',
+                    })
+                    setEvent(null)
+                  }}
+                >
+                  Remove this and future check-ins
+                </button>
+              )}
             </div>
             {error && (
               <p role="alert" className="form-error workspace-spaced">
@@ -618,7 +645,13 @@ function CoachWorkspace() {
       )}
       {confirm && (
         <WorkspaceModal
-          title={confirm.type === 'archive' ? 'Archive this plan?' : 'Remove this scheduled item?'}
+          title={
+            confirm.type === 'archive'
+              ? 'Archive this plan?'
+              : confirm.scope === 'FOLLOWING'
+                ? 'Remove remaining check-ins?'
+                : 'Remove this scheduled item?'
+          }
           label={confirm.title}
           busy={busy}
           onClose={() => setConfirm(null)}
@@ -626,7 +659,9 @@ function CoachWorkspace() {
           <p>
             {confirm.type === 'archive'
               ? 'The plan will leave the client’s current programs. Past calendar items and tracking records stay in place.'
-              : 'This removes the item from both calendars. Logged workouts and check-ins are kept.'}
+              : confirm.scope === 'FOLLOWING'
+                ? 'This removes uncompleted check-ins in this series from this date onward, on both calendars. Completed items, earlier dates, and submitted reflections are kept.'
+                : 'This removes the item from both calendars. Logged workouts and check-ins are kept.'}
           </p>
           {error && (
             <p className="form-error" role="alert">
@@ -649,9 +684,14 @@ function CoachWorkspace() {
                 setError('')
                 try {
                   if (confirm.type === 'archive') await archiveProgram({ data: { id: confirm.id } })
-                  else await deleteEvent({ data: { id: confirm.id } })
+                  else
+                    await deleteEvent({ data: { id: confirm.id, scope: confirm.scope || 'ONE' } })
                   await refresh(
-                    confirm.type === 'archive' ? 'Plan archived.' : 'Scheduled item removed.',
+                    confirm.type === 'archive'
+                      ? 'Plan archived.'
+                      : confirm.scope === 'FOLLOWING'
+                        ? 'Remaining uncompleted check-ins removed.'
+                        : 'Scheduled item removed.',
                   )
                 } catch {
                   setError('Could not complete that action. Please try again.')
@@ -660,7 +700,13 @@ function CoachWorkspace() {
                 }
               }}
             >
-              {busy ? 'Saving…' : confirm.type === 'archive' ? 'Archive plan' : 'Remove item'}
+              {busy
+                ? 'Saving…'
+                : confirm.type === 'archive'
+                  ? 'Archive plan'
+                  : confirm.scope === 'FOLLOWING'
+                    ? 'Remove remaining check-ins'
+                    : 'Remove item'}
             </button>
           </div>
         </WorkspaceModal>

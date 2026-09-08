@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { calendarDate } from './validation'
+import { recurrenceDates } from './recurrence'
 
 const text = z.string().trim().max(5000)
 const optionalInt = (max: number) =>
@@ -49,17 +50,45 @@ export const programSchema = z
       })
   })
 
-export const eventSchema = z.object({
-  id: z.string().optional(),
-  clientId: z.string().min(1),
-  title: z.string().trim().min(2).max(120),
-  kind: z.enum(['WORKOUT', 'CHECK_IN', 'NUTRITION', 'COACH_TASK']),
-  date: calendarDate,
-  time: z.union([z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/), z.literal('')]).default(''),
-  durationMinutes: z.coerce.number().int().min(5).max(480),
-  notes: text.default(''),
-  programId: z.string().default(''),
-})
+export const eventSchema = z
+  .object({
+    id: z.string().optional(),
+    clientId: z.string().min(1),
+    title: z.string().trim().min(2).max(120),
+    kind: z.enum(['WORKOUT', 'CHECK_IN', 'NUTRITION', 'COACH_TASK']),
+    date: calendarDate,
+    time: z.union([z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/), z.literal('')]).default(''),
+    durationMinutes: z.coerce.number().int().min(5).max(480),
+    notes: text.default(''),
+    programId: z.string().default(''),
+    repeatEvery: z.enum(['NONE', 'WEEKLY', 'BIWEEKLY', 'MONTHLY']).default('NONE'),
+    occurrences: z.coerce.number().int().min(2).max(52).default(12),
+  })
+  .superRefine((value, context) => {
+    if (value.repeatEvery !== 'NONE' && value.kind !== 'CHECK_IN') {
+      context.addIssue({
+        code: 'custom',
+        path: ['repeatEvery'],
+        message: 'Only client check-ins can repeat.',
+      })
+    }
+    if (
+      calendarDate.safeParse(value.date).success &&
+      value.repeatEvery !== 'NONE' &&
+      Number.isInteger(value.occurrences) &&
+      value.occurrences >= 2 &&
+      value.occurrences <= 52
+    ) {
+      const dates = recurrenceDates(value.date, value.repeatEvery, value.occurrences)
+      if (!calendarDate.safeParse(dates.at(-1)).success) {
+        context.addIssue({
+          code: 'custom',
+          path: ['date'],
+          message: 'Choose an earlier start date.',
+        })
+      }
+    }
+  })
 export const nutritionSchema = z.object({
   date: calendarDate,
   calories: z.coerce.number().int().min(0).max(15000),

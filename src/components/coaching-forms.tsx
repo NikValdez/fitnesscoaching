@@ -4,6 +4,8 @@ import { programSchema, eventSchema, nutritionSchema } from '../lib/coaching-val
 import { saveProgram, saveEvent, saveNutritionLog } from '../lib/coaching'
 import { WorkspaceModal } from './workspace'
 import type { PlanData } from './plan-card'
+import { recurrenceDates, repeatOptions, type RepeatEvery } from '../lib/recurrence'
+import { calendarDate } from '../lib/validation'
 
 type Client = { id: string; name: string }
 type FormProps = { onClose: () => void; onSaved: () => Promise<void> }
@@ -295,6 +297,8 @@ export type EventData = {
   durationMinutes: number
   notes: string | null
   programId: string | null
+  seriesId?: string | null
+  repeatEvery?: string | null
 }
 export function EventForm({
   clients,
@@ -302,6 +306,7 @@ export function EventForm({
   initial,
   clientId,
   today,
+  defaultKind = 'WORKOUT',
   onClose,
   onSaved,
 }: FormProps & {
@@ -310,9 +315,13 @@ export function EventForm({
   initial?: EventData
   clientId?: string
   today: string
+  defaultKind?: EventData['kind']
 }) {
   const [selectedClient, setClient] = useState(initial?.clientId || clientId || '')
-  const [kind, setKind] = useState(initial?.kind || 'WORKOUT')
+  const [kind, setKind] = useState(initial?.kind || defaultKind)
+  const [repeatEvery, setRepeatEvery] = useState<RepeatEvery>('NONE')
+  const [occurrences, setOccurrences] = useState(12)
+  const [date, setDate] = useState(initial?.date || today)
   const [programId, setProgramId] = useState(initial?.programId || '')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -333,6 +342,8 @@ export function EventForm({
             kind,
             programId,
             id: initial?.id,
+            repeatEvery: kind === 'CHECK_IN' && !initial?.seriesId ? repeatEvery : 'NONE',
+            occurrences,
           })
           if (!parsed.success) {
             setError(parsed.error.issues[0].message)
@@ -377,6 +388,8 @@ export function EventForm({
           Type
           <select
             value={kind}
+            aria-label="Type"
+            disabled={Boolean(initial?.seriesId)}
             onChange={(e) => {
               setKind(e.target.value as typeof kind)
               setProgramId('')
@@ -402,20 +415,78 @@ export function EventForm({
             maxLength={120}
             defaultValue={initial?.title}
             placeholder={
-              kind === 'COACH_TASK' ? 'e.g. Create nutrition plan' : 'e.g. Lower body session'
+              kind === 'COACH_TASK'
+                ? 'e.g. Create nutrition plan'
+                : kind === 'CHECK_IN'
+                  ? 'e.g. Weekly progress check-in'
+                  : 'e.g. Lower body session'
             }
           />
         </label>
         <div className="field-row">
           <label>
             Date
-            <input type="date" name="date" required defaultValue={initial?.date || today} />
+            <input
+              type="date"
+              name="date"
+              required
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+            />
           </label>
           <label>
             Time (Los Angeles)
             <input type="time" name="time" defaultValue={initial?.time || ''} />
           </label>
         </div>
+        {kind === 'CHECK_IN' && !initial?.seriesId && (
+          <>
+            <div className="field-row">
+              <label>
+                Repeats
+                <select
+                  value={repeatEvery}
+                  aria-label="Repeats"
+                  onChange={(e) => setRepeatEvery(e.target.value as RepeatEvery)}
+                >
+                  {Object.entries(repeatOptions).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              {repeatEvery !== 'NONE' && (
+                <label>
+                  Number of check-ins
+                  <input
+                    type="number"
+                    required
+                    min={2}
+                    max={52}
+                    value={occurrences}
+                    onChange={(e) => setOccurrences(Number(e.target.value))}
+                  />
+                </label>
+              )}
+            </div>
+            {repeatEvery !== 'NONE' && (
+              <p className="form-note">
+                Includes the first check-in. Each date appears on both calendars and is completed
+                separately.
+                {calendarDate.safeParse(date).success && occurrences >= 2 && occurrences <= 52 && (
+                  <> Last check-in: {recurrenceDates(date, repeatEvery, occurrences).at(-1)}.</>
+                )}
+                {repeatEvery === 'MONTHLY' && ' Shorter months use their last day.'}
+              </p>
+            )}
+          </>
+        )}
+        {initial?.seriesId && (
+          <p className="form-note">
+            This saves changes to this check-in only. Other dates in the series stay as scheduled.
+          </p>
+        )}
         <label>
           Duration (minutes)
           <input
@@ -424,7 +495,7 @@ export function EventForm({
             min={5}
             max={480}
             required
-            defaultValue={initial?.durationMinutes || 45}
+            defaultValue={initial?.durationMinutes || (kind === 'CHECK_IN' ? 15 : 45)}
           />
         </label>
         <label>

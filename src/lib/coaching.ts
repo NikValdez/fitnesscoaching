@@ -1,6 +1,7 @@
 import { createServerFn } from '@tanstack/react-start'
 import { redirect } from '@tanstack/react-router'
 import { z } from 'zod'
+import { recurrenceDates } from './recurrence'
 import {
   eventSchema,
   programSchema,
@@ -172,11 +173,12 @@ export const saveEvent = createServerFn({ method: 'POST' })
     const coach = await requireCoach()
     await findClient(data.clientId)
     const { db } = await import('./db.server')
-    if (
-      data.id &&
-      !(await db.scheduleEvent.findFirst({ where: { id: data.id, clientId: data.clientId } }))
-    )
-      throw new Error('Scheduled item not found for this client.')
+    const existing = data.id
+      ? await db.scheduleEvent.findFirst({ where: { id: data.id, clientId: data.clientId } })
+      : null
+    if (data.id && !existing) throw new Error('Scheduled item not found for this client.')
+    if (existing?.seriesId && (data.repeatEvery !== 'NONE' || data.kind !== 'CHECK_IN'))
+      throw new Error('Edit this check-in individually or remove the remaining series.')
     if (data.programId) {
       const program = await db.program.findFirst({
         where: { id: data.programId, clientId: data.clientId, archived: false },
@@ -188,8 +190,33 @@ export const saveEvent = createServerFn({ method: 'POST' })
       )
         throw new Error('Choose a matching plan belonging to this client.')
     }
-    const { id, ...input } = data
+    const { id, repeatEvery, occurrences, ...input } = data
     const values = { ...input, time: data.time || null, programId: data.programId || null }
+    if (repeatEvery !== 'NONE') {
+      const seriesId = crypto.randomUUID()
+      const dates = recurrenceDates(data.date, repeatEvery, occurrences)
+      // Commit the entire series together; converting an existing item keeps its
+      // identity and completion history and cannot create a second series on retry.
+      await db.$transaction(async (tx) => {
+        if (id) {
+          const changed = await tx.scheduleEvent.updateMany({
+            where: { id, clientId: data.clientId, seriesId: null },
+            data: { ...values, seriesId, repeatEvery },
+          })
+          if (!changed.count) throw new Error('This check-in already belongs to a series.')
+        }
+        await tx.scheduleEvent.createMany({
+          data: (id ? dates.slice(1) : dates).map((date) => ({
+            ...values,
+            date,
+            seriesId,
+            repeatEvery,
+            coachId: coach.id,
+          })),
+        })
+      })
+      return { ok: true }
+    }
     if (id) return db.scheduleEvent.update({ where: { id }, data: values })
     return db.scheduleEvent.create({ data: { ...values, coachId: coach.id } })
   })
@@ -218,12 +245,27 @@ export const setEventDone = createServerFn({ method: 'POST' })
   })
 
 export const deleteEvent = createServerFn({ method: 'POST' })
-  .validator(z.object({ id: z.string().min(1) }))
+  .validator(
+    z.object({ id: z.string().min(1), scope: z.enum(['ONE', 'FOLLOWING']).default('ONE') }),
+  )
   .handler(async ({ data }) => {
     const { requireCoach } = await import('./access.server')
     await requireCoach()
     const { db } = await import('./db.server')
-    await db.scheduleEvent.delete({ where: { id: data.id } })
+    if (data.scope === 'FOLLOWING') {
+      const event = await db.scheduleEvent.findUniqueOrThrow({ where: { id: data.id } })
+      if (!event.seriesId) throw new Error('This item does not belong to a repeating series.')
+      await db.scheduleEvent.deleteMany({
+        where: {
+          seriesId: event.seriesId,
+          clientId: event.clientId,
+          date: { gte: event.date },
+          completedAt: null,
+        },
+      })
+    } else {
+      await db.scheduleEvent.delete({ where: { id: data.id } })
+    }
     return { ok: true }
   })
 
