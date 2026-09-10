@@ -1,6 +1,6 @@
 export const pdfProgram = {
   id: '69-easy-v1',
-  name: '69 easy',
+  name: '69 Easy',
   amountCents: 4900,
   currency: 'usd',
   isSample: true,

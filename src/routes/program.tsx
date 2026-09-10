@@ -1,19 +1,18 @@
 import { createFileRoute, type SearchSchemaInput } from '@tanstack/react-router'
-import { useState } from 'react'
-import { ArrowUpRight, Check, CreditCard, Download, FileText, LockKeyhole } from 'lucide-react'
+import { ArrowUpRight, Check, Download, FileText } from 'lucide-react'
 import { ShopLayout, shopLinks } from '../components/shop-layout'
-import { pdfProgram, programPrice } from '../lib/product'
-import { getShop } from '../lib/shop'
+import { pdfProgram } from '../lib/product'
+import programPdf from '../../output/pdf/69-easy-sample.pdf?url'
 
 export const Route = createFileRoute('/program')({
   head: () => ({
     links: shopLinks,
     meta: [
-      { title: '69 easy — PDF program | Steve Rossiter Coaching' },
+      { title: '69 Easy — Free PDF plan | Steve Rossiter Coaching' },
       {
         name: 'description',
         content:
-          'Explore 69 easy, a downloadable PDF program from Steve Rossiter Coaching. One purchase, your own pace.',
+          'Explore 69 Easy, a free downloadable PDF plan from Steve Rossiter Coaching. No payment or account required.',
       },
     ],
   }),
@@ -22,14 +21,10 @@ export const Route = createFileRoute('/program')({
       ? String(search.checkout)
       : '',
   }),
-  loader: () => getShop(),
   component: ProgramPage,
 })
 
 function ProgramPage() {
-  const config = Route.useLoaderData()
-  const { checkout } = Route.useSearch()
-  const [busy, setBusy] = useState(false)
   return (
     <ShopLayout>
       <div className="container shop-breadcrumb">
@@ -38,7 +33,7 @@ function ProgramPage() {
         <span>The PDF program</span>
       </div>
       <section className="container product-grid">
-        <div className="product-art" aria-label="69 easy PDF cover preview">
+        <div className="product-art" aria-label="69 Easy PDF cover preview">
           <span className="eyebrow product-art-label">A little structure. Your own pace.</span>
           <div className="program-book">
             <span className="eyebrow book-brand">
@@ -49,7 +44,7 @@ function ProgramPage() {
             <div className="book-title">
               69
               <br />
-              <span>easy</span>
+              <span>Easy</span>
             </div>
             <div className="book-rule" />
             <span className="book-subtitle">The PDF program</span>
@@ -82,19 +77,15 @@ function ProgramPage() {
           </p>
           <ul className="product-benefits">
             <li>
-              <Check size={17} /> One purchase, no subscription
+              <Check size={17} /> Free download, no subscription
             </li>
             <li>
-              <Check size={17} /> Download after checkout
+              <Check size={17} /> Download directly to your device
             </li>
             <li>
-              <Check size={17} /> Buy as a guest, no account needed
+              <Check size={17} /> No account needed
             </li>
           </ul>
-          <div className="product-price">
-            <strong>{programPrice}</strong>
-            <span>One-time payment</span>
-          </div>
           {pdfProgram.isSample && (
             <div className="sample-note">
               <FileText size={19} />
@@ -104,57 +95,37 @@ function ProgramPage() {
               </p>
             </div>
           )}
-          {checkout && (
-            <p role="status" className="checkout-notice">
-              {checkout === 'cancelled'
-                ? 'Checkout was cancelled. You can return whenever you’re ready.'
-                : checkout === 'unavailable'
-                  ? 'Purchasing isn’t available just yet. Please check back soon.'
-                  : 'We couldn’t open checkout. Please try again.'}
-            </p>
-          )}
-          <form action="/api/checkout" method="post" onSubmit={() => setBusy(true)}>
-            <button className="button product-buy" disabled={!config.enabled || busy}>
-              {busy
-                ? 'Opening secure checkout…'
-                : config.enabled && config.testMode
-                  ? `Try test checkout · ${programPrice}`
-                  : `Buy PDF · ${programPrice}`}
-              <ArrowUpRight size={19} />
-            </button>
-          </form>
+          <a
+            className="button product-buy"
+            href={programPdf}
+            download={pdfProgram.isSample ? '69 Easy-sample.pdf' : '69 Easy.pdf'}
+          >
+            {pdfProgram.isSample ? 'Download the free sample' : 'Download 69 Easy free'}
+            <Download size={19} />
+          </a>
           <p className="checkout-caption">
-            {!config.enabled
-              ? 'Purchasing opens soon. Explore the sample edition above.'
-              : config.testMode
-                ? 'Test checkout only. No real payment is collected.'
-                : 'Your download will be ready after payment.'}
+            No payment or account required.
+            {pdfProgram.isSample && ' The full 69 Easy plan is coming soon.'}
           </p>
-          <div className="stripe-reassurance">
-            <LockKeyhole size={14} />
-            <span>
-              Secure checkout with <strong>stripe</strong>
-            </span>
-          </div>
         </div>
       </section>
       <section className="shop-how">
         <div className="container">
           <div className="shop-section-heading">
             <span className="eyebrow">Simple from the start</span>
-            <h2>From checkout to your device.</h2>
+            <h2>From this page to your device.</h2>
           </div>
           <div className="shop-steps">
             {[
               {
-                icon: CreditCard,
-                title: 'Make it yours',
-                text: 'Check out securely through Stripe. No coaching account needed.',
+                icon: Download,
+                title: 'Get your copy',
+                text: 'Download the free PDF directly. No checkout or client account needed.',
               },
               {
                 icon: Download,
-                title: 'Get your PDF',
-                text: 'Return to your confirmation page and download your copy.',
+                title: 'Open your PDF',
+                text: 'Read it on your phone, tablet, or laptop.',
               },
               {
                 icon: FileText,
@@ -179,12 +150,12 @@ function ProgramPage() {
           <span className="eyebrow">Looking for something personal?</span>
           <h2>Work directly with Steve.</h2>
           <p>
-            This PDF is a standalone product. For a plan written around your goals and ongoing
-            support, explore individual coaching.
+            In the Los Angeles area? Contact Steve about one-on-one, in-person coaching. He’ll get
+            back to you about your goals and availability.
           </p>
         </div>
         <a href="/#book" className="button button-outline">
-          Let’s talk <ArrowUpRight size={17} />
+          Contact Steve <ArrowUpRight size={17} />
         </a>
       </section>
     </ShopLayout>

@@ -34,13 +34,21 @@ describe('server input boundaries', () => {
     const enquiry = {
       name: '  Alex Morgan  ',
       email: 'ALEX@example.com',
-      interest: 'Online programming',
+      interest: 'In-person coaching',
     }
     expect(enquirySchema.parse(enquiry)).toMatchObject({
       name: 'Alex Morgan',
       email: 'alex@example.com',
     })
-    expect(enquirySchema.safeParse({ ...enquiry, interest: 'invalid' }).success).toBe(false)
+    for (const interest of [
+      'Online programming',
+      'Hybrid coaching',
+      'Nutrition coaching',
+      'Accountability',
+      'invalid',
+    ]) {
+      expect(enquirySchema.safeParse({ ...enquiry, interest }).success).toBe(false)
+    }
     expect(enquirySchema.safeParse({ ...enquiry, notes: 'a'.repeat(2001) }).success).toBe(false)
   })
 })

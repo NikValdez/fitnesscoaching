@@ -1,15 +1,9 @@
 import { useState } from 'react'
 import { ArrowUpRight, Check, LoaderCircle } from 'lucide-react'
 import { requestIntro } from '../lib/functions'
-import { interests, enquirySchema } from '../lib/validation'
+import { enquirySchema } from '../lib/validation'
 
-export function IntroForm({
-  interest,
-  onInterestChange,
-}: {
-  interest: string
-  onInterestChange: (value: string) => void
-}) {
+export function IntroForm() {
   const [status, setStatus] = useState<'idle' | 'saving' | 'success'>('idle')
   const [error, setError] = useState('')
   return status === 'success' ? (
@@ -19,7 +13,9 @@ export function IntroForm({
       </span>
       <p className="eyebrow">Request received</p>
       <h3>You’ve taken the first step.</h3>
-      <p>Your intro-call request is saved. A time still needs to be arranged with the coach.</p>
+      <p>
+        Your message is saved. Steve will get back to you by email about coaching in Los Angeles.
+      </p>
       <button className="text-link" onClick={() => setStatus('idle')}>
         Send another request <ArrowUpRight size={16} />
       </button>
@@ -47,7 +43,7 @@ export function IntroForm({
         }
       }}
     >
-      <p className="eyebrow">Let’s find your starting point</p>
+      <p className="eyebrow">Contact Steve about coaching in LA</p>
       <div className="field-row">
         <label>
           Name
@@ -72,25 +68,14 @@ export function IntroForm({
           />
         </label>
       </div>
-      <label>
-        I’m interested in
-        <select
-          name="interest"
-          value={interest}
-          onChange={(event) => onInterestChange(event.target.value)}
-        >
-          {interests.map((item) => (
-            <option key={item}>{item}</option>
-          ))}
-        </select>
-      </label>
+      <input type="hidden" name="interest" value="In-person coaching" />
       <label>
         Anything I should know? <span className="optional">Optional</span>
         <textarea
           name="notes"
           rows={3}
           maxLength={2000}
-          placeholder="Your goals, schedule, or past training…"
+          placeholder="Your goals, where you’re based in LA, and your availability…"
         />
       </label>
       <label className="honeypot" aria-hidden="true">
@@ -109,11 +94,11 @@ export function IntroForm({
           </>
         ) : (
           <>
-            Request intro call <ArrowUpRight size={17} />
+            Send message <ArrowUpRight size={17} />
           </>
         )}
       </button>
-      <p className="form-note">A conversation, not a commitment. No mailing list.</p>
+      <p className="form-note">For in-person coaching in Los Angeles. Steve will reply by email.</p>
     </form>
   )
 }

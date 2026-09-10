@@ -8,11 +8,11 @@ export const Route = createRootRoute({
     meta: [
       { charSet: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'Steve Rossiter Coaching — Strength & Nutrition' },
+      { title: 'Steve Rossiter Coaching — 69 Easy & LA Coaching' },
       {
         name: 'description',
         content:
-          'Individual strength coaching, practical nutrition, and a record of your progress. In-person in Los Angeles and online, wherever you train.',
+          'Explore the 69 Easy plan and contact Steve for one-on-one coaching in Los Angeles. Online coaching and accountability services are coming soon.',
       },
       { name: 'theme-color', content: '#fbfaf8' },
     ],

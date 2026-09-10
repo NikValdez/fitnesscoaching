@@ -21,8 +21,10 @@ export function ShopLayout({ children }: { children: ReactNode }) {
       <footer className="site-footer">
         <div className="container shop-footer">
           <Brand />
-          <span className="eyebrow">Los Angeles, everywhere online</span>
-          <Link to="/privacy" className="text-link">Privacy</Link>
+          <span className="eyebrow">One-on-one coaching in Los Angeles</span>
+          <Link to="/privacy" className="text-link">
+            Privacy
+          </Link>
           <a className="text-link" href="/#book">
             Talk to Steve <ArrowUpRight size={15} />
           </a>
