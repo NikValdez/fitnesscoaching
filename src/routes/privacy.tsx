@@ -18,7 +18,7 @@ function PrivacyPage() {
         <p>This notice explains how the Steve Rossiter Coaching web app handles information when you browse, create an account, or use your coaching portal.</p>
 
         <h2>Information you provide</h2>
-        <p>The app stores your name, email address, and account details. Passwords are stored as hashes. Your service choices, communication preferences, optional phone number, goals, workouts, nutrition entries, check-ins, and schedules are saved so your coach can personalize and manage your coaching. Enquiry forms store the contact details and message you submit.</p>
+        <p>The app stores your name, email address, and account details. Passwords are stored as hashes. Your service choices, communication preferences, optional phone number, goals, workouts, nutrition entries, check-ins, and schedules are saved so your coach can personalize and manage your coaching. Enquiry forms store the contact details and message you submit and send an email notification to the coach and website administrator through Cloudflare Email Routing.</p>
 
         <h2>Google sign-in</h2>
         <p>If you choose Google sign-in, the app receives your Google account identifier, name, email address, email verification status, and profile image when provided. It stores the account connection and authentication tokens needed to support sign-in. The requested permissions are limited to basic identity, email, and profile information. The app does not request access to your Gmail, Google Drive, or Google Calendar.</p>

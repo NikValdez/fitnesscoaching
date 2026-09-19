@@ -34,7 +34,7 @@ For a new environment, generate a secret with `openssl rand -hex 32`. `DATABASE_
 - A client portal with assigned exercise programs, nutrition plans and targets, daily nutrition tracking, a monthly calendar, and coach feedback.
 - A coach workspace with a searchable client roster, fitness/nutrition plan editors, client filters, a shared coaching calendar, editable scheduled tasks, completion controls, and check-in review.
 - A three-step client questionnaire for service interests, per-service support tiers, contact preferences, and optional goals.
-- A public `69 easy` PDF product page, guest Stripe Checkout integration, purchase confirmation, and payment-verified downloads.
+- A free public `69 easy` reading page with the full plan, section navigation, and responsive formatting. Legacy Stripe purchase endpoints remain for existing confirmation links.
 
 Accounts begin with an empty training record. No fabricated workouts, subscriptions, payments, or appointments are created.
 
@@ -77,7 +77,13 @@ An existing one-time check-in can be made repeating through Edit. Its ID and com
 
 Clients can record calories, macros, water, and notes once per day; saving the same date updates it. Coaches can review check-ins with feedback visible in the client portal and training history. Editing a submitted check-in clears its prior review so the coach sees it as pending again. Schedule completion and check-in review are separate actions.
 
-## PDF program and Stripe Checkout
+## 69 easy reading page
+
+The public `/program` page presents the complete 69 easy plan directly on the website, without an account, payment, or PDF download. The supplied wording is preserved in `src/content/69-easy.json`; `src/routes/program.tsx` and `src/program.css` provide the reading layout, section links, quotes, and numbered examples. The home-page navigation and program callout link to this page.
+
+## Legacy PDF and Stripe Checkout integration
+
+The following describes the earlier PDF integration, retained for existing purchase links. It is not the current 69 easy experience and is not linked from the reading page.
 
 The public `/program` page is linked from the home-page navigation and footer. **69 easy costs US$49 as a one-time purchase.** Buying does not require an account. The current three-page PDF is explicitly a sample edition; it contains a cover, placeholder overview, and blank notes worksheet. The page stays public, while the download endpoint verifies payment.
 
@@ -120,7 +126,21 @@ The production origin is `https://steve-rossiter-coaching.nikcochran.workers.dev
 
 `src/lib/access.server.ts` centralizes live account/role guards. `src/lib/coaching.ts` implements portal reads and coach/client mutations. Shared Zod schemas in `src/lib/coaching-validation.ts` validate plan dates, exercises, scheduling times, and nutrition logs. Client mutations include ownership predicates; only coach mutations accept a target client ID, which must belong to a client account. No frontend visibility check is used as the authorization boundary.
 
-For enquiries, the application records a request only; it does not book a calendar slot or send an email. View and follow up on requests using `npm run db:studio` and the Enquiry model. The form has a honeypot and limits requests to three per email per hour. Better Auth uses Cloudflare's `cf-connecting-ip` header for authentication throttling. Its in-memory rate limits are local to each Worker isolate; use a shared store or Cloudflare rate limiting if stronger global limits are needed.
+For enquiries, the application saves the request in Neon, then sends independent notifications through the `CONTACT_EMAIL` Cloudflare binding to both Gmail addresses in `email-worker/recipients.ts`. The sender is `website@steverossiter.com`; Reply-To is the visitor's validated email. The message includes their name, interest, notes, timestamp, and enquiry reference. It does not book a calendar slot. Both recipients are attempted, so one unverified or unavailable destination cannot block the other. The form acknowledges a notification once at least one send is accepted. If both sends fail, the saved request remains available and the form explains the failure. The Worker logs the enquiry ID and failed configured destinations without the visitor's message. Notifications are not automatically retried; use the Enquiry model in `npm run db:studio` to recover and follow up on a saved request after an email failure.
+
+The form has a honeypot and limits requests to three per email per hour. Better Auth uses Cloudflare's `cf-connecting-ip` header for authentication throttling. Its in-memory rate limits are local to each Worker isolate; use a shared store or Cloudflare rate limiting if stronger global limits are needed.
+
+### Contact email setup
+
+Cloudflare Email Routing is enabled for `steverossiter.com`. The `info@steverossiter.com` rule invokes the separate `steve-rossiter-email` Worker, whose source and configuration are in `email-worker/`. It forwards the original message to `nikcochran@gmail.com` and `rossiter.steve@gmail.com`, using the same recipient list as the website. Both forwards are attempted even if one fails. Partial failures are logged without throwing away a successful forward; an error is raised when neither destination accepts the message. A successful forward is not proof that both inboxes received the email.
+
+`info@steverossiter.com` is a forwarding alias, without a separate mailbox or password. Only the Gmail destinations need verification. Website submissions go directly to the two Gmail destinations and do not depend on alias verification. The earlier pending destination registration for `info@steverossiter.com` was removed; the inbound routing rule remains configured. Both Gmail destinations are verified; Steve completed verification on September 15, 2026 at 23:55 UTC. Changing the shared recipient list also requires updating the website binding's `allowed_destination_addresses` and deploying both Workers.
+
+On September 15, 2026, both Workers were deployed with independent recipient handling. Type checking, the production build, and 42 unit tests passed. After Steve completed verification, a final live browser submission saved its enquiry and both notification sends completed without errors. The production trace had outcome `ok`, no failure logs, and no exceptions. Inbox placement still requires confirmation from the recipients. The test database record was removed.
+
+Deploy forwarding changes separately with `npx wrangler deploy --config email-worker/wrangler.jsonc`. The website uses the normal build/deploy workflow. Local development uses Cloudflare's simulated email binding and does not send real mail; do not enable a remote email binding for automated tests. After verification and website deployment, submit a clearly labelled test through the live form and confirm it arrives in both Gmail inboxes, with Reply-To pointing to the test submitter.
+
+References: [Cloudflare routing and destination verification](https://developers.cloudflare.com/email-service/configuration/email-routing-addresses/), [Worker email bindings](https://developers.cloudflare.com/email-service/configuration/send-bindings/).
 
 Email verification, forgotten-password email delivery, newsletters, automated invitations, chat messaging, and external scheduling-service integrations are not configured. Email/password login works without an email delivery provider. Coaching plans and schedules are stored and managed directly in this application. Stripe configuration for PDF purchases is described above.
 

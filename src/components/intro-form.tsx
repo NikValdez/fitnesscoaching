@@ -6,6 +6,7 @@ import { enquirySchema } from '../lib/validation'
 export function IntroForm() {
   const [status, setStatus] = useState<'idle' | 'saving' | 'success'>('idle')
   const [error, setError] = useState('')
+  const [notificationSent, setNotificationSent] = useState(true)
   return status === 'success' ? (
     <div className="intro-form form-success" role="status">
       <span className="success-icon">
@@ -13,9 +14,17 @@ export function IntroForm() {
       </span>
       <p className="eyebrow">Request received</p>
       <h3>You’ve taken the first step.</h3>
-      <p>
-        Your message is saved. Steve will get back to you by email about coaching in Los Angeles.
-      </p>
+      {notificationSent ? (
+        <p>
+          Your message has been sent. Steve will get back to you by email about coaching in Los
+          Angeles.
+        </p>
+      ) : (
+        <p role="alert">
+          Your message is saved, but we couldn’t send the email notification. You can also reach
+          Steve at <a href="mailto:info@steverossiter.com">info@steverossiter.com</a>.
+        </p>
+      )}
       <button className="text-link" onClick={() => setStatus('idle')}>
         Send another request <ArrowUpRight size={16} />
       </button>
@@ -34,7 +43,8 @@ export function IntroForm() {
         setStatus('saving')
         setError('')
         try {
-          await requestIntro({ data: parsed.data })
+          const result = await requestIntro({ data: parsed.data })
+          setNotificationSent(result.notificationSent)
           setStatus('success')
           form.reset()
         } catch {
@@ -90,7 +100,7 @@ export function IntroForm() {
       <button className="button" disabled={status === 'saving'}>
         {status === 'saving' ? (
           <>
-            Saving request <LoaderCircle className="spin" size={16} />
+            Sending message <LoaderCircle className="spin" size={16} />
           </>
         ) : (
           <>

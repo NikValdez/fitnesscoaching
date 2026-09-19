@@ -102,23 +102,13 @@ function Landing() {
             <div className="hero-image-wrap">
               <img
                 className="hero-image"
-                src="/images/steve-rossiter-hero.png"
-                alt="AI-generated portrait of Steve Rossiter in a strength-training gym"
+                src="/images/steve-rossiter-outdoors.jpg"
+                alt="Steve Rossiter standing on a misty hillside"
                 fetchPriority="high"
               />
-              <div className="photo-topline">
-                <span className="eyebrow">Built around real life</span>
-                <span className="image-cross">+</span>
-              </div>
-              <div className="photo-caption">
-                <span className="caption-dot" /> The work is personal.
-                <br />
-                <span className="caption-indent">The progress is yours.</span>
-              </div>
             </div>
             <div className="hero-photo-foot">
               <span className="eyebrow">One-on-one coaching in Los Angeles</span>
-              <span>↗</span>
             </div>
           </div>
         </section>
@@ -291,8 +281,8 @@ function Landing() {
               <span className="eyebrow">04 / Your next step</span>
               <h2 id="program-cta-title">Meet 69 Easy.</h2>
               <p>
-                A little structure, at your own pace. Explore Steve’s free PDF plan and download the
-                sample to keep on your phone, tablet, or laptop. No account needed.
+                A little structure, at your own pace. Read Steve’s free 69 Easy plan right here on
+                the website and start building habits for life. No account needed.
               </p>
             </div>
             <Link className="button" to="/program">

@@ -1,163 +1,165 @@
-import { createFileRoute, type SearchSchemaInput } from '@tanstack/react-router'
-import { ArrowUpRight, Check, Download, FileText } from 'lucide-react'
+import { createFileRoute } from '@tanstack/react-router'
+import { ArrowUp, ArrowDown } from 'lucide-react'
 import { ShopLayout, shopLinks } from '../components/shop-layout'
-import { pdfProgram } from '../lib/product'
-import programPdf from '../../output/pdf/69-easy-sample.pdf?url'
+import plan from '../content/69-easy.json'
+import programStyles from '../program.css?url'
 
 export const Route = createFileRoute('/program')({
   head: () => ({
-    links: shopLinks,
+    links: [...shopLinks, { rel: 'stylesheet', href: programStyles }],
     meta: [
-      { title: '69 Easy — Free PDF plan | Steve Rossiter Coaching' },
-      {
-        name: 'description',
-        content:
-          'Explore 69 Easy, a free downloadable PDF plan from Steve Rossiter Coaching. No payment or account required.',
-      },
+      { title: '69 easy — A little better every day | Steve Rossiter Coaching' },
+      { name: 'description', content: plan.overview.intro },
     ],
-  }),
-  validateSearch: (search: { checkout?: unknown } & SearchSchemaInput) => ({
-    checkout: ['cancelled', 'error', 'unavailable'].includes(String(search.checkout))
-      ? String(search.checkout)
-      : '',
   }),
   component: ProgramPage,
 })
 
+const sections = [
+  ['what-is-69-easy', 'What is 69 easy?'],
+  ['choosing-your-10', 'Choosing Your 10 Things'],
+  ['example', '69 easy [EXAMPLE]'],
+  ['mindset', 'Mindset, Tips, Quotes'],
+  ['one-degree-shift', '1-Degree Shift'],
+  ['warning', 'WARNING!'],
+  ['what-people-say', 'What people are saying'],
+]
+
 function ProgramPage() {
   return (
     <ShopLayout>
-      <div className="container shop-breadcrumb">
-        <a href="/">Coaching</a>
-        <span>/</span>
-        <span>The PDF program</span>
-      </div>
-      <section className="container product-grid">
-        <div className="product-art" aria-label="69 Easy PDF cover preview">
-          <span className="eyebrow product-art-label">A little structure. Your own pace.</span>
-          <div className="program-book">
-            <span className="eyebrow book-brand">
-              Steve Rossiter
-              <br />
-              Coaching
-            </span>
-            <div className="book-title">
-              69
-              <br />
-              <span>Easy</span>
+      <div className="container easy-page" id="top">
+        <article aria-labelledby="easy-title">
+          <header className="easy-hero">
+            <h1 id="easy-title">{plan.title}</h1>
+            <div className="easy-hero-note">
+              <p>{plan.tagline}</p>
+              <a href="#what-is-69-easy" className="text-link">
+                What is 69 easy? <ArrowDown size={16} aria-hidden="true" />
+              </a>
             </div>
-            <div className="book-rule" />
-            <span className="book-subtitle">The PDF program</span>
-            <div className="book-bottom">
-              <span>{pdfProgram.isSample ? 'Sample edition' : 'Digital edition'}</span>
-              <span>SR / 01</span>
+          </header>
+          <div className="easy-layout">
+            <aside className="easy-sidebar">
+              <nav aria-label="Plan sections">
+                <span className="eyebrow">On this page</span>
+                <ol>
+                  {sections.map(([id, label]) => (
+                    <li key={id}>
+                      <a href={`#${id}`}>{label}</a>
+                    </li>
+                  ))}
+                </ol>
+              </nav>
+            </aside>
+            <div className="easy-reading">
+              <blockquote className="easy-introduction">
+                {plan.introduction.paragraphs.map((text) => (
+                  <p key={text}>{text}</p>
+                ))}
+                <footer>{plan.introduction.attribution}</footer>
+              </blockquote>
+              <section
+                className="easy-section"
+                id="what-is-69-easy"
+                aria-labelledby="overview-title"
+              >
+                <h2 id="overview-title">{plan.overview.heading}</h2>
+                <p className="easy-lead">{plan.overview.intro}</p>
+                <ol className="easy-steps">
+                  {plan.overview.steps.map((text) => (
+                    <li key={text}>{text}</li>
+                  ))}
+                </ol>
+                {plan.overview.paragraphs.map((text) => (
+                  <p key={text}>{text}</p>
+                ))}
+              </section>
+              <section
+                className="easy-section"
+                id="choosing-your-10"
+                aria-labelledby="choosing-title"
+              >
+                <h2 id="choosing-title">{plan.choosing.heading}</h2>
+                <ul className="easy-choices">
+                  {plan.choosing.items.map((item) => (
+                    <li key={item.text}>
+                      <p>{item.text}</p>
+                      {'detail' in item && (
+                        <ul>
+                          <li>{item.detail}</li>
+                        </ul>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+              <section className="easy-section" id="example" aria-labelledby="example-title">
+                <h2 id="example-title">{plan.example.heading}</h2>
+                <p className="easy-example-tagline">{plan.example.tagline}</p>
+                <ol className="easy-examples">
+                  {plan.example.items.map((text) => {
+                    const split = text.indexOf('. ') + 1
+                    return (
+                      <li key={text}>
+                        <span>{text.slice(0, split)}</span>{' '}
+                        <strong>{text.slice(split).trimStart()}</strong>
+                      </li>
+                    )
+                  })}
+                </ol>
+              </section>
+              <section className="easy-section" id="mindset" aria-labelledby="mindset-title">
+                <h2 id="mindset-title">{plan.mindset.heading}</h2>
+                <ul className="easy-mindset">
+                  {plan.mindset.items.map((text) => (
+                    <li key={text}>{text}</li>
+                  ))}
+                </ul>
+              </section>
+              <section
+                className="easy-section easy-shift"
+                id="one-degree-shift"
+                aria-labelledby="shift-title"
+              >
+                <h2 id="shift-title">{plan.shift.heading}</h2>
+                <blockquote>
+                  {plan.shift.paragraphs.map((text) => (
+                    <p key={text}>{text}</p>
+                  ))}
+                  <footer>{plan.shift.attribution}</footer>
+                </blockquote>
+              </section>
+              <section
+                className="easy-section easy-warning"
+                id="warning"
+                aria-labelledby="warning-title"
+              >
+                <h2 id="warning-title">{plan.warning.heading}</h2>
+                <blockquote>{plan.warning.quote}</blockquote>
+                {plan.warning.paragraphs.map((text) => (
+                  <p key={text}>{text}</p>
+                ))}
+              </section>
+              <section
+                className="easy-section easy-testimonials"
+                id="what-people-say"
+                aria-labelledby="testimonials-title"
+              >
+                <h2 id="testimonials-title">{plan.testimonials.heading}</h2>
+                {plan.testimonials.quotes.map((text) => (
+                  <blockquote key={text}>{text}</blockquote>
+                ))}
+              </section>
             </div>
           </div>
-          <div className="product-art-footer">
-            <FileText size={16} />
-            <span>Digital download</span>
-            <span>PDF</span>
-          </div>
-        </div>
-        <div className="product-copy">
-          <span className="eyebrow">
-            <span className="status-dot" /> The program collection / 01
-          </span>
-          <h1>
-            {pdfProgram.name}
-            <span className="product-title-dot">.</span>
-          </h1>
-          <p className="product-intro">
-            A plan to keep.
-            <br />A pace that’s yours.
-          </p>
-          <p className="product-description">
-            A downloadable PDF from Steve Rossiter Coaching, ready to keep on your phone, tablet, or
-            laptop. Open it whenever you’re ready to get started.
-          </p>
-          <ul className="product-benefits">
-            <li>
-              <Check size={17} /> Free download, no subscription
-            </li>
-            <li>
-              <Check size={17} /> Download directly to your device
-            </li>
-            <li>
-              <Check size={17} /> No account needed
-            </li>
-          </ul>
-          {pdfProgram.isSample && (
-            <div className="sample-note">
-              <FileText size={19} />
-              <p>
-                <strong>Sample edition</strong>This preview contains a branded placeholder PDF. The
-                full training program is coming.
-              </p>
-            </div>
-          )}
-          <a
-            className="button product-buy"
-            href={programPdf}
-            download={pdfProgram.isSample ? '69 Easy-sample.pdf' : '69 Easy.pdf'}
-          >
-            {pdfProgram.isSample ? 'Download the free sample' : 'Download 69 Easy free'}
-            <Download size={19} />
+        </article>
+        <div className="easy-end">
+          <a className="text-link" href="#top">
+            Back to top <ArrowUp size={16} aria-hidden="true" />
           </a>
-          <p className="checkout-caption">
-            No payment or account required.
-            {pdfProgram.isSample && ' The full 69 Easy plan is coming soon.'}
-          </p>
         </div>
-      </section>
-      <section className="shop-how">
-        <div className="container">
-          <div className="shop-section-heading">
-            <span className="eyebrow">Simple from the start</span>
-            <h2>From this page to your device.</h2>
-          </div>
-          <div className="shop-steps">
-            {[
-              {
-                icon: Download,
-                title: 'Get your copy',
-                text: 'Download the free PDF directly. No checkout or client account needed.',
-              },
-              {
-                icon: Download,
-                title: 'Open your PDF',
-                text: 'Read it on your phone, tablet, or laptop.',
-              },
-              {
-                icon: FileText,
-                title: 'Keep it close',
-                text: 'Save the PDF to your device so it’s there when you need it.',
-              },
-            ].map(({ icon: Icon, title, text }, i) => (
-              <article key={title}>
-                <div>
-                  <Icon size={22} strokeWidth={1.5} />
-                  <span className="eyebrow">0{i + 1}</span>
-                </div>
-                <h3>{title}</h3>
-                <p>{text}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-      <section className="container program-coaching-note">
-        <div>
-          <span className="eyebrow">Looking for something personal?</span>
-          <h2>Work directly with Steve.</h2>
-          <p>
-            In the Los Angeles area? Contact Steve about one-on-one, in-person coaching. He’ll get
-            back to you about your goals and availability.
-          </p>
-        </div>
-        <a href="/#book" className="button button-outline">
-          Contact Steve <ArrowUpRight size={17} />
-        </a>
-      </section>
+      </div>
     </ShopLayout>
   )
 }

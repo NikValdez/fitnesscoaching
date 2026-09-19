@@ -7,5 +7,12 @@
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": true,
   "preview_urls": false,
-  "observability": { "enabled": true }
+  "observability": { "enabled": true },
+  "send_email": [
+    {
+      "name": "CONTACT_EMAIL",
+      "allowed_destination_addresses": ["nikcochran@gmail.com", "rossiter.steve@gmail.com"],
+      "allowed_sender_addresses": ["website@steverossiter.com"],
+    },
+  ],
 }

@@ -86,7 +86,7 @@ export const saveCheckIn = createServerFn({ method: 'POST' })
 export const requestIntro = createServerFn({ method: 'POST' })
   .validator(enquirySchema)
   .handler(async ({ data }) => {
-    if (data.website) return { ok: true }
+    if (data.website) return { ok: true, notificationSent: true }
     const { db } = await import('./db.server')
     const current = await session()
     // Attach enquiries only to the active session. Never match by a submitted email.
@@ -95,7 +95,7 @@ export const requestIntro = createServerFn({ method: 'POST' })
     })
     if (recent >= 3)
       throw new Error('You already have a recent request. Please try again in an hour.')
-    await db.enquiry.create({
+    const enquiry = await db.enquiry.create({
       data: {
         name: data.name,
         email: data.email,
@@ -104,5 +104,11 @@ export const requestIntro = createServerFn({ method: 'POST' })
         userId: current?.user.id,
       },
     })
-    return { ok: true }
+    const { notifyEnquiryEmail, CONTACT_SENDER } = await import('./enquiry-email')
+    const notificationSent = await notifyEnquiryEmail(enquiry, async (raw, recipient) => {
+      const { env } = await import('cloudflare:workers')
+      const { EmailMessage } = await import('cloudflare:email')
+      return env.CONTACT_EMAIL.send(new EmailMessage(CONTACT_SENDER, recipient, raw))
+    })
+    return { ok: true, notificationSent }
   })

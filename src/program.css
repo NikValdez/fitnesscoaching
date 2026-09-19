@@ -1,0 +1,319 @@
+.easy-hero {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  align-items: center;
+  gap: 70px;
+  padding-block: 76px 66px;
+  border-bottom: 1px solid var(--line);
+}
+.easy-hero h1 {
+  margin: 0;
+  color: var(--navy);
+  font-size: clamp(78px, 10vw, 142px);
+  font-weight: 550;
+  letter-spacing: -0.075em;
+  line-height: 1;
+}
+.easy-hero-note p {
+  max-width: 410px;
+  margin-bottom: 24px;
+  font-size: clamp(20px, 2vw, 26px);
+  line-height: 1.55;
+  letter-spacing: -0.6px;
+}
+.easy-page .text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+.easy-layout {
+  display: grid;
+  grid-template-columns: 230px minmax(0, 740px);
+  justify-content: space-between;
+  gap: 70px;
+  padding-top: 60px;
+}
+.easy-sidebar nav {
+  position: sticky;
+  top: 124px;
+}
+.easy-sidebar ol {
+  list-style: decimal-leading-zero;
+  padding-left: 26px;
+  margin-top: 22px;
+}
+.easy-sidebar li {
+  padding-left: 5px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.easy-sidebar li::marker {
+  font: 10px var(--mono);
+  color: var(--navy);
+}
+.easy-sidebar a {
+  display: block;
+  padding-block: 11px;
+  line-height: 1.5;
+}
+.easy-sidebar a:hover {
+  color: var(--navy);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.easy-reading {
+  font-size: 17px;
+  line-height: 1.8;
+}
+.easy-reading p {
+  line-height: inherit;
+  margin-bottom: 24px;
+}
+.easy-reading blockquote {
+  margin: 0;
+}
+.easy-reading blockquote footer {
+  font-size: 13px;
+  color: var(--muted);
+}
+.easy-introduction {
+  padding: 0 0 52px 28px;
+  position: relative;
+}
+.easy-introduction::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 7px;
+  width: 3px;
+  height: 75px;
+  background: var(--navy);
+}
+.easy-introduction p:first-child {
+  font-size: 23px;
+  line-height: 1.55;
+  letter-spacing: -0.35px;
+}
+.easy-section {
+  border-top: 1px solid var(--line);
+  padding-block: 52px;
+  scroll-margin-top: 26px;
+}
+.easy-section h2 {
+  font-size: clamp(28px, 3vw, 36px);
+  line-height: 1.25;
+  margin-bottom: 26px;
+}
+.easy-section > :last-child {
+  margin-bottom: 0;
+}
+.easy-lead {
+  font-size: 20px;
+  color: var(--navy);
+}
+.easy-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 30px;
+  padding: 28px 30px 30px;
+  margin-block: 32px;
+  background: var(--navy);
+  color: white;
+  list-style-position: inside;
+}
+.easy-steps li {
+  font-size: 17px;
+  line-height: 1.5;
+}
+.easy-steps li::marker {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: #c8d6eb;
+}
+.easy-choices {
+  padding-left: 22px;
+}
+.easy-choices > li {
+  padding-left: 10px;
+  margin-bottom: 26px;
+}
+.easy-choices li::marker {
+  color: var(--navy);
+}
+.easy-choices p {
+  margin-bottom: 12px;
+}
+.easy-choices ul {
+  border-left: 2px solid var(--line);
+  padding-left: 24px;
+  list-style: none;
+  font-size: 16px;
+  color: #505960;
+}
+.easy-example-tagline {
+  color: var(--navy);
+}
+.easy-examples {
+  padding-left: 36px;
+  margin: 28px 0 0;
+  list-style: decimal-leading-zero;
+}
+.easy-examples li {
+  padding: 18px 12px 18px 16px;
+  border-top: 1px solid var(--line);
+}
+.easy-examples li::marker {
+  font: 12px var(--mono);
+  color: var(--navy);
+}
+.easy-examples span {
+  display: block;
+  color: var(--muted);
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+.easy-examples strong {
+  color: var(--navy);
+  font-weight: 550;
+}
+.easy-mindset {
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 32px;
+}
+.easy-mindset li {
+  padding: 24px 0;
+  border-top: 1px solid var(--line);
+  font-size: 16px;
+}
+.easy-shift {
+  padding: 40px;
+  background: var(--blue-tint);
+  border: 0;
+  margin-bottom: 52px;
+}
+.easy-shift h2 {
+  color: var(--navy);
+}
+.easy-shift blockquote p:last-of-type {
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 1.6;
+  color: var(--navy);
+}
+.easy-warning {
+  border-top: 3px solid #bda46c;
+}
+.easy-warning h2 {
+  font: 500 13px var(--mono);
+  letter-spacing: 1.5px;
+  color: #7c622f;
+}
+.easy-warning blockquote {
+  font-size: 25px;
+  line-height: 1.5;
+  letter-spacing: -0.5px;
+  margin-bottom: 26px;
+}
+.easy-testimonials blockquote {
+  font-size: 23px;
+  color: var(--navy);
+  margin-block: 28px;
+  line-height: 1.6;
+}
+.easy-end {
+  display: flex;
+  justify-content: flex-end;
+  padding-block: 24px 40px;
+  border-top: 1px solid var(--line);
+}
+@media (max-width: 1000px) {
+  .easy-layout {
+    grid-template-columns: 190px minmax(0, 1fr);
+    gap: 36px;
+  }
+  .easy-hero {
+    gap: 40px;
+  }
+  .easy-steps {
+    gap: 18px;
+    padding: 24px;
+  }
+}
+@media (max-width: 760px) {
+  .easy-hero {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    padding-block: 42px 36px;
+  }
+  .easy-hero h1 {
+    font-size: clamp(76px, 18vw, 125px);
+  }
+  .easy-hero-note p {
+    max-width: 480px;
+  }
+  .easy-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 36px;
+    padding-top: 28px;
+  }
+  .easy-sidebar nav {
+    position: static;
+  }
+  .easy-sidebar ol {
+    columns: 2;
+    column-gap: 30px;
+    margin-block: 12px 0;
+  }
+  .easy-sidebar li {
+    break-inside: avoid;
+    font-size: 12px;
+  }
+  .easy-sidebar a {
+    padding-block: 9px;
+  }
+  .easy-reading {
+    font-size: 16px;
+  }
+  .easy-introduction {
+    padding-left: 20px;
+    padding-bottom: 36px;
+  }
+  .easy-introduction p:first-child {
+    font-size: 21px;
+  }
+  .easy-section {
+    padding-block: 36px;
+  }
+  .easy-section h2 {
+    font-size: 29px;
+    letter-spacing: -0.7px;
+  }
+  .easy-steps {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .easy-mindset {
+    grid-template-columns: 1fr;
+  }
+  .easy-mindset li {
+    padding-block: 20px;
+  }
+  .easy-shift {
+    padding: 26px 22px;
+    margin-bottom: 36px;
+  }
+  .easy-shift blockquote p:last-of-type {
+    font-size: 20px;
+  }
+  .easy-warning h2 {
+    font-size: 13px;
+    letter-spacing: 1.5px;
+  }
+  .easy-warning blockquote,
+  .easy-testimonials blockquote {
+    font-size: 22px;
+  }
+}
