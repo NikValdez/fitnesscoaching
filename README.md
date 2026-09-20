@@ -79,7 +79,7 @@ Clients can record calories, macros, water, and notes once per day; saving the s
 
 ## 69 easy reading page
 
-The public `/program` page presents the complete 69 easy plan directly on the website, without an account, payment, or PDF download. The supplied wording is preserved in `src/content/69-easy.json`; `src/routes/program.tsx` and `src/program.css` provide the reading layout, section links, quotes, and numbered examples. The home-page navigation and program callout link to this page.
+The public `/69-easy` page presents the complete 69 easy plan directly on the website, without an account, payment, or PDF download. The supplied wording is preserved in `src/content/69-easy.json`; `src/routes/69-easy.tsx` and `src/program.css` provide the reading layout, section links, quotes, and numbered examples. The home-page navigation and program callout link to this page. The former `/program` route permanently redirects to `/69-easy`.
 
 ## Legacy PDF and Stripe Checkout integration
 

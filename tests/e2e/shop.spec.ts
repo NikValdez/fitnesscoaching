@@ -5,13 +5,16 @@ test('free 69 Easy reading page, mobile layout and legacy payment guards', async
   page,
   request,
 }) => {
+  const oldRoute = await request.get('/program', { maxRedirects: 0 })
+  expect(oldRoute.status()).toBe(301)
+  expect(oldRoute.headers().location).toBe('/69-easy')
   await page.goto('/')
   await waitForHydration(page)
   await page
     .getByRole('navigation', { name: 'Main navigation' })
     .getByRole('link', { name: '69 Easy', exact: true })
     .click()
-  await expect(page).toHaveURL(/\/program/)
+  await expect(page).toHaveURL(/\/69-easy/)
   await expect(page.getByRole('heading', { name: '69 easy', exact: true })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'What is 69 easy?' })).toBeVisible()
   await expect(page.locator('form[action="/api/checkout"]')).toHaveCount(0)
@@ -22,7 +25,7 @@ test('free 69 Easy reading page, mobile layout and legacy payment guards', async
     .getByRole('navigation', { name: 'Plan sections' })
     .getByRole('link', { name: '69 easy [EXAMPLE]', exact: true })
     .click()
-  await expect(page).toHaveURL(/\/program#example$/)
+  await expect(page).toHaveURL(/\/69-easy#example$/)
   await expect(
     page.getByRole('heading', { name: '69 easy [EXAMPLE]', exact: true }),
   ).toBeInViewport()

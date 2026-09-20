@@ -28,9 +28,8 @@
 }
 .easy-layout {
   display: grid;
-  grid-template-columns: 230px minmax(0, 740px);
-  justify-content: space-between;
-  gap: 70px;
+  grid-template-columns: 200px minmax(0, 1fr);
+  gap: 48px;
   padding-top: 60px;
 }
 .easy-sidebar nav {
@@ -166,7 +165,7 @@
   font: 12px var(--mono);
   color: var(--navy);
 }
-.easy-examples span {
+.easy-examples s {
   display: block;
   color: var(--muted);
   font-size: 15px;

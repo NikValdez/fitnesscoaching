@@ -97,7 +97,7 @@ function PurchasePage() {
               </button>
             )
           )}
-          <Link to="/program" className="text-link">
+          <Link to="/69-easy" className="text-link">
             Back to the program
           </Link>
           <p className="purchase-help">

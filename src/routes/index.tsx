@@ -59,7 +59,7 @@ function Landing() {
                 {item}
               </a>
             ))}
-            <Link to="/program" onClick={() => setMenuOpen(false)}>
+            <Link to="/69-easy" onClick={() => setMenuOpen(false)}>
               69 Easy
             </Link>
           </nav>
@@ -90,7 +90,7 @@ function Landing() {
               around your goals, schedule, experience, and progress.
             </p>
             <div className="button-row">
-              <Link className="button" to="/program">
+              <Link className="button" to="/69-easy">
                 Explore 69 Easy free <ArrowUpRight size={18} />
               </Link>
               <a className="button button-outline" href="#book">
@@ -285,7 +285,7 @@ function Landing() {
                 the website and start building habits for life. No account needed.
               </p>
             </div>
-            <Link className="button" to="/program">
+            <Link className="button" to="/69-easy">
               Explore the 69 Easy plan <ArrowUpRight size={18} />
             </Link>
           </div>
@@ -297,7 +297,7 @@ function Landing() {
           <span className="eyebrow">One-on-one coaching in Los Angeles</span>
           <div>
             <a href="#services">Services</a>
-            <Link to="/program">69 Easy plan</Link>
+            <Link to="/69-easy">69 Easy plan</Link>
             <a href="#book">Get in touch</a>
             <Link to="/privacy">Privacy</Link>
             <span>© 2026 Steve Rossiter Coaching</span>

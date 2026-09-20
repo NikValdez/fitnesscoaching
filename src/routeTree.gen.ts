@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as R69EasyRouteImport } from './routes/69-easy'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as CoachRouteImport } from './routes/coach'
 import { Route as DashboardRouteImport } from './routes/dashboard'
@@ -28,6 +29,11 @@ import { Route as ApiStripeWebhookRouteImport } from './routes/api/stripe/webhoo
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const R69EasyRoute = R69EasyRouteImport.update({
+  id: '/69-easy',
+  path: '/69-easy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AccountRoute = AccountRouteImport.update({
@@ -103,6 +109,7 @@ const ApiStripeWebhookRoute = ApiStripeWebhookRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/69-easy': typeof R69EasyRoute
   '/account': typeof AccountRoute
   '/coach': typeof CoachRoute
   '/dashboard': typeof DashboardRoute
@@ -120,6 +127,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/69-easy': typeof R69EasyRoute
   '/account': typeof AccountRoute
   '/coach': typeof CoachRoute
   '/dashboard': typeof DashboardRoute
@@ -138,6 +146,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/69-easy': typeof R69EasyRoute
   '/account': typeof AccountRoute
   '/coach': typeof CoachRoute
   '/dashboard': typeof DashboardRoute
@@ -157,6 +166,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/69-easy'
     | '/account'
     | '/coach'
     | '/dashboard'
@@ -174,6 +184,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/69-easy'
     | '/account'
     | '/coach'
     | '/dashboard'
@@ -191,6 +202,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/69-easy'
     | '/account'
     | '/coach'
     | '/dashboard'
@@ -209,6 +221,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  R69EasyRoute: typeof R69EasyRoute
   AccountRoute: typeof AccountRoute
   CoachRoute: typeof CoachRoute
   DashboardRoute: typeof DashboardRoute
@@ -232,6 +245,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/69-easy': {
+      id: '/69-easy'
+      path: '/69-easy'
+      fullPath: '/69-easy'
+      preLoaderRoute: typeof R69EasyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/account': {
@@ -337,6 +357,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  R69EasyRoute: R69EasyRoute,
   AccountRoute: AccountRoute,
   CoachRoute: CoachRoute,
   DashboardRoute: DashboardRoute,
