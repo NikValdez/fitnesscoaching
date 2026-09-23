@@ -8,11 +8,15 @@
 
 > Use case: photorealistic-natural. Asset type: landing-page hero portrait for Steve Rossiter Coaching. Create a new exceptionally photorealistic editorial photograph of the same adult man shown in the four reference photos, Steve Rossiter, in a real boutique strength-training gym. Input images are identity references only: image 1 shows his overall appearance and proportions; images 2 and 3 show his athletic build; image 4 is the primary reference for his face, eyes, hair, skin, and facial hair. Preserve his recognizable facial structure, textured wavy dark-brown hair with shorter sides, light blue-gray eyes, short stubble, and lean muscular proportions faithfully. He wears a simple fitted dark navy short-sleeve training T-shirt and charcoal athletic trousers, no logos. Relaxed standing three-quarter portrait, shoulders at a slight angle, looking toward the camera with a calm approachable expression and a subtle natural smile; arms relaxed, hands naturally resting together at waist level. Frame from above his head to mid-thigh, centered, with generous breathing room around his hair and shoulders for responsive cropping. Real gym in the softly defocused background, understated steel training rack and weight plates, warm gray walls and large side windows. Soft natural side daylight, realistic skin pores and small facial imperfections, natural eyes and hair detail, believable fabric texture, restrained color grading, authentic professional camera photograph, 50mm lens perspective. Portrait 4:5 composition, crisp face, background discernible but unobtrusive; lower part slightly darker to support existing website caption overlay. No text, no graphics, no watermark, no phone, no mirror selfie, no extra people, no glossy or plastic skin, no beauty-filter smoothing, no exaggerated muscles or stylized rendering.
 
-## Original service-card image
+## In-person coaching service card
+
+`public/images/steve-client-coaching.png` is the user-supplied photo now displayed in the first service card. The card crops the portrait toward the top to keep Steve and the client visible in its wide frame.
+
+## Previous service-card image
 
 The site is now named Steve Rossiter Coaching. The original generation prompt below is retained verbatim for provenance.
 
-`public/images/coaching-hero.png` was generated with the built-in ImageGen tool for this project. It replaces the gym-floor photo placeholder in the supplied mockup. The service card uses a crop of the same image. The online-training and nutrition graphics are implemented in HTML and CSS.
+`public/images/coaching-hero.png` was generated with the built-in ImageGen tool for this project and was previously shown in the first service card. The online-training and nutrition graphics are implemented in HTML and CSS.
 
 ## Final generation prompt
 

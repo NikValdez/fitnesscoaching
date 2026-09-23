@@ -1,16 +1,13 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { useState } from 'react'
 import {
   ArrowRight,
   ArrowUpRight,
   Check,
-  Menu,
-  X,
   Monitor,
   CalendarCheck,
 } from 'lucide-react'
-import { Brand } from '../components/brand'
 import { IntroForm } from '../components/intro-form'
+import { SiteFooter, SiteHeader } from '../components/site-layout'
 import { interests } from '../lib/validation'
 
 export const Route = createFileRoute('/')({
@@ -33,7 +30,7 @@ const services = [
   {
     type: 'Online coaching · Coming soon',
     title: 'Your program. Anywhere.',
-    text: 'Personal online coaching is on the way. It isn’t available to book yet. In the meantime, explore the 69 Easy plan at your own pace.',
+    text: 'Personal online coaching is on the way. It isn’t available to book yet. In the meantime, explore the 69 easy plan at your own pace.',
     items: [],
     comingSoon: true,
   },
@@ -47,35 +44,9 @@ const services = [
 ]
 
 function Landing() {
-  const [menuOpen, setMenuOpen] = useState(false)
   return (
     <>
-      <header className="site-header">
-        <div className="container header-inner">
-          <Brand />
-          <nav className={menuOpen ? 'main-nav is-open' : 'main-nav'} aria-label="Main navigation">
-            {['Services', 'Process'].map((item) => (
-              <a key={item} href={`#${item.toLowerCase()}`} onClick={() => setMenuOpen(false)}>
-                {item}
-              </a>
-            ))}
-            <Link to="/69-easy" onClick={() => setMenuOpen(false)}>
-              69 Easy
-            </Link>
-          </nav>
-          <a className="button button-small header-cta" href="#book">
-            Contact Steve <ArrowUpRight size={14} />
-          </a>
-          <button
-            className="icon-button menu-toggle"
-            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-            aria-expanded={menuOpen}
-            onClick={() => setMenuOpen(!menuOpen)}
-          >
-            {menuOpen ? <X /> : <Menu />}
-          </button>
-        </div>
-      </header>
+      <SiteHeader />
       <main id="main">
         <section className="container hero">
           <div className="hero-copy">
@@ -91,7 +62,7 @@ function Landing() {
             </p>
             <div className="button-row">
               <Link className="button" to="/69-easy">
-                Explore 69 Easy free <ArrowUpRight size={18} />
+                Explore 69 easy free <ArrowUpRight size={18} />
               </Link>
               <a className="button button-outline" href="#book">
                 Contact Steve <ArrowRight size={16} />
@@ -127,8 +98,10 @@ function Landing() {
                     {index === 0 ? (
                       <>
                         <img
-                          src="/images/coaching-hero.png"
-                          alt="Barbell coaching in the studio"
+                          src="/images/steve-client-coaching.png"
+                          alt="Steve Rossiter coaching a client beside a squat rack"
+                          width="801"
+                          height="1384"
                           loading="lazy"
                         />
                         <span className="art-label">On the floor. In your corner.</span>
@@ -279,31 +252,19 @@ function Landing() {
           <div className="container">
             <div className="program-cta-copy">
               <span className="eyebrow">04 / Your next step</span>
-              <h2 id="program-cta-title">Meet 69 Easy.</h2>
+              <h2 id="program-cta-title">Meet 69 easy.</h2>
               <p>
-                A little structure, at your own pace. Read Steve’s free 69 Easy plan right here on
+                A little structure, at your own pace. Read Steve’s free 69 easy plan right here on
                 the website and start building habits for life. No account needed.
               </p>
             </div>
             <Link className="button" to="/69-easy">
-              Explore the 69 Easy plan <ArrowUpRight size={18} />
+              Explore the 69 easy plan <ArrowUpRight size={18} />
             </Link>
           </div>
         </section>
       </main>
-      <footer className="site-footer">
-        <div className="container footer-inner">
-          <Brand />
-          <span className="eyebrow">One-on-one coaching in Los Angeles</span>
-          <div>
-            <a href="#services">Services</a>
-            <Link to="/69-easy">69 Easy plan</Link>
-            <a href="#book">Get in touch</a>
-            <Link to="/privacy">Privacy</Link>
-            <span>© 2026 Steve Rossiter Coaching</span>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </>
   )
 }

@@ -13,12 +13,17 @@ export function BrandMark() {
   )
 }
 
-export function Brand() {
+export function Brand({ tagline = false }: { tagline?: boolean }) {
   return (
     <Link to="/" className="brand" aria-label="Steve Rossiter Coaching home">
       <BrandMark />
       <span className="brand-name">
-        Steve Rossiter<span className="brand-coaching">Coaching</span>
+        Steve Rossiter
+        {tagline ? (
+          <span className="brand-tagline">Helping you feel great.</span>
+        ) : (
+          <span className="brand-coaching">Coaching</span>
+        )}
       </span>
     </Link>
   )

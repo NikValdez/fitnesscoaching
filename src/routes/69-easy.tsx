@@ -1,5 +1,5 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { ArrowUp, ArrowDown } from 'lucide-react'
+import { createFileRoute, Link } from '@tanstack/react-router'
+import { ArrowUp, ArrowDown, ArrowUpRight } from 'lucide-react'
 import { ShopLayout, shopLinks } from '../components/shop-layout'
 import plan from '../content/69-easy.json'
 import programStyles from '../program.css?url'
@@ -9,7 +9,10 @@ export const Route = createFileRoute('/69-easy')({
     links: [...shopLinks, { rel: 'stylesheet', href: programStyles }],
     meta: [
       { title: '69 easy — Just 1% better every day | Steve Rossiter Coaching' },
-      { name: 'description', content: plan.overview.intro },
+      {
+        name: 'description',
+        content: 'Read Steve Rossiter’s free 69 easy plan: 69 days of small, flexible habits to help you feel great. Explore the full guide and get in touch about coaching.',
+      },
     ],
   }),
   component: ProgramPage,
@@ -155,6 +158,9 @@ function ProgramPage() {
           </div>
         </article>
         <div className="easy-end">
+          <Link className="button button-small" to="/work-with-me">
+            Work With Me <ArrowUpRight size={16} aria-hidden="true" />
+          </Link>
           <a className="text-link" href="#top">
             Back to top <ArrowUp size={16} aria-hidden="true" />
           </a>

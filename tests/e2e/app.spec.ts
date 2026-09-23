@@ -46,15 +46,15 @@ test('landing page, mobile navigation, and LA coaching enquiries', async ({ page
   await waitForHydration(page)
   await page.waitForLoadState('networkidle')
   await page.getByRole('button', { name: 'Open menu' }).click()
-  await page.getByRole('navigation').getByRole('link', { name: 'Services' }).click()
+  await page.getByRole('navigation', { name: 'Main navigation' }).getByRole('link', { name: 'Home' }).click()
   await expect(page.getByRole('button', { name: 'Open menu' })).toBeVisible()
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
     true,
   )
   await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }))
   await page.screenshot({ path: 'test-results/landing-mobile.png', fullPage: true })
-  await page.locator('.program-cta').getByRole('link', { name: 'Explore the 69 Easy plan' }).click()
-  await expect(page).toHaveURL(/\/program/)
+  await page.locator('.program-cta').getByRole('link', { name: 'Explore the 69 easy plan' }).click()
+  await expect(page).toHaveURL(/\/69-easy/)
   expect(errors).toEqual([])
 })
 

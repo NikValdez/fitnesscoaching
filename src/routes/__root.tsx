@@ -12,7 +12,7 @@ export const Route = createRootRoute({
       {
         name: 'description',
         content:
-          'Explore the 69 Easy plan and contact Steve for one-on-one coaching in Los Angeles. Online coaching and accountability services are coming soon.',
+          'Explore Steve Rossiter’s free 69 easy plan and get in touch about one-on-one coaching in Los Angeles.',
       },
       { name: 'theme-color', content: '#fbfaf8' },
     ],

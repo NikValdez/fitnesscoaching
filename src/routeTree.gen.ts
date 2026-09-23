@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as R69EasyRouteImport } from './routes/69-easy'
 import { Route as AccountRouteImport } from './routes/account'
+import { Route as BlogRouteImport } from './routes/blog'
 import { Route as CoachRouteImport } from './routes/coach'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as LoginRouteImport } from './routes/login'
@@ -20,6 +21,7 @@ import { Route as PortalRouteImport } from './routes/portal'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ProgramRouteImport } from './routes/program'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as WorkWithMeRouteImport } from './routes/work-with-me'
 import { Route as ApiCheckoutRouteImport } from './routes/api/checkout'
 import { Route as PurchaseSuccessRouteImport } from './routes/purchase.success'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
@@ -39,6 +41,11 @@ const R69EasyRoute = R69EasyRouteImport.update({
 const AccountRoute = AccountRouteImport.update({
   id: '/account',
   path: '/account',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogRoute = BlogRouteImport.update({
+  id: '/blog',
+  path: '/blog',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CoachRoute = CoachRouteImport.update({
@@ -81,6 +88,11 @@ const SignupRoute = SignupRouteImport.update({
   path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WorkWithMeRoute = WorkWithMeRouteImport.update({
+  id: '/work-with-me',
+  path: '/work-with-me',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiCheckoutRoute = ApiCheckoutRouteImport.update({
   id: '/api/checkout',
   path: '/api/checkout',
@@ -111,6 +123,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/69-easy': typeof R69EasyRoute
   '/account': typeof AccountRoute
+  '/blog': typeof BlogRoute
   '/coach': typeof CoachRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
@@ -119,6 +132,7 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/program': typeof ProgramRoute
   '/signup': typeof SignupRoute
+  '/work-with-me': typeof WorkWithMeRoute
   '/api/checkout': typeof ApiCheckoutRoute
   '/purchase/success': typeof PurchaseSuccessRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -129,6 +143,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/69-easy': typeof R69EasyRoute
   '/account': typeof AccountRoute
+  '/blog': typeof BlogRoute
   '/coach': typeof CoachRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
@@ -137,6 +152,7 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/program': typeof ProgramRoute
   '/signup': typeof SignupRoute
+  '/work-with-me': typeof WorkWithMeRoute
   '/api/checkout': typeof ApiCheckoutRoute
   '/purchase/success': typeof PurchaseSuccessRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -148,6 +164,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/69-easy': typeof R69EasyRoute
   '/account': typeof AccountRoute
+  '/blog': typeof BlogRoute
   '/coach': typeof CoachRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
@@ -156,6 +173,7 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/program': typeof ProgramRoute
   '/signup': typeof SignupRoute
+  '/work-with-me': typeof WorkWithMeRoute
   '/api/checkout': typeof ApiCheckoutRoute
   '/purchase/success': typeof PurchaseSuccessRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -168,6 +186,7 @@ export interface FileRouteTypes {
     | '/'
     | '/69-easy'
     | '/account'
+    | '/blog'
     | '/coach'
     | '/dashboard'
     | '/login'
@@ -176,6 +195,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/program'
     | '/signup'
+    | '/work-with-me'
     | '/api/checkout'
     | '/purchase/success'
     | '/api/auth/$'
@@ -186,6 +206,7 @@ export interface FileRouteTypes {
     | '/'
     | '/69-easy'
     | '/account'
+    | '/blog'
     | '/coach'
     | '/dashboard'
     | '/login'
@@ -194,6 +215,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/program'
     | '/signup'
+    | '/work-with-me'
     | '/api/checkout'
     | '/purchase/success'
     | '/api/auth/$'
@@ -204,6 +226,7 @@ export interface FileRouteTypes {
     | '/'
     | '/69-easy'
     | '/account'
+    | '/blog'
     | '/coach'
     | '/dashboard'
     | '/login'
@@ -212,6 +235,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/program'
     | '/signup'
+    | '/work-with-me'
     | '/api/checkout'
     | '/purchase/success'
     | '/api/auth/$'
@@ -223,6 +247,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   R69EasyRoute: typeof R69EasyRoute
   AccountRoute: typeof AccountRoute
+  BlogRoute: typeof BlogRoute
   CoachRoute: typeof CoachRoute
   DashboardRoute: typeof DashboardRoute
   LoginRoute: typeof LoginRoute
@@ -231,6 +256,7 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   ProgramRoute: typeof ProgramRoute
   SignupRoute: typeof SignupRoute
+  WorkWithMeRoute: typeof WorkWithMeRoute
   ApiCheckoutRoute: typeof ApiCheckoutRoute
   PurchaseSuccessRoute: typeof PurchaseSuccessRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -259,6 +285,13 @@ declare module '@tanstack/react-router' {
       path: '/account'
       fullPath: '/account'
       preLoaderRoute: typeof AccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog': {
+      id: '/blog'
+      path: '/blog'
+      fullPath: '/blog'
+      preLoaderRoute: typeof BlogRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/coach': {
@@ -317,6 +350,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/work-with-me': {
+      id: '/work-with-me'
+      path: '/work-with-me'
+      fullPath: '/work-with-me'
+      preLoaderRoute: typeof WorkWithMeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/checkout': {
       id: '/api/checkout'
       path: '/api/checkout'
@@ -359,6 +399,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   R69EasyRoute: R69EasyRoute,
   AccountRoute: AccountRoute,
+  BlogRoute: BlogRoute,
   CoachRoute: CoachRoute,
   DashboardRoute: DashboardRoute,
   LoginRoute: LoginRoute,
@@ -367,6 +408,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   ProgramRoute: ProgramRoute,
   SignupRoute: SignupRoute,
+  WorkWithMeRoute: WorkWithMeRoute,
   ApiCheckoutRoute: ApiCheckoutRoute,
   PurchaseSuccessRoute: PurchaseSuccessRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,

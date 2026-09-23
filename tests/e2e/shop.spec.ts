@@ -1,7 +1,7 @@
 import { waitForHydration } from './hydration'
 import { test, expect } from '@playwright/test'
 
-test('free 69 Easy reading page, mobile layout and legacy payment guards', async ({
+test('free 69 easy reading page, mobile layout and legacy payment guards', async ({
   page,
   request,
 }) => {
@@ -12,7 +12,7 @@ test('free 69 Easy reading page, mobile layout and legacy payment guards', async
   await waitForHydration(page)
   await page
     .getByRole('navigation', { name: 'Main navigation' })
-    .getByRole('link', { name: '69 Easy', exact: true })
+    .getByRole('link', { name: '69 easy', exact: true })
     .click()
   await expect(page).toHaveURL(/\/69-easy/)
   await expect(page.getByRole('heading', { name: '69 easy', exact: true })).toBeVisible()
