@@ -18,21 +18,22 @@ test('landing page, mobile navigation, and LA coaching enquiries', async ({ page
   await page.goto('/')
   await waitForHydration(page)
   await page.waitForLoadState('networkidle')
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Personal coaching, built around you.',
-  )
-  await expect(page.locator('.hero-image')).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Hi, I’m Steve.')
+  await expect(page.getByText('My mission is to help you feel great.')).toBeVisible()
+  await expect(page.getByText('Maybe you can relate. Maybe not. Maybe fuck yaself.')).toBeVisible()
+  await expect(page.getByRole('heading', { name: '“FITNESS” vs. wellth' })).toBeVisible()
+  await expect(page.locator('.home-comparison li')).toHaveCount(6)
+  await expect(page.locator('.home-portrait')).toBeVisible()
   await expect(page.locator('#pricing')).toHaveCount(0)
   await expect(page.locator('a[href="/login"], a[href="/signup"], a[href="/portal"]')).toHaveCount(
     0,
   )
-  await expect(page.locator('.service-coming-soon')).toHaveCount(2)
-  await expect(
-    page.locator('.service-card').filter({ hasText: 'Coming soon' }).locator('a, button'),
-  ).toHaveCount(0)
-  await expect(page.locator('select[name="interest"]')).toHaveCount(0)
   await page.screenshot({ path: 'test-results/landing-desktop.png', fullPage: true })
-  await page.locator('.hero').getByRole('link', { name: 'Contact Steve', exact: true }).click()
+  await page
+    .locator('.home-hero')
+    .getByRole('link', { name: 'Work with me →', exact: true })
+    .click()
+  await expect(page).toHaveURL(/\/work-with-me/)
   await expect(page.locator('input[name="interest"]')).toHaveValue('In-person coaching')
   const email = `rossiter-test-${randomUUID()}@example.com`
   testEmails.push(email)
@@ -46,14 +47,21 @@ test('landing page, mobile navigation, and LA coaching enquiries', async ({ page
   await waitForHydration(page)
   await page.waitForLoadState('networkidle')
   await page.getByRole('button', { name: 'Open menu' }).click()
-  await page.getByRole('navigation', { name: 'Main navigation' }).getByRole('link', { name: 'Home' }).click()
+  await page
+    .getByRole('navigation', { name: 'Main navigation' })
+    .getByRole('link', { name: 'Home' })
+    .click()
   await expect(page.getByRole('button', { name: 'Open menu' })).toBeVisible()
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
     true,
   )
   await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }))
   await page.screenshot({ path: 'test-results/landing-mobile.png', fullPage: true })
-  await page.locator('.program-cta').getByRole('link', { name: 'Explore the 69 easy plan' }).click()
+  await page.getByRole('button', { name: 'Open menu' }).click()
+  await page
+    .getByRole('navigation', { name: 'Main navigation' })
+    .getByRole('link', { name: '69 easy' })
+    .click()
   await expect(page).toHaveURL(/\/69-easy/)
   expect(errors).toEqual([])
 })
@@ -65,14 +73,20 @@ test('protected dashboard redirects visitors', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Good to have you back.' })).toBeVisible()
 })
 
-test('LA contact link works before JavaScript loads and survives a reload', async ({ browser }) => {
+test('work with me link works before JavaScript loads and survives a reload', async ({
+  browser,
+}) => {
   const context = await browser.newContext({
     javaScriptEnabled: false,
     baseURL: process.env.TEST_BASE_URL || 'http://localhost:3000',
   })
   const page = await context.newPage()
   await page.goto('/')
-  await page.locator('.hero').getByRole('link', { name: 'Contact Steve', exact: true }).click()
+  await page
+    .locator('.home-hero')
+    .getByRole('link', { name: 'Work with me →', exact: true })
+    .click()
+  await expect(page).toHaveURL(/\/work-with-me/)
   await expect(page.locator('input[name="interest"]')).toHaveValue('In-person coaching')
   await page.reload()
   await expect(page.locator('input[name="interest"]')).toHaveValue('In-person coaching')

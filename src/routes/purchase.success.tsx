@@ -101,7 +101,7 @@ function PurchasePage() {
             Back to the program
           </Link>
           <p className="purchase-help">
-            Need a hand? <a href="/#book">Get in touch with Steve.</a>
+            Need a hand? <a href="/work-with-me">Get in touch with Steve.</a>
           </p>
         </div>
       </section>

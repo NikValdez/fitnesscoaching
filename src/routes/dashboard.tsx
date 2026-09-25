@@ -61,7 +61,7 @@ function Dashboard() {
           <Link to="/portal" className="text-link client-space">
             ← Client portal
           </Link>
-          <Link to="/" hash="book" className="text-link">
+          <Link to="/work-with-me" className="text-link">
             Explore coaching <ArrowUpRight size={16} />
           </Link>
           <button
@@ -245,7 +245,7 @@ function Dashboard() {
                   <h2>A plan built around you.</h2>
                   <p>Get individual programming, nutrition guidance, and a coach in your corner.</p>
                 </div>
-                <Link to="/" hash="book" className="button button-outline">
+                <Link to="/work-with-me" className="button button-outline">
                   Book a free intro call <ArrowUpRight size={16} />
                 </Link>
               </section>
