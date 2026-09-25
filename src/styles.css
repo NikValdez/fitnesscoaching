@@ -221,7 +221,6 @@ select:focus {
   width: 40px;
   height: 40px;
   object-fit: contain;
-  mix-blend-mode: multiply;
   position: relative;
   flex-shrink: 0;
 }

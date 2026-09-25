@@ -20,7 +20,7 @@ export const Route = createRootRoute({
       { rel: 'stylesheet', href: stylesheet },
       { rel: 'stylesheet', href: workspaceStylesheet },
       { rel: 'stylesheet', href: intakeStylesheet },
-      { rel: 'icon', type: 'image/png', href: '/images/sr-monogram-v2.png' },
+      { rel: 'icon', type: 'image/png', href: '/images/sr-monogram-v3.png' },
       { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
       { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossOrigin: 'anonymous' },
       {

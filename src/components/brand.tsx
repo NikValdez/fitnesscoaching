@@ -4,7 +4,7 @@ export function BrandMark() {
   return (
     <img
       className="brand-mark"
-      src="/images/sr-monogram-v2.png"
+      src="/images/sr-monogram-v3.png"
       width="40"
       height="40"
       alt=""
