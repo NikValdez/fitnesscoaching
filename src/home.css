@@ -27,15 +27,12 @@
 
 .home-hero-copy h1 {
   margin: 0 0 clamp(20px, 2vw, 28px);
-  font-size: clamp(52px, 16cqi, 104px);
+  font-size: min(104px, 16cqi);
   font-weight: 600;
   line-height: 1;
   letter-spacing: -0.045em;
+  white-space: nowrap;
   animation: home-rise 900ms var(--home-ease) backwards;
-}
-
-.home-hero-copy h1 span {
-  display: block;
 }
 
 .home-hero-copy p {
@@ -135,16 +132,18 @@
 }
 
 .home-wellth {
+  container-type: inline-size;
   padding-top: clamp(48px, 5.5vw, 76px);
   padding-bottom: clamp(104px, 13vw, 184px);
 }
 
 .home-wellth h2 {
   margin: 0 0 clamp(16px, 1.6vw, 22px);
-  font-size: clamp(40px, 5.2vw, 68px);
+  font-size: min(68px, 9.5cqi);
   font-weight: 600;
   line-height: 1.02;
   letter-spacing: -0.045em;
+  white-space: nowrap;
 }
 
 .home-wellth h2:not(:first-child) {
@@ -335,10 +334,6 @@
 
   .home-hero-copy {
     padding: 56px var(--home-gutter) 44px;
-  }
-
-  .home-hero-copy h1 {
-    font-size: clamp(52px, 19cqi, 88px);
   }
 
   .home-hero-media {

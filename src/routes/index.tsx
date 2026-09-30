@@ -29,9 +29,7 @@ function Landing() {
       <main id="main" className="home-page">
         <section className="home-hero">
           <div className="home-hero-copy">
-            <h1>
-              <span>Hi,</span> <span>I’m Steve.</span>
-            </h1>
+            <h1>Hi, I’m Steve.</h1>
             <p>My mission is to help you feel great.</p>
             <Link className="home-work-link" to="/work-with-me">
               Work with me <span className="home-work-arrow">→</span>
