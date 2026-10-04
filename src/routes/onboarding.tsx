@@ -39,7 +39,7 @@ const steps = ['Your interests', 'Your support', 'Stay in touch']
 export const Route = createFileRoute('/onboarding')({
   head: () => ({
     meta: [
-      { title: 'Your coaching preferences — Steve Rossiter Coaching' },
+      { title: 'Your coaching preferences — Steve Rossiter' },
       { name: 'robots', content: 'noindex' },
     ],
   }),

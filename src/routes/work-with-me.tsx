@@ -6,7 +6,7 @@ import { SiteLayout } from '../components/site-layout'
 export const Route = createFileRoute('/work-with-me')({
   head: () => ({
     meta: [
-      { title: 'Work With Me — Steve Rossiter Coaching' },
+      { title: 'Work With Me — Steve Rossiter' },
       {
         name: 'description',
         content: 'Get in touch with Steve Rossiter about one-on-one coaching in Los Angeles. Share your goals and Steve will follow up by email.',

@@ -15,15 +15,11 @@ export function BrandMark() {
 
 export function Brand({ tagline = false }: { tagline?: boolean }) {
   return (
-    <Link to="/" className="brand" aria-label="Steve Rossiter Coaching home">
+    <Link to="/" className="brand" aria-label="Steve Rossiter home">
       <BrandMark />
       <span className="brand-name">
         Steve Rossiter
-        {tagline ? (
-          <span className="brand-tagline">Helping you feel great.</span>
-        ) : (
-          <span className="brand-coaching">Coaching</span>
-        )}
+        {tagline && <span className="brand-tagline">Helping you feel great.</span>}
       </span>
     </Link>
   )

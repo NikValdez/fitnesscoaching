@@ -230,13 +230,6 @@ select:focus {
   gap: 4px;
   line-height: 1;
 }
-.brand-coaching {
-  font-family: var(--mono);
-  font-size: 8px;
-  font-weight: 400;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-}
 .brand-tagline {
   color: var(--muted);
   font-size: 10px;

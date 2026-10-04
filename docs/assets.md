@@ -14,7 +14,7 @@
 
 ## Previous service-card image
 
-The site is now named Steve Rossiter Coaching. The original generation prompt below is retained verbatim for provenance.
+The site is now named Steve Rossiter. The original generation prompt below is retained verbatim for provenance.
 
 `public/images/coaching-hero.png` was generated with the built-in ImageGen tool for this project and was previously shown in the first service card. The online-training and nutrition graphics are implemented in HTML and CSS.
 

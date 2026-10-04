@@ -9,7 +9,7 @@ export const Route = createFileRoute('/purchase/success')({
   head: () => ({
     links: shopLinks,
     meta: [
-      { title: 'Your PDF download — Steve Rossiter Coaching' },
+      { title: 'Your PDF download — Steve Rossiter' },
       { name: 'robots', content: 'noindex, nofollow' },
       { name: 'referrer', content: 'no-referrer' },
     ],

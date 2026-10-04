@@ -9,7 +9,7 @@ import { googleAuthError } from '../lib/auth-errors'
 export const Route = createFileRoute('/account')({
   head: () => ({
     meta: [
-      { title: 'Your account — Steve Rossiter Coaching' },
+      { title: 'Your account — Steve Rossiter' },
       { name: 'robots', content: 'noindex' },
     ],
   }),

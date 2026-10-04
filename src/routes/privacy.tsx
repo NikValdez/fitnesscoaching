@@ -4,7 +4,7 @@ import { ShopLayout, shopLinks } from '../components/shop-layout'
 export const Route = createFileRoute('/privacy')({
   head: () => ({
     links: shopLinks,
-    meta: [{ title: 'Privacy policy — Steve Rossiter Coaching' }],
+    meta: [{ title: 'Privacy policy — Steve Rossiter' }],
   }),
   component: PrivacyPage,
 })
@@ -15,7 +15,7 @@ function PrivacyPage() {
       <article className="privacy-page container">
         <p className="eyebrow">Updated September 7, 2026</p>
         <h1>Privacy policy</h1>
-        <p>This notice explains how the Steve Rossiter Coaching web app handles information when you browse, create an account, or use your coaching portal.</p>
+        <p>This notice explains how the Steve Rossiter web app handles information when you browse, create an account, or use your coaching portal.</p>
 
         <h2>Information you provide</h2>
         <p>The app stores your name, email address, and account details. Passwords are stored as hashes. Your service choices, communication preferences, optional phone number, goals, workouts, nutrition entries, check-ins, and schedules are saved so your coach can personalize and manage your coaching. Enquiry forms store the contact details and message you submit and send an email notification to the coach and website administrator through Cloudflare Email Routing.</p>

@@ -48,7 +48,7 @@ const tabs = [
 export const Route = createFileRoute('/coach')({
   head: () => ({
     meta: [
-      { title: 'Coach workspace — Steve Rossiter Coaching' },
+      { title: 'Coach workspace — Steve Rossiter' },
       { name: 'robots', content: 'noindex' },
     ],
   }),

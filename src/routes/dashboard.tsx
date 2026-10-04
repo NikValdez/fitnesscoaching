@@ -21,7 +21,7 @@ import { workoutSchema, checkInSchema } from '../lib/validation'
 export const Route = createFileRoute('/dashboard')({
   head: () => ({
     meta: [
-      { title: 'Your training record — Steve Rossiter Coaching' },
+      { title: 'Your training record — Steve Rossiter' },
       { name: 'robots', content: 'noindex' },
     ],
   }),

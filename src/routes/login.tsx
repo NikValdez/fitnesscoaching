@@ -3,7 +3,7 @@ import { AuthForm } from '../components/auth-form'
 import { getAuthOptions } from '../lib/functions'
 
 export const Route = createFileRoute('/login')({
-  head: () => ({ meta: [{ title: 'Sign in — Steve Rossiter Coaching' }] }),
+  head: () => ({ meta: [{ title: 'Sign in — Steve Rossiter' }] }),
   loader: () => getAuthOptions(),
   validateSearch: (search: { error?: unknown } & SearchSchemaInput) => ({
     error: typeof search.error === 'string' ? search.error : undefined,

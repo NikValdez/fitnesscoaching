@@ -10,7 +10,7 @@ export const isGoogleEnabled = () => Boolean(
 
 function createAuth() {
 return betterAuth({
-  appName: 'Steve Rossiter Coaching',
+  appName: 'Steve Rossiter',
   baseURL: process.env.BETTER_AUTH_URL,
   secret: process.env.BETTER_AUTH_SECRET,
   advanced: { ipAddress: { ipAddressHeaders: ['cf-connecting-ip'] } },

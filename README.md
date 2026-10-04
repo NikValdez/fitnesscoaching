@@ -1,4 +1,4 @@
-# Steve Rossiter Coaching — Strength & Nutrition
+# Steve Rossiter — Strength & Nutrition
 
 A full-stack coaching website built with **TanStack Start**, React, TypeScript, **Neon PostgreSQL**, **Prisma ORM 7**, and **Better Auth**. The design follows the supplied landing-page mockup: Archivo and IBM Plex Mono typography, warm off-white, navy, fine borders, and numbered sections.
 

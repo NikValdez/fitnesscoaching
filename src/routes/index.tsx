@@ -13,7 +13,7 @@ export const Route = createFileRoute('/')({
       },
     ],
     meta: [
-      { title: 'Hi, I’m Steve. — Steve Rossiter Coaching' },
+      { title: 'Hi, I’m Steve. — Steve Rossiter' },
       { name: 'description', content: 'My mission is to help you feel great.' },
     ],
   }),
@@ -21,12 +21,10 @@ export const Route = createFileRoute('/')({
 })
 
 // The opening statement, revealed word by word as it scrolls through the viewport.
-type RevealPart = { text: string } | { scribble: string } | { portrait: true }
+type RevealPart = { text: string } | { scribble: string }
 
 const statement: RevealPart[] = [
-  { text: 'I' },
-  { portrait: true },
-  { text: 'know what it’s like to feel great, be healthy,' },
+  { text: 'I know what it’s like to feel great, be healthy,' },
   { scribble: '[kind of]' },
   { text: 'strong, and get compliments about my body from strangers' },
   { scribble: '(mostly dudes).' },
@@ -65,10 +63,6 @@ function Landing() {
         <section className="home-hero">
           <div className="home-hero-bg" aria-hidden="true" />
           <div className="home-hero-copy">
-            <p className="home-pill">
-              <span className="home-pill-dot" aria-hidden="true" />
-              One-on-one coaching in Los Angeles
-            </p>
             <h1>Hi, I’m Steve.</h1>
             <p className="home-hero-sub">
               My mission is to help you{' '}
@@ -226,10 +220,6 @@ function Landing() {
           </p>
           <WorkLink />
         </section>
-
-        <p className="home-wordmark" aria-hidden="true">
-          Steve Rossiter
-        </p>
       </main>
       <SiteFooter />
     </>
@@ -268,9 +258,7 @@ function RevealStatement({ parts }: { parts: RevealPart[] }) {
         const style = { '--i': i } as CSSProperties
         return (
           <Fragment key={i}>
-            {'portrait' in unit ? (
-              <span className="home-reveal-portrait" style={style} aria-hidden="true" />
-            ) : 'scribble' in unit ? (
+            {'scribble' in unit ? (
               <span className="home-reveal-word home-scribble" style={style}>
                 {unit.scribble}
               </span>

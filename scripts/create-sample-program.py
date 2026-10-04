@@ -8,7 +8,7 @@ target = root / 'output/pdf/69-easy-sample.pdf'
 target.parent.mkdir(parents=True, exist_ok=True)
 c = canvas.Canvas(str(target), pagesize=(595, 842))
 c.setTitle('69 easy - Sample edition')
-c.setAuthor('Steve Rossiter Coaching')
+c.setAuthor('Steve Rossiter')
 navy, paper, muted, ink = '#2e4a7d', '#fbfaf8', '#727773', '#151c24'
 
 def text(x, y, value, size=12, color=ink, font='Helvetica'):
@@ -18,7 +18,6 @@ def base(page, dark=False):
     c.setFillColor(HexColor(navy if dark else paper)); c.rect(0, 0, 595, 842, fill=1, stroke=0)
     color = paper if dark else navy
     text(48, 784, 'STEVE ROSSITER', 12, color, 'Helvetica-Bold')
-    text(48, 767, 'C O A C H I N G', 8, color)
     c.setStrokeColor(HexColor('#6680a9' if dark else '#d9dcd7')); c.line(48, 63, 547, 63)
     text(48, 42, 'SAMPLE EDITION  /  NOT A TRAINING PRESCRIPTION', 8, color)
     text(526, 42, f'{page:02}', 9, color)

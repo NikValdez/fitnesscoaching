@@ -40,7 +40,7 @@ const tabs = [
 export const Route = createFileRoute('/portal')({
   head: () => ({
     meta: [
-      { title: 'Client portal — Steve Rossiter Coaching' },
+      { title: 'Client portal — Steve Rossiter' },
       { name: 'robots', content: 'noindex' },
     ],
   }),

@@ -52,8 +52,7 @@ export function SiteFooter() {
           <Link to="/69-easy">69 easy</Link>
           <Link to="/blog">Blog</Link>
           <Link to="/work-with-me">Work With Me</Link>
-          <Link to="/privacy">Privacy</Link>
-          <span>© 2026 Steve Rossiter Coaching</span>
+          <span>© 2026 Steve Rossiter</span>
         </div>
       </div>
     </footer>

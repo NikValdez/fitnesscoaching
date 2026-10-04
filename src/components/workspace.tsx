@@ -128,7 +128,7 @@ export function Workspace({
               <br />
               Lasting progress.
             </p>
-            <span className="eyebrow">Steve Rossiter Coaching</span>
+            <span className="eyebrow">Steve Rossiter</span>
           </div>
         </aside>
         <main id="main" className="workspace-main">

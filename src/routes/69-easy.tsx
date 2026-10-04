@@ -8,7 +8,7 @@ export const Route = createFileRoute('/69-easy')({
   head: () => ({
     links: [...shopLinks, { rel: 'stylesheet', href: programStyles }],
     meta: [
-      { title: '69 easy — Just 1% better every day | Steve Rossiter Coaching' },
+      { title: '69 easy — Just 1% better every day | Steve Rossiter' },
       {
         name: 'description',
         content: 'Read Steve Rossiter’s free 69 easy plan: 69 days of small, flexible habits to help you feel great. Explore the full guide and get in touch about coaching.',

@@ -5,10 +5,10 @@ import { SiteLayout } from '../components/site-layout'
 export const Route = createFileRoute('/blog')({
   head: () => ({
     meta: [
-      { title: 'Blog — Steve Rossiter Coaching' },
+      { title: 'Blog — Steve Rossiter' },
       {
         name: 'description',
-        content: 'The Steve Rossiter Coaching blog is coming soon. Explore the free 69 easy plan while Steve prepares notes on training, habits, and feeling great.',
+        content: 'The Steve Rossiter blog is coming soon. Explore the free 69 easy plan while Steve prepares notes on training, habits, and feeling great.',
       },
     ],
   }),

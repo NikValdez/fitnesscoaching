@@ -34,7 +34,7 @@ export const Route = createRootRoute({
     <main className="message-page">
       <p className="eyebrow">404 / Page not found</p>
       <h1>A little off course.</h1>
-      <p>Let’s get you back to Steve Rossiter Coaching.</p>
+      <p>Let’s get you back to Steve Rossiter.</p>
       <Link className="button" to="/">
         Back home
       </Link>

@@ -32,12 +32,12 @@ export function AuthForm({
           </h1>
           <p>A place for the work you put in—and the progress that follows.</p>
         </div>
-        <span className="eyebrow">Steve Rossiter Coaching / Strength &amp; Nutrition</span>
+        <span className="eyebrow">Steve Rossiter / Strength &amp; Nutrition</span>
       </div>
       <div className="auth-main">
         <Link to="/" className="text-link back-link">
           <ArrowLeft size={16} />
-          Back to Steve Rossiter Coaching
+          Back to Steve Rossiter
         </Link>
         <div className="auth-form-wrap">
           <span className="eyebrow">{signup ? 'Your next chapter' : 'Your client space'}</span>
@@ -191,7 +191,7 @@ export function AuthForm({
             </button>
           </form>
           <p className="auth-switch">
-            {signup ? 'Already have an account?' : 'New to Steve Rossiter Coaching?'}{' '}
+            {signup ? 'Already have an account?' : 'New to Steve Rossiter?'}{' '}
             <Link to={signup ? '/login' : '/signup'}>
               {signup ? 'Sign in' : 'Create an account'}
             </Link>
@@ -199,7 +199,7 @@ export function AuthForm({
           <p className="form-note">Your training record is shared with your coach. <Link to="/privacy">Privacy policy</Link></p>
         </div>
         <span className="auth-copyright">
-          © 2026 Steve Rossiter Coaching Strength &amp; Nutrition
+          © 2026 Steve Rossiter Strength &amp; Nutrition
         </span>
       </div>
     </main>
