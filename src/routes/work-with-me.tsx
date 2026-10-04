@@ -16,6 +16,17 @@ export const Route = createFileRoute('/work-with-me')({
   component: WorkWithMePage,
 })
 
+const wellthComparisons = [
+  ['Initial consultation & financial audit', 'Initial Wellth Audit — the full picture'],
+  ['Personalized investment strategy', 'Personalized Wellth Strategy'],
+  ['Portfolio construction', 'Training + nutrition + recovery + lifestyle'],
+  ['Ongoing management & adjustments', 'Ongoing management & adjustments'],
+  ['Regular check-ins & reviews', 'Weekly check-ins & reviews'],
+  ['Market intelligence & recommendations', 'Wellness intelligence & recommendations'],
+  ['Access to expertise when you need it', 'Access to Steve when you need it'],
+  ['Builds long-term wealth', 'Builds long-term Wellth'],
+] as const
+
 function WorkWithMePage() {
   return (
     <SiteLayout className="marketing-page">
@@ -41,6 +52,35 @@ function WorkWithMePage() {
             </ul>
           </div>
           <IntroForm />
+        </div>
+      </section>
+      <section className="work-comparison" aria-labelledby="wellth-comparison-title">
+        <div className="container">
+          <div className="work-comparison-heading">
+            <span className="eyebrow">The Wellth Manager approach</span>
+            <h2 id="wellth-comparison-title">Build long-term wellth.</h2>
+            <p>
+              The same care you’d give your finances, applied to how you feel, move, and live.
+            </p>
+          </div>
+          <div className="work-comparison-table-wrap">
+            <table className="work-comparison-table" aria-labelledby="wellth-comparison-title">
+              <thead>
+                <tr>
+                  <th scope="col">Wealth Manager</th>
+                  <th scope="col">Wellth Manager</th>
+                </tr>
+              </thead>
+              <tbody>
+                {wellthComparisons.map(([wealth, wellth]) => (
+                  <tr key={wealth}>
+                    <td>{wealth}</td>
+                    <td>{wellth}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
     </SiteLayout>
