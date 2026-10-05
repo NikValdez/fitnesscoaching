@@ -1,0 +1,886 @@
+/* Public pages share the homepage's typography and component shapes. */
+.work-intro,
+.work-wellth,
+.work-fit,
+.work-process {
+  padding-block: var(--section-space);
+}
+
+.work-story-grid,
+.work-process-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  align-items: start;
+  gap: clamp(40px, 7vw, 100px);
+}
+
+.work-intro-heading > .eyebrow {
+  margin-bottom: 24px;
+  color: var(--navy);
+  font-family: inherit;
+  font-size: 11px;
+  line-height: 1.8;
+}
+
+.work-intro-heading h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(48px, 5.6vw, 80px);
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+}
+
+.work-intro-heading h1 span {
+  display: block;
+  color: var(--navy);
+}
+
+.work-story-heading h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(38px, 4vw, 56px);
+  font-weight: 500;
+  line-height: 1.12;
+  letter-spacing: -0.035em;
+}
+
+.work-story-copy {
+  color: #51565b;
+  font-size: clamp(16px, 1.4vw, 18px);
+}
+
+.work-story-copy p {
+  margin-bottom: 24px;
+  line-height: 1.8;
+}
+
+.work-story-copy > p:last-child {
+  margin-bottom: 0;
+}
+
+.work-wellth {
+  background: var(--blue-tint);
+}
+
+.work-wellth .work-story-heading h2 {
+  color: var(--navy);
+}
+
+.work-wellth-definition {
+  max-width: 330px;
+  margin: 24px 0 0;
+  font-size: clamp(20px, 2vw, 26px);
+  line-height: 1.5;
+  color: var(--navy);
+}
+
+.work-fit-list {
+  display: grid;
+  gap: 22px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.work-fit-list li {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  line-height: 1.8;
+}
+
+.work-fit-list svg {
+  flex-shrink: 0;
+  align-self: start;
+  margin-top: 7px;
+  color: var(--navy);
+}
+
+.work-story-copy .work-fit-note {
+  margin-top: 32px;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+  color: var(--ink);
+}
+
+.work-process {
+  border-top: 1px solid var(--line);
+}
+
+.work-process-heading h2 {
+  max-width: 460px;
+  margin: 0 0 32px;
+  font-family: var(--font-display);
+  font-size: clamp(44px, 5vw, 72px);
+  font-weight: 500;
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+}
+
+.work-process-heading h2 em {
+  color: var(--navy);
+}
+
+.work-process-steps {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.work-process-steps li {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 18px;
+  padding-block: 28px;
+  border-top: 1px solid var(--line);
+}
+
+.work-process-steps li:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.work-process-steps li:last-child {
+  padding-bottom: 0;
+}
+
+.work-process-number {
+  padding-top: 3px;
+  color: var(--navy);
+  font-family: var(--mono);
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.work-process-steps h3 {
+  margin: 0 0 10px;
+  font-size: clamp(20px, 1.8vw, 24px);
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.025em;
+  text-wrap: pretty;
+}
+
+.work-process-steps p {
+  margin: 0;
+  color: #51565b;
+  font-size: 16px;
+  line-height: 1.75;
+}
+
+@media (max-width: 760px) {
+  .work-story-grid,
+  .work-process-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 44px;
+  }
+
+  .work-intro-heading h1 {
+    font-size: clamp(48px, 10vw, 64px);
+  }
+
+  .work-process-heading h2 {
+    font-size: clamp(42px, 9vw, 60px);
+  }
+
+  .work-process-steps li {
+    grid-template-columns: 24px minmax(0, 1fr);
+    gap: 12px;
+    padding-block: 24px;
+  }
+}
+
+.online-coaching {
+  padding-block: var(--section-space);
+  border-top: 1px solid var(--line);
+  scroll-margin-top: 24px;
+}
+
+.online-coaching-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
+  gap: clamp(32px, 7vw, 100px);
+  align-items: start;
+}
+
+.online-coaching-copy {
+  padding-top: 24px;
+}
+
+.online-coaching-copy h2 {
+  margin: 24px 0;
+  font-family: var(--font-display);
+  font-size: clamp(42px, 4.8vw, 64px);
+  font-weight: 400;
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+}
+
+.online-coaching-copy h2 em {
+  color: var(--navy);
+}
+
+.online-coaching-copy > p {
+  max-width: 440px;
+  font-size: 16px;
+  line-height: 1.8;
+  color: #51565b;
+}
+
+.online-coaching-features {
+  display: grid;
+  gap: 18px;
+  list-style: none;
+  margin: 32px 0;
+  padding: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.online-coaching-features li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.online-coaching-features svg {
+  flex-shrink: 0;
+  color: var(--navy);
+}
+
+.online-coaching-steps {
+  display: grid;
+  gap: 12px;
+  padding: 24px 0;
+  margin-bottom: 20px;
+  border-block: 1px solid var(--line);
+  font-size: 13px;
+}
+
+.online-coaching-steps b {
+  margin-right: 14px;
+  color: var(--navy);
+  font: 11px var(--mono);
+}
+
+.coaching-enrollment {
+  padding: clamp(24px, 3vw, 40px);
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-panel);
+  box-shadow: 0 24px 48px -32px rgba(16, 21, 28, 0.22);
+}
+
+.coaching-pricing-panel {
+  margin-top: 40px;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+  scroll-margin-top: 24px;
+}
+
+.coaching-pricing-panel .coaching-plan-heading > .eyebrow {
+  color: var(--navy);
+}
+
+.coaching-pricing-panel .coaching-billing-options {
+  gap: 24px;
+  margin-top: 18px;
+  padding: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+}
+
+.coaching-pricing-panel .coaching-billing-options button {
+  justify-content: flex-start;
+  flex: 0 1 auto;
+  gap: 8px;
+  min-height: 48px;
+  margin-bottom: -1px;
+  padding: 10px 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  font-size: 14px;
+}
+
+.coaching-pricing-panel .coaching-billing-options button[aria-pressed='true'] {
+  border-bottom-color: var(--navy);
+  background: transparent;
+  box-shadow: none;
+  color: var(--navy);
+}
+
+.coaching-pricing-panel .coaching-billing-options button span {
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--navy);
+  font-size: 11px;
+}
+
+.coaching-pricing-panel .coaching-plan-price {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 28px 0 16px;
+  font-family: var(--font-display);
+  font-size: clamp(56px, 5vw, 72px);
+  font-weight: 400;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+}
+
+.coaching-pricing-panel .coaching-plan-price > span {
+  font-family: 'Archivo', Arial, sans-serif;
+}
+
+.coaching-pricing-panel .coaching-plan-savings {
+  margin-bottom: 12px;
+  color: var(--navy);
+}
+
+.coaching-pricing-panel .coaching-plan-terms {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  max-width: 340px;
+  line-height: 1.7;
+}
+
+.marketing-page .coaching-pricing-apply {
+  margin-top: 28px;
+}
+
+.coaching-plan-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.coaching-plan-badge {
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: var(--blue-tint);
+  color: var(--navy);
+  font-size: 10px;
+}
+
+.coaching-plan-price {
+  margin: 24px 0 12px;
+  font-size: clamp(48px, 5vw, 64px);
+  letter-spacing: -0.05em;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.coaching-billing-options {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  margin-top: 24px;
+  background: var(--tint);
+  border-radius: 999px;
+}
+
+.coaching-billing-options button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.coaching-billing-options button[aria-pressed='true'] {
+  background: #fff;
+  color: var(--ink);
+  box-shadow: var(--shadow-soft);
+}
+
+.coaching-billing-options button span {
+  padding: 4px 6px;
+  border-radius: 999px;
+  background: #e9f3ed;
+  color: #2d5c48;
+  font-size: 10px;
+}
+
+.coaching-plan-savings {
+  font-size: 12px;
+  line-height: 1.7;
+  color: #2d5c48;
+}
+
+.coaching-plan-price > span {
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--muted);
+}
+
+.coaching-plan-terms {
+  margin-bottom: 26px;
+  padding-bottom: 26px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.coaching-notice {
+  padding: 14px 16px;
+  background: var(--blue-tint);
+  color: #263c60;
+  border-radius: var(--radius-field);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.coaching-auth-tabs {
+  display: flex;
+  padding: 4px;
+  margin: 22px 0;
+  background: var(--tint);
+  border-radius: 999px;
+}
+
+.coaching-auth-tabs button {
+  flex: 1;
+  min-height: 40px;
+  border: 0;
+  background: transparent;
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.coaching-auth-tabs button[aria-pressed='true'] {
+  background: #fff;
+  color: var(--ink);
+  box-shadow: var(--shadow-soft);
+}
+
+.coaching-signup-form {
+  display: grid;
+  gap: 18px;
+}
+
+.coaching-signup-form input {
+  min-height: 46px;
+  border-radius: var(--radius-field);
+  font-size: 14px;
+}
+
+.coaching-enrollment .button {
+  width: 100%;
+  white-space: normal;
+}
+
+.coaching-enrollment > form:not(:empty) {
+  margin-top: 16px;
+}
+
+.coaching-enrollment .form-divider {
+  margin: 20px 0;
+}
+
+.coaching-signed-in {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 24px 0;
+  color: var(--navy);
+}
+
+.coaching-signed-in > div {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.coaching-signed-in span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.coaching-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  margin-bottom: 16px;
+  border-radius: 999px;
+  background: #fff3df;
+  color: #78541b;
+  font-size: 12px;
+}
+
+.coaching-status.is-active {
+  color: #2d5c48;
+  background: #e9f3ed;
+}
+
+.coaching-membership > p {
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+
+.coaching-refresh {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin: 22px 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.coaching-secure-note {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 7px;
+  margin: 22px 0 12px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.coaching-privacy {
+  margin-bottom: 0;
+  text-align: center;
+  line-height: 1.7;
+}
+
+.coaching-privacy a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 760px) {
+  .online-coaching-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 32px;
+  }
+
+  .online-coaching-copy {
+    padding-top: 0;
+  }
+}
+
+.marketing-page .button,
+.shop-page .button {
+  min-height: 52px;
+  padding: 14px 26px;
+  gap: 10px;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 10px 22px -10px rgba(43, 74, 125, 0.7);
+}
+
+.marketing-page .button-outline,
+.shop-page .button-outline {
+  background: #fff;
+  border-color: var(--line);
+  box-shadow: var(--shadow-soft);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .marketing-page .button:hover,
+  .shop-page .button:hover {
+    background: #1d365f;
+  }
+
+  .marketing-page .button-outline:hover,
+  .shop-page .button-outline:hover {
+    background: var(--tint);
+  }
+}
+
+.blog-coming {
+  padding-block: var(--section-space);
+}
+
+.blog-coming h1 {
+  font-family: var(--font-display);
+  font-size: clamp(44px, 5.5vw, 76px);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+}
+
+.blog-coming-copy > p {
+  font-size: clamp(16px, 1.4vw, 19px);
+  line-height: 1.7;
+  color: #30353c;
+}
+
+.blog-preview {
+  padding: clamp(28px, 3vw, 40px);
+  border-radius: var(--radius-panel);
+  box-shadow: 0 24px 48px -28px rgba(16, 21, 28, 0.3);
+}
+
+.blog-preview strong {
+  font-family: var(--font-display);
+  font-size: clamp(54px, 7vw, 96px);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+}
+
+.work-contact {
+  min-height: 0;
+  margin: 0 16px 48px;
+  padding-block: var(--section-space);
+  border-radius: var(--radius-hero);
+}
+
+.work-contact .booking-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(32px, 6vw, 80px);
+}
+
+.work-contact .booking-copy > .eyebrow {
+  font-size: 10px;
+  color: #b1bbc9;
+}
+
+.work-contact .booking-copy h2 {
+  font-family: var(--font-display);
+  font-size: clamp(40px, 4.8vw, 68px);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+}
+
+.work-contact .booking-copy > p {
+  max-width: 440px;
+  font-size: clamp(16px, 1.4vw, 19px);
+  line-height: 1.7;
+  color: #d0d5dc;
+}
+
+.work-contact .booking-list {
+  gap: 18px;
+  margin-bottom: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #d0d5dc;
+}
+
+.work-contact .intro-form {
+  container-type: inline-size;
+  padding: clamp(24px, 3vw, 40px);
+  gap: 22px;
+  border-radius: var(--radius-panel);
+  background: #fff;
+  box-shadow: 0 24px 60px -32px rgba(0, 0, 0, 0.45);
+}
+
+.work-contact .intro-form > .eyebrow {
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.work-contact .intro-form label {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.work-contact .intro-form input,
+.work-contact .intro-form textarea {
+  padding: 14px;
+  border-radius: var(--radius-field);
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+.coaching-interest {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.coaching-interest legend {
+  padding: 0;
+  margin-bottom: 10px;
+  color: #51565b;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.coaching-choices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.work-contact .intro-form .coaching-choice {
+  flex-direction: row;
+  align-items: center;
+  gap: 9px;
+  min-height: 70px;
+  padding: 12px;
+  border: 1px solid #d7d8d6;
+  border-radius: var(--radius-field);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.work-contact .intro-form .coaching-choice:hover {
+  background: #f7f8fa;
+  border-color: #a6b4c8;
+}
+
+.work-contact .intro-form .coaching-choice:has(input:checked) {
+  border-color: var(--navy);
+  background: #f0f3f8;
+  color: var(--navy);
+}
+
+.coaching-choice:has(input:focus-visible) {
+  outline: 2px solid #7794be;
+  outline-offset: 3px;
+}
+
+.work-contact .intro-form .coaching-choice input {
+  appearance: none;
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #aab1ba;
+  border-radius: 50%;
+  outline: none;
+  cursor: pointer;
+}
+
+.work-contact .intro-form .coaching-choice input:checked {
+  border: 5px solid var(--navy);
+}
+
+.coaching-choice-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.coaching-choice-copy > span {
+  font-weight: 600;
+}
+
+.coaching-choice-copy small {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+@container (max-width: 380px) {
+  .coaching-choices {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .work-contact .intro-form .coaching-choice {
+    min-height: 58px;
+    padding: 11px 14px;
+  }
+
+  .coaching-choice-copy {
+    flex: 1;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+}
+
+.work-contact .intro-form .optional {
+  font-size: 11px;
+}
+
+.intro-notes-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.intro-notes-heading .optional {
+  position: static;
+  flex-shrink: 0;
+}
+
+.work-contact .intro-form .button {
+  font-size: 15px;
+}
+
+.work-contact .intro-form .form-note {
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.work-contact .intro-form .form-error {
+  font-size: 13px;
+}
+
+.work-contact .form-success h3 {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 400;
+  line-height: 1.15;
+}
+
+.privacy-page h1,
+.privacy-page h2,
+.disclaimer-page h1 {
+  font-family: var(--font-display);
+  font-weight: 400;
+}
+
+.privacy-page h1,
+.disclaimer-page h1 {
+  font-size: clamp(44px, 5.5vw, 76px);
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+}
+
+.privacy-page h2 {
+  font-size: 32px;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+}
+
+@media (max-width: 640px) {
+  .work-contact {
+    margin: 0 12px 32px;
+    border-radius: var(--radius-panel-small);
+  }
+
+  .work-contact .booking-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .work-contact .intro-form {
+    border-radius: var(--radius-panel-small);
+  }
+}

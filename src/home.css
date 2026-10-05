@@ -1,14 +1,14 @@
 .home-page {
   --home-gutter: 36px;
   --home-inset: 16px;
-  --home-radius: 40px;
+  --home-radius: var(--radius-hero);
   --home-tile-radius: clamp(28px, 4vw, 52px);
   --home-overlap: clamp(120px, 17vw, 240px);
   --home-body: #30353c;
-  --home-serif: 'Newsreader', Georgia, 'Times New Roman', serif;
-  --home-hand: 'Gochi Hand', 'Comic Sans MS', cursive;
+  --home-serif: var(--font-display);
+  --home-hand: var(--font-accent);
   --home-ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --home-shadow: 0 1px 2px rgba(16, 21, 28, 0.06), 0 10px 24px -12px rgba(16, 21, 28, 0.2);
+  --home-shadow: var(--shadow-soft);
   container-type: inline-size;
   overflow-x: clip;
 }
@@ -59,7 +59,7 @@
   gap: 10px;
   min-height: 52px;
   padding: 0 26px;
-  border-radius: 999px;
+  border-radius: var(--radius-button);
   background: var(--navy);
   color: white;
   font-size: 15px;
@@ -74,12 +74,6 @@
     transform 160ms ease;
 }
 
-.home-button-ghost {
-  background: white;
-  color: var(--ink);
-  box-shadow: var(--home-shadow);
-}
-
 .home-button:active {
   transform: scale(0.97);
 }
@@ -89,31 +83,12 @@
   transition: transform 240ms var(--home-ease);
 }
 
-.home-text-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  min-height: 44px;
-  color: var(--navy);
-  font-size: 16px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-}
-
 @media (hover: hover) {
   .home-button:hover {
     background: #1d365f;
   }
 
-  .home-button-ghost:hover {
-    background: white;
-    box-shadow:
-      0 1px 2px rgba(16, 21, 28, 0.06),
-      0 14px 28px -12px rgba(16, 21, 28, 0.28);
-  }
-
-  .home-button:hover .home-arrow,
-  .home-text-link:hover .home-arrow {
+  .home-button:hover .home-arrow {
     transform: translateX(4px);
   }
 }
@@ -167,15 +142,6 @@
   line-height: 1.4;
   letter-spacing: -0.02em;
   animation: home-rise 900ms 180ms var(--home-ease) backwards;
-}
-
-.home-actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 12px;
-  margin-top: clamp(32px, 3.4vw, 44px);
-  animation: home-rise 900ms 280ms var(--home-ease) backwards;
 }
 
 .home-hero-figure {
@@ -386,8 +352,9 @@
 
 .home-feature-copy h2 {
   margin: 0 0 clamp(18px, 2vw, 24px);
+  font-family: var(--font-display);
   font-size: min(46px, 10cqi);
-  font-weight: 550;
+  font-weight: 400;
   line-height: 1.05;
   letter-spacing: -0.045em;
   white-space: nowrap;
@@ -443,7 +410,10 @@
 .home-comparison h2,
 .home-comparison li {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) clamp(56px, 7vw, 96px) minmax(0, 1fr);
+  grid-template-columns:
+    minmax(0, max-content) clamp(32px, 4vw, 56px)
+    minmax(0, max-content);
+  justify-content: center;
   align-items: baseline;
 }
 
@@ -697,35 +667,28 @@
     object-position: 50% 30%;
   }
 
-  .home-actions {
-    width: 100%;
-  }
-
-  .home-actions .home-button {
-    flex: 1 1 0;
-    padding: 0 18px;
-  }
-
   .home-tile-traits li {
     padding: 8px 13px;
   }
 
   .home-comparison h2 {
-    grid-template-columns: auto auto 1fr;
+    grid-template-columns: auto auto auto;
     gap: 12px;
   }
 
   .home-comparison li {
-    grid-template-columns: auto 1fr;
-    gap: 8px 12px;
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    gap: 8px;
+    text-align: center;
   }
 
   .home-comparison .home-fitness {
-    justify-self: start;
-    text-align: left;
+    justify-self: center;
+    text-align: center;
   }
 
   .home-comparison li .home-fitness {
-    grid-column: 1 / -1;
+    grid-column: auto;
   }
 }

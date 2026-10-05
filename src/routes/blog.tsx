@@ -1,54 +1,25 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { ArrowUpRight } from 'lucide-react'
+import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { SiteLayout } from '../components/site-layout'
+import blogStyles from '../blog.css?url'
 
 export const Route = createFileRoute('/blog')({
   head: () => ({
+    links: [{ rel: 'stylesheet', href: blogStyles }],
     meta: [
       { title: 'Blog — Steve Rossiter' },
       {
         name: 'description',
-        content: 'The Steve Rossiter blog is coming soon. Explore the free 69 easy plan while Steve prepares notes on training, habits, and feeling great.',
+        content: 'Notes from Steve Rossiter on training, presence, and enjoying the process.',
       },
     ],
   }),
-  component: BlogPage,
+  component: BlogLayout,
 })
 
-function BlogPage() {
+function BlogLayout() {
   return (
     <SiteLayout className="marketing-page">
-      <section className="blog-coming container" aria-labelledby="blog-title">
-        <div className="blog-coming-copy">
-          <span className="eyebrow">The blog / Coming soon</span>
-          <h1 id="blog-title">
-            Better days,
-            <br />
-            one thought at a time.
-          </h1>
-          <p>
-            Steve’s notes on training, nutrition, and the small habits that help you feel great are
-            on their way.
-          </p>
-          <div className="button-row">
-            <Link className="button" to="/69-easy">
-              Read 69 easy <ArrowUpRight size={17} aria-hidden="true" />
-            </Link>
-            <Link className="button button-outline" to="/work-with-me">
-              Work With Me <ArrowUpRight size={17} aria-hidden="true" />
-            </Link>
-          </div>
-        </div>
-        <div className="blog-preview" aria-hidden="true">
-          <span className="blog-preview-top">Notes from Steve / Vol. 01</span>
-          <span className="blog-preview-mark">S·R</span>
-          <div>
-            <span>Strength is a practice.</span>
-            <strong>More soon.</strong>
-          </div>
-          <span className="blog-preview-bottom">Helping you feel great.</span>
-        </div>
-      </section>
+      <Outlet />
     </SiteLayout>
   )
 }

@@ -47,10 +47,7 @@ const tabs = [
 ]
 export const Route = createFileRoute('/coach')({
   head: () => ({
-    meta: [
-      { title: 'Coach workspace — Steve Rossiter' },
-      { name: 'robots', content: 'noindex' },
-    ],
+    meta: [{ title: 'Coach workspace — Steve Rossiter' }, { name: 'robots', content: 'noindex' }],
   }),
   validateSearch: (
     search: { month?: unknown; tab?: unknown; clientId?: unknown } & SearchSchemaInput,
@@ -214,6 +211,16 @@ function CoachWorkspace() {
       </div>
       {notice && <Notice message={notice} onClose={() => setNotice('')} />}
       {client && <IntakeSummary intake={client.intake} email={client.email} />}
+      {client && (
+        <p className="form-note">
+          Online coaching subscription:{' '}
+          {client.billingAccounts[0]?.subscriptions[0]?.status.replaceAll('_', ' ') ||
+            'Not subscribed'}
+          {client.billingAccounts[0]?.subscriptions[0]?.cancelAtPeriodEnd
+            ? ' · Cancellation scheduled'
+            : ''}
+        </p>
+      )}
       {!data.clients.length && (
         <div className="workspace-panel coach-onboarding">
           <Users size={30} strokeWidth={1.4} />
@@ -346,6 +353,11 @@ function CoachWorkspace() {
                   <span>
                     <strong>{client.name}</strong>
                     <small>{client.email}</small>
+                    <small>
+                      Online coaching:{' '}
+                      {client.billingAccounts[0]?.subscriptions[0]?.status.replaceAll('_', ' ') ||
+                        'Not subscribed'}
+                    </small>
                   </span>
                 </div>
                 <span>

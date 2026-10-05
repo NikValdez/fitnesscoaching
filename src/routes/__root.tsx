@@ -2,6 +2,7 @@ import { createRootRoute, HeadContent, Scripts, Outlet, Link, useHydrated } from
 import stylesheet from '../styles.css?url'
 import workspaceStylesheet from '../workspace.css?url'
 import intakeStylesheet from '../intake.css?url'
+import marketingStylesheet from '../marketing.css?url'
 
 export const Route = createRootRoute({
   head: () => ({
@@ -20,12 +21,17 @@ export const Route = createRootRoute({
       { rel: 'stylesheet', href: stylesheet },
       { rel: 'stylesheet', href: workspaceStylesheet },
       { rel: 'stylesheet', href: intakeStylesheet },
+      { rel: 'stylesheet', href: marketingStylesheet },
       { rel: 'icon', type: 'image/png', href: '/images/sr-monogram-v3.png' },
       { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
       { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossOrigin: 'anonymous' },
       {
         rel: 'stylesheet',
         href: 'https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,400;0,450;0,500;0,550;0,600;0,650;0,700;0,750;1,400;1,450;1,500&family=IBM+Plex+Mono:wght@400;500&display=swap',
+      },
+      {
+        rel: 'stylesheet',
+        href: 'https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..600&family=Gochi+Hand&display=swap',
       },
     ],
   }),

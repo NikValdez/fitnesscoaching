@@ -47,6 +47,7 @@ export const getCoachWorkspace = createServerFn({ method: 'GET' })
     const user = await requireAccount()
     if (user.role !== 'ADMIN') throw redirect({ to: '/portal' })
     const { db } = await import('./db.server')
+    const { stripeConfiguration } = await import('./stripe.server')
     const clients = await db.user.findMany({
       where: { role: 'CLIENT' },
       select: {
@@ -55,6 +56,16 @@ export const getCoachWorkspace = createServerFn({ method: 'GET' })
         email: true,
         createdAt: true,
         intake: { include: { interests: true } },
+        billingAccounts: {
+          where: { livemode: !stripeConfiguration().testMode },
+          select: {
+            subscriptions: {
+              orderBy: { stripeCreatedAt: 'desc' },
+              take: 1,
+              select: { status: true, cancelAtPeriodEnd: true, currentPeriodEnd: true },
+            },
+          },
+        },
         _count: {
           select: {
             programs: { where: { archived: false } },

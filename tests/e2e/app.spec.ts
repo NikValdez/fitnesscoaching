@@ -11,7 +11,9 @@ test.afterAll(async () => {
   await db.$disconnect()
 })
 
-test('landing page, mobile navigation, and LA coaching enquiries', async ({ page }) => {
+test('landing page, mobile navigation, and online and in-person coaching enquiries', async ({
+  page,
+}) => {
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
   await page.setViewportSize({ width: 1440, height: 1000 })
@@ -30,18 +32,23 @@ test('landing page, mobile navigation, and LA coaching enquiries', async ({ page
   )
   await page.screenshot({ path: 'test-results/landing-desktop.png', fullPage: true })
   await page
-    .locator('.home-hero')
-    .getByRole('link', { name: 'Work with me →', exact: true })
+    .getByRole('navigation', { name: 'Main navigation' })
+    .getByRole('link', { name: 'Work With Me', exact: true })
     .click()
   await expect(page).toHaveURL(/\/work-with-me/)
-  await expect(page.locator('input[name="interest"]')).toHaveValue('In-person coaching')
-  const email = `rossiter-test-${randomUUID()}@example.com`
-  testEmails.push(email)
-  await page.getByLabel('Name', { exact: true }).fill('Test Enquiry')
-  await page.getByLabel('Email', { exact: true }).fill(email)
-  await page.getByRole('button', { name: 'Send message' }).click()
-  await expect(page.getByText('You’ve taken the first step.')).toBeVisible()
-  expect(await db.enquiry.count({ where: { email, interest: 'In-person coaching' } })).toBe(1)
+  await expect(page.getByRole('radio', { name: 'Not sure yet', exact: true })).toHaveCount(0)
+  await expect(page.getByRole('radio', { name: 'Online coaching', exact: true })).not.toBeChecked()
+  for (const interest of ['In-person coaching', 'Online coaching']) {
+    const email = `rossiter-test-${randomUUID()}@example.com`
+    testEmails.push(email)
+    await page.getByLabel('Name', { exact: true }).fill('Test Enquiry')
+    await page.getByLabel('Email', { exact: true }).fill(email)
+    await page.getByRole('radio', { name: interest, exact: true }).check()
+    await page.getByRole('button', { name: 'Send message' }).click()
+    await expect(page.getByText('You’ve taken the first step.')).toBeVisible()
+    expect(await db.enquiry.count({ where: { email, interest } })).toBe(1)
+    await page.getByRole('button', { name: 'Send another request' }).click()
+  }
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/')
   await waitForHydration(page)
@@ -83,13 +90,13 @@ test('work with me link works before JavaScript loads and survives a reload', as
   const page = await context.newPage()
   await page.goto('/')
   await page
-    .locator('.home-hero')
-    .getByRole('link', { name: 'Work with me →', exact: true })
+    .getByRole('navigation', { name: 'Main navigation' })
+    .getByRole('link', { name: 'Work With Me', exact: true })
     .click()
   await expect(page).toHaveURL(/\/work-with-me/)
-  await expect(page.locator('input[name="interest"]')).toHaveValue('In-person coaching')
+  await expect(page.getByRole('radio', { name: 'Online coaching', exact: true })).toBeVisible()
   await page.reload()
-  await expect(page.locator('input[name="interest"]')).toHaveValue('In-person coaching')
+  await expect(page.getByRole('radio', { name: 'In-person coaching', exact: true })).toBeVisible()
   await context.close()
 })
 

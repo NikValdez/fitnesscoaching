@@ -15,6 +15,7 @@ import {
   Users,
   ListChecks,
   Settings,
+  CreditCard,
 } from 'lucide-react'
 import { Brand, BrandMark } from './brand'
 import { authClient } from '../lib/auth-client'
@@ -120,6 +121,10 @@ export function Workspace({
               <Settings size={18} strokeWidth={1.6} />
               Account
             </Link>
+            {!coach && <Link to="/work-with-me" hash="online-coaching">
+              <CreditCard size={18} strokeWidth={1.6} />
+              Coaching subscription
+            </Link>}
           </nav>
           <div className="workspace-sidebar-foot">
             <BrandMark />

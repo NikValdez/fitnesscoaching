@@ -40,6 +40,9 @@ describe('server input boundaries', () => {
       name: 'Alex Morgan',
       email: 'alex@example.com',
     })
+    for (const interest of ['Online coaching', 'In-person coaching', 'Not sure yet']) {
+      expect(enquirySchema.parse({ ...enquiry, interest }).interest).toBe(interest)
+    }
     for (const interest of [
       'Online programming',
       'Hybrid coaching',

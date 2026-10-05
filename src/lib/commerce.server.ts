@@ -4,30 +4,24 @@ import { db } from './db.server'
 import { pdfProgram } from './product'
 import { matchesPurchase, validSessionId } from './commerce-validation'
 import programPdf from '../../output/pdf/69-easy-sample.pdf?inline'
+import {
+  stripeClient as billingClient,
+  stripeConfiguration,
+  storeOrigin,
+  privateBillingHeaders,
+} from './stripe.server'
 
-const privateHeaders = { 'Cache-Control': 'private, no-store', 'Referrer-Policy': 'no-referrer' }
+const privateHeaders = privateBillingHeaders
 
 export function checkoutConfiguration() {
-  const key = process.env.STRIPE_SECRET_KEY || ''
-  const testMode = key.startsWith('sk_test_')
-  const hasKey = testMode || key.startsWith('sk_live_')
+  const { enabled: hasKey, testMode } = stripeConfiguration()
   // The placeholder document can only be bought in Stripe test mode.
   return { enabled: hasKey && (testMode || !pdfProgram.isSample), testMode }
 }
 
 function stripeClient() {
   if (!checkoutConfiguration().enabled) throw new Error('Checkout unavailable')
-  return new Stripe(process.env.STRIPE_SECRET_KEY!, { maxNetworkRetries: 2, timeout: 15000 })
-}
-
-function storeOrigin() {
-  const url = new URL(process.env.APP_URL || process.env.BETTER_AUTH_URL || 'http://localhost:3000')
-  if (
-    url.protocol !== 'https:' &&
-    !(url.protocol === 'http:' && ['localhost', '127.0.0.1'].includes(url.hostname))
-  )
-    throw new Error('Configure an HTTPS APP_URL')
-  return url.origin
+  return billingClient()
 }
 
 export async function checkoutResponse(request: Request) {
@@ -104,17 +98,25 @@ export async function fulfillPurchase(sessionId: string): Promise<'paid' | 'pend
 
 export async function webhookResponse(request: Request) {
   const secret = process.env.STRIPE_WEBHOOK_SECRET
-  if (!secret || !checkoutConfiguration().enabled)
+  if (!secret || !stripeConfiguration().enabled)
     return new Response('Webhook unavailable.', { status: 503 })
   let event: Stripe.Event
   try {
-    event = stripeClient().webhooks.constructEvent(
+    event = await billingClient().webhooks.constructEventAsync(
       await request.text(),
       request.headers.get('stripe-signature') || '',
       secret,
+      undefined,
+      Stripe.createSubtleCryptoProvider(),
     )
   } catch {
     return new Response('Invalid webhook signature.', { status: 400 })
+  }
+  try {
+    const { handleCoachingEvent } = await import('./subscriptions.server')
+    await handleCoachingEvent(event)
+  } catch {
+    return new Response('Please retry delivery.', { status: 503 })
   }
   if (
     event.type === 'checkout.session.completed' ||

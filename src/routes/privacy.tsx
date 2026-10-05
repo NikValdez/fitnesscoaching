@@ -13,7 +13,7 @@ function PrivacyPage() {
   return (
     <ShopLayout>
       <article className="privacy-page container">
-        <p className="eyebrow">Updated September 7, 2026</p>
+        <p className="eyebrow">Updated October 4, 2026</p>
         <h1>Privacy policy</h1>
         <p>This notice explains how the Steve Rossiter web app handles information when you browse, create an account, or use your coaching portal.</p>
 
@@ -30,6 +30,7 @@ function PrivacyPage() {
         <h2>Service providers and payments</h2>
         <p>Cloudflare hosts the app and processes requests. Neon stores the account and coaching database. Google provides optional sign-in and the site's web fonts. These providers process information needed to deliver their services and may process it outside your country.</p>
         <p>When Stripe checkout is available and you choose to purchase a program, Stripe handles the payment details. The app stores the checkout identifier, email when supplied, amount, currency, and payment status to verify access to downloads. Card numbers are not stored in the app's database.</p>
+        <p>For online coaching subscriptions, the app shares your account name and email with Stripe and stores customer, checkout, subscription, and price identifiers, billing amounts, currency, renewal dates, cancellation settings, and subscription status. These records link your subscription to your account and let your coach see its status. Stripe provides payment processing and billing management, including payment method updates and cancellations.</p>
 
         <h2>Cookies and technical information</h2>
         <p>Essential cookies maintain your signed-in session and protect the sign-in process. Requests may include IP addresses, browser details, and timestamps. Hosting and error logs help operate the service and investigate problems; IP information is also used to limit abusive authentication requests.</p>

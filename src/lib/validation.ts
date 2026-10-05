@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-export const interests = ['In-person coaching'] as const
+export const interests = ['Online coaching', 'In-person coaching', 'Not sure yet'] as const
 export const enquirySchema = z.object({
   name: z.string().trim().min(2, 'Please enter your name.').max(100),
   email: z.email('Please enter a valid email.').trim().toLowerCase().max(254),

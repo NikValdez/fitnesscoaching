@@ -12,6 +12,15 @@
   --tint: #f1efeb;
   --blue-tint: #e9edf4;
   --mono: 'IBM Plex Mono', monospace;
+  --font-display: 'Newsreader', Georgia, 'Times New Roman', serif;
+  --font-accent: 'Gochi Hand', 'Comic Sans MS', cursive;
+  --radius-button: 999px;
+  --radius-panel: 32px;
+  --radius-panel-small: 24px;
+  --radius-hero: 40px;
+  --radius-field: 12px;
+  --section-space: clamp(72px, 8vw, 116px);
+  --shadow-soft: 0 1px 2px rgba(16, 21, 28, 0.06), 0 10px 24px -12px rgba(16, 21, 28, 0.2);
 }
 * {
   box-sizing: border-box;
@@ -127,7 +136,7 @@ select:focus {
   min-height: 48px;
   padding: 14px 21px;
   border: 1px solid var(--navy);
-  border-radius: 2px;
+  border-radius: var(--radius-button);
   background: var(--navy);
   color: white;
   font-size: 13px;
@@ -141,7 +150,7 @@ select:focus {
   background: #213d69;
 }
 .button:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
 }
 .button-outline {
   background: transparent;
@@ -274,7 +283,7 @@ select:focus {
   padding: 11px 14px;
   background: var(--navy);
   color: white;
-  border-radius: 2px;
+  border-radius: var(--radius-button);
   font-weight: 600;
 }
 .main-nav .nav-work-link:hover {
@@ -1285,7 +1294,9 @@ textarea {
   right: -205px;
   border: 1px solid #ffffff2b;
   border-radius: 50%;
-  box-shadow: 0 0 0 75px #ffffff0b, 0 0 0 150px #ffffff08;
+  box-shadow:
+    0 0 0 75px #ffffff0b,
+    0 0 0 150px #ffffff08;
 }
 .blog-preview-top,
 .blog-preview-bottom {
@@ -1334,91 +1345,11 @@ textarea {
   min-height: calc(100svh - 190px);
   padding-block: 80px;
 }
-.work-contact .booking-copy h1 {
+.work-contact .booking-copy h2 {
   margin: 23px 0;
   font-size: clamp(45px, 4vw, 62px);
   line-height: 1.07;
   letter-spacing: -0.055em;
-}
-.work-comparison {
-  padding-block: clamp(58px, 7vw, 96px);
-  background: var(--paper);
-}
-.work-comparison-heading {
-  max-width: 640px;
-  margin-bottom: 36px;
-}
-.work-comparison-heading h2 {
-  margin: 18px 0;
-  font-size: clamp(34px, 3.5vw, 48px);
-  letter-spacing: -0.045em;
-}
-.work-comparison-heading p {
-  margin-bottom: 0;
-  color: var(--muted);
-  font-size: 15px;
-}
-.work-comparison-table-wrap {
-  overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: 2px;
-}
-.work-comparison-table {
-  width: 100%;
-  table-layout: fixed;
-  border-collapse: collapse;
-  text-align: left;
-}
-.work-comparison-table th {
-  padding: 24px 28px;
-  background: var(--ink);
-  color: var(--paper);
-  font-family: var(--mono);
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 1.5;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-}
-.work-comparison-table th:last-child {
-  background: var(--navy);
-}
-.work-comparison-table td {
-  padding: 24px 28px;
-  border-top: 1px solid var(--line);
-  color: var(--muted);
-  font-size: 16px;
-  line-height: 1.6;
-  vertical-align: middle;
-  overflow-wrap: anywhere;
-}
-.work-comparison-table td + td {
-  border-left: 1px solid var(--line);
-  color: var(--ink);
-  font-weight: 500;
-}
-.work-comparison-table tbody tr:nth-child(even) {
-  background: var(--tint);
-}
-.work-comparison-table tbody tr:last-child td:last-child {
-  color: var(--navy);
-  font-weight: 600;
-}
-
-@media (max-width: 600px) {
-  .work-comparison-heading {
-    margin-bottom: 28px;
-  }
-  .work-comparison-table th {
-    padding: 18px 14px;
-    font-size: 10px;
-    letter-spacing: 0.5px;
-  }
-  .work-comparison-table td {
-    padding: 18px 14px;
-    font-size: 14px;
-    line-height: 1.6;
-  }
 }
 .skip-link {
   position: fixed;
@@ -3105,8 +3036,26 @@ textarea {
     transform: none;
   }
 }
-.privacy-page { max-width: 800px; padding-block: 72px; }
-.privacy-page h1 { margin: 16px 0 28px; font-size: clamp(36px, 5vw, 56px); }
-.privacy-page h2 { margin: 36px 0 12px; font-size: 22px; }
-.privacy-page p { line-height: 1.75; margin-bottom: 16px; }
-.privacy-page a { text-decoration: underline; text-underline-offset: 3px; }
+.privacy-page,
+.disclaimer-page {
+  max-width: 800px;
+  padding-block: 72px;
+}
+.privacy-page h1,
+.disclaimer-page h1 {
+  margin: 16px 0 28px;
+  font-size: clamp(36px, 5vw, 56px);
+}
+.privacy-page h2 {
+  margin: 36px 0 12px;
+  font-size: 22px;
+}
+.privacy-page p,
+.disclaimer-page p {
+  line-height: 1.75;
+  margin-bottom: 16px;
+}
+.privacy-page a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

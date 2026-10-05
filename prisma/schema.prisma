@@ -48,8 +48,47 @@ model User {
   authoredEvents   ScheduleEvent[] @relation("CoachEvents")
   nutritionLogs    NutritionLog[]
   intake           ClientIntake?
+  billingAccounts  CoachingBillingAccount[]
 
   @@map("rossiter_user")
+}
+
+model CoachingBillingAccount {
+  id                      String                 @id @default(cuid())
+  userId                  String
+  user                    User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  livemode                Boolean
+  stripeCustomerId        String?                @unique
+  stripeCheckoutSessionId String?                @unique
+  checkoutAttemptId       String?
+  checkoutLockUntil       DateTime?
+  subscriptions           CoachingSubscription[]
+  createdAt               DateTime               @default(now())
+  updatedAt               DateTime               @updatedAt
+
+  @@unique([userId, livemode])
+  @@map("rossiter_coaching_billing_account")
+}
+
+model CoachingSubscription {
+  id                   String                 @id @default(cuid())
+  billingAccountId     String
+  billingAccount       CoachingBillingAccount @relation(fields: [billingAccountId], references: [id], onDelete: Cascade)
+  stripeSubscriptionId String                 @unique
+  stripePriceId        String
+  status               String
+  amountCents          Int
+  currency             String
+  interval             String
+  intervalCount        Int
+  currentPeriodEnd     DateTime
+  cancelAtPeriodEnd    Boolean                @default(false)
+  stripeCreatedAt      DateTime
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+
+  @@index([billingAccountId, stripeCreatedAt])
+  @@map("rossiter_coaching_subscription")
 }
 
 enum CoachingService {

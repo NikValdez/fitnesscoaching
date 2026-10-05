@@ -15,6 +15,7 @@ import { Route as AccountRouteImport } from './routes/account'
 import { Route as BlogRouteImport } from './routes/blog'
 import { Route as CoachRouteImport } from './routes/coach'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as DisclaimerRouteImport } from './routes/disclaimer'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as PortalRouteImport } from './routes/portal'
@@ -23,8 +24,12 @@ import { Route as ProgramRouteImport } from './routes/program'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as WorkWithMeRouteImport } from './routes/work-with-me'
 import { Route as ApiCheckoutRouteImport } from './routes/api/checkout'
+import { Route as BlogIndexRouteImport } from './routes/blog.index'
+import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as PurchaseSuccessRouteImport } from './routes/purchase.success'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ApiCoachingCheckoutRouteImport } from './routes/api/coaching/checkout'
+import { Route as ApiCoachingPortalRouteImport } from './routes/api/coaching/portal'
 import { Route as ApiProgramDownloadRouteImport } from './routes/api/program/download'
 import { Route as ApiStripeWebhookRouteImport } from './routes/api/stripe/webhook'
 
@@ -56,6 +61,11 @@ const CoachRoute = CoachRouteImport.update({
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DisclaimerRoute = DisclaimerRouteImport.update({
+  id: '/disclaimer',
+  path: '/disclaimer',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -98,6 +108,16 @@ const ApiCheckoutRoute = ApiCheckoutRouteImport.update({
   path: '/api/checkout',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BlogIndexRoute = BlogIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => BlogRoute,
+} as any)
+const BlogSlugRoute = BlogSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => BlogRoute,
+} as any)
 const PurchaseSuccessRoute = PurchaseSuccessRouteImport.update({
   id: '/purchase/success',
   path: '/purchase/success',
@@ -106,6 +126,16 @@ const PurchaseSuccessRoute = PurchaseSuccessRouteImport.update({
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCoachingCheckoutRoute = ApiCoachingCheckoutRouteImport.update({
+  id: '/api/coaching/checkout',
+  path: '/api/coaching/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCoachingPortalRoute = ApiCoachingPortalRouteImport.update({
+  id: '/api/coaching/portal',
+  path: '/api/coaching/portal',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiProgramDownloadRoute = ApiProgramDownloadRouteImport.update({
@@ -123,9 +153,10 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/69-easy': typeof R69EasyRoute
   '/account': typeof AccountRoute
-  '/blog': typeof BlogRoute
+  '/blog': typeof BlogRouteWithChildren
   '/coach': typeof CoachRoute
   '/dashboard': typeof DashboardRoute
+  '/disclaimer': typeof DisclaimerRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/portal': typeof PortalRoute
@@ -134,8 +165,12 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/work-with-me': typeof WorkWithMeRoute
   '/api/checkout': typeof ApiCheckoutRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/purchase/success': typeof PurchaseSuccessRoute
+  '/blog/': typeof BlogIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/coaching/checkout': typeof ApiCoachingCheckoutRoute
+  '/api/coaching/portal': typeof ApiCoachingPortalRoute
   '/api/program/download': typeof ApiProgramDownloadRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
 }
@@ -143,9 +178,9 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/69-easy': typeof R69EasyRoute
   '/account': typeof AccountRoute
-  '/blog': typeof BlogRoute
   '/coach': typeof CoachRoute
   '/dashboard': typeof DashboardRoute
+  '/disclaimer': typeof DisclaimerRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/portal': typeof PortalRoute
@@ -154,8 +189,12 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/work-with-me': typeof WorkWithMeRoute
   '/api/checkout': typeof ApiCheckoutRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/purchase/success': typeof PurchaseSuccessRoute
+  '/blog': typeof BlogIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/coaching/checkout': typeof ApiCoachingCheckoutRoute
+  '/api/coaching/portal': typeof ApiCoachingPortalRoute
   '/api/program/download': typeof ApiProgramDownloadRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
 }
@@ -164,9 +203,10 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/69-easy': typeof R69EasyRoute
   '/account': typeof AccountRoute
-  '/blog': typeof BlogRoute
+  '/blog': typeof BlogRouteWithChildren
   '/coach': typeof CoachRoute
   '/dashboard': typeof DashboardRoute
+  '/disclaimer': typeof DisclaimerRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/portal': typeof PortalRoute
@@ -175,8 +215,12 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/work-with-me': typeof WorkWithMeRoute
   '/api/checkout': typeof ApiCheckoutRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/purchase/success': typeof PurchaseSuccessRoute
+  '/blog/': typeof BlogIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/coaching/checkout': typeof ApiCoachingCheckoutRoute
+  '/api/coaching/portal': typeof ApiCoachingPortalRoute
   '/api/program/download': typeof ApiProgramDownloadRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
 }
@@ -189,6 +233,7 @@ export interface FileRouteTypes {
     | '/blog'
     | '/coach'
     | '/dashboard'
+    | '/disclaimer'
     | '/login'
     | '/onboarding'
     | '/portal'
@@ -197,8 +242,12 @@ export interface FileRouteTypes {
     | '/signup'
     | '/work-with-me'
     | '/api/checkout'
+    | '/blog/$slug'
     | '/purchase/success'
+    | '/blog/'
     | '/api/auth/$'
+    | '/api/coaching/checkout'
+    | '/api/coaching/portal'
     | '/api/program/download'
     | '/api/stripe/webhook'
   fileRoutesByTo: FileRoutesByTo
@@ -206,9 +255,9 @@ export interface FileRouteTypes {
     | '/'
     | '/69-easy'
     | '/account'
-    | '/blog'
     | '/coach'
     | '/dashboard'
+    | '/disclaimer'
     | '/login'
     | '/onboarding'
     | '/portal'
@@ -217,8 +266,12 @@ export interface FileRouteTypes {
     | '/signup'
     | '/work-with-me'
     | '/api/checkout'
+    | '/blog/$slug'
     | '/purchase/success'
+    | '/blog'
     | '/api/auth/$'
+    | '/api/coaching/checkout'
+    | '/api/coaching/portal'
     | '/api/program/download'
     | '/api/stripe/webhook'
   id:
@@ -229,6 +282,7 @@ export interface FileRouteTypes {
     | '/blog'
     | '/coach'
     | '/dashboard'
+    | '/disclaimer'
     | '/login'
     | '/onboarding'
     | '/portal'
@@ -237,8 +291,12 @@ export interface FileRouteTypes {
     | '/signup'
     | '/work-with-me'
     | '/api/checkout'
+    | '/blog/$slug'
     | '/purchase/success'
+    | '/blog/'
     | '/api/auth/$'
+    | '/api/coaching/checkout'
+    | '/api/coaching/portal'
     | '/api/program/download'
     | '/api/stripe/webhook'
   fileRoutesById: FileRoutesById
@@ -247,9 +305,10 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   R69EasyRoute: typeof R69EasyRoute
   AccountRoute: typeof AccountRoute
-  BlogRoute: typeof BlogRoute
+  BlogRoute: typeof BlogRouteWithChildren
   CoachRoute: typeof CoachRoute
   DashboardRoute: typeof DashboardRoute
+  DisclaimerRoute: typeof DisclaimerRoute
   LoginRoute: typeof LoginRoute
   OnboardingRoute: typeof OnboardingRoute
   PortalRoute: typeof PortalRoute
@@ -260,6 +319,8 @@ export interface RootRouteChildren {
   ApiCheckoutRoute: typeof ApiCheckoutRoute
   PurchaseSuccessRoute: typeof PurchaseSuccessRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiCoachingCheckoutRoute: typeof ApiCoachingCheckoutRoute
+  ApiCoachingPortalRoute: typeof ApiCoachingPortalRoute
   ApiProgramDownloadRoute: typeof ApiProgramDownloadRoute
   ApiStripeWebhookRoute: typeof ApiStripeWebhookRoute
 }
@@ -306,6 +367,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/disclaimer': {
+      id: '/disclaimer'
+      path: '/disclaimer'
+      fullPath: '/disclaimer'
+      preLoaderRoute: typeof DisclaimerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -364,6 +432,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCheckoutRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/blog/': {
+      id: '/blog/'
+      path: '/'
+      fullPath: '/blog/'
+      preLoaderRoute: typeof BlogIndexRouteImport
+      parentRoute: typeof BlogRoute
+    }
+    '/blog/$slug': {
+      id: '/blog/$slug'
+      path: '/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof BlogSlugRouteImport
+      parentRoute: typeof BlogRoute
+    }
     '/purchase/success': {
       id: '/purchase/success'
       path: '/purchase/success'
@@ -376,6 +458,20 @@ declare module '@tanstack/react-router' {
       path: '/api/auth/$'
       fullPath: '/api/auth/$'
       preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/coaching/checkout': {
+      id: '/api/coaching/checkout'
+      path: '/api/coaching/checkout'
+      fullPath: '/api/coaching/checkout'
+      preLoaderRoute: typeof ApiCoachingCheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/coaching/portal': {
+      id: '/api/coaching/portal'
+      path: '/api/coaching/portal'
+      fullPath: '/api/coaching/portal'
+      preLoaderRoute: typeof ApiCoachingPortalRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/program/download': {
@@ -395,13 +491,26 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface BlogRouteChildren {
+  BlogSlugRoute: typeof BlogSlugRoute
+  BlogIndexRoute: typeof BlogIndexRoute
+}
+
+const BlogRouteChildren: BlogRouteChildren = {
+  BlogSlugRoute: BlogSlugRoute,
+  BlogIndexRoute: BlogIndexRoute,
+}
+
+const BlogRouteWithChildren = BlogRoute._addFileChildren(BlogRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   R69EasyRoute: R69EasyRoute,
   AccountRoute: AccountRoute,
-  BlogRoute: BlogRoute,
+  BlogRoute: BlogRouteWithChildren,
   CoachRoute: CoachRoute,
   DashboardRoute: DashboardRoute,
+  DisclaimerRoute: DisclaimerRoute,
   LoginRoute: LoginRoute,
   OnboardingRoute: OnboardingRoute,
   PortalRoute: PortalRoute,
@@ -412,6 +521,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiCheckoutRoute: ApiCheckoutRoute,
   PurchaseSuccessRoute: PurchaseSuccessRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiCoachingCheckoutRoute: ApiCoachingCheckoutRoute,
+  ApiCoachingPortalRoute: ApiCoachingPortalRoute,
   ApiProgramDownloadRoute: ApiProgramDownloadRoute,
   ApiStripeWebhookRoute: ApiStripeWebhookRoute,
 }

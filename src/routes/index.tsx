@@ -1,17 +1,12 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { Fragment, type CSSProperties } from 'react'
 import { SiteFooter, SiteHeader } from '../components/site-layout'
+import { wellthDefinition, wellthParagraphs } from '../content/wellth'
 import homeStyles from '../home.css?url'
 
 export const Route = createFileRoute('/')({
   head: () => ({
-    links: [
-      { rel: 'stylesheet', href: homeStyles },
-      {
-        rel: 'stylesheet',
-        href: 'https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..600&family=Gochi+Hand&display=swap',
-      },
-    ],
+    links: [{ rel: 'stylesheet', href: homeStyles }],
     meta: [
       { title: 'Hi, I’m Steve. — Steve Rossiter' },
       { name: 'description', content: 'My mission is to help you feel great.' },
@@ -72,12 +67,6 @@ function Landing() {
               </span>
               .
             </p>
-            <div className="home-actions">
-              <WorkLink />
-              <a className="home-button home-button-ghost" href="#story">
-                Read my story
-              </a>
-            </div>
           </div>
           <figure className="home-hero-figure">
             <img
@@ -125,12 +114,12 @@ function Landing() {
             philosophy.
           </p>
           <p className="home-kicker">
-            And now I feel a responsibility to{' '}
+            And now I feel a{' '}
             <span className="home-mark home-mark-scroll">
-              share it
+              responsibility
               <Underline />
-            </span>
-            .
+            </span>{' '}
+            to share it.
           </p>
         </section>
 
@@ -153,9 +142,6 @@ function Landing() {
                 mano—building real, lasting wellth (I always thought it was mono e mono until just
                 now).
               </p>
-              <Link className="home-text-link" to="/work-with-me">
-                Work with me <span className="home-arrow">→</span>
-              </Link>
             </div>
           </div>
 
@@ -168,15 +154,11 @@ function Landing() {
               </ul>
             </div>
             <div className="home-feature-copy">
-              <h2>What is wellth, you ask?</h2>
-              <p>
-                It’s having a strong, capable body. The ability to move well and pain-free. A calm
-                nervous system. Being present and at peace. Joy, playfulness, silliness. Community.
-                Living in gratitude. Living in alignment. It’s that warm, fuzzy feeling. The
-                combination of a youthful spirit and mature wisdom. It’s having sustainable energy
-                so you can handle your responsibilities <em>and</em> meet the demands of whatever
-                life throws at you.
-              </p>
+              <h2>What is wellth?</h2>
+              <p>{wellthDefinition}</p>
+              {wellthParagraphs.map((paragraph) => (
+                <p key={paragraph}>{paragraph}</p>
+              ))}
             </div>
           </div>
         </section>
@@ -188,7 +170,12 @@ function Landing() {
               feel great
               <Underline />
             </span>{' '}
-            and enjoy your life.
+            and{' '}
+            <span className="home-mark home-mark-scroll">
+              enjoy your life
+              <Underline />
+            </span>
+            .
           </p>
         </section>
 

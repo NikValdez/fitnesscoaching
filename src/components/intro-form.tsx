@@ -16,8 +16,8 @@ export function IntroForm() {
       <h3>You’ve taken the first step.</h3>
       {notificationSent ? (
         <p>
-          Your message has been sent. Steve will get back to you by email about coaching in Los
-          Angeles.
+          Your message has been sent. Steve will get back to you by email about your coaching
+          options.
         </p>
       ) : (
         <p role="alert">
@@ -53,7 +53,7 @@ export function IntroForm() {
         }
       }}
     >
-      <p className="eyebrow">Contact Steve about coaching in LA</p>
+      <p className="eyebrow">Contact</p>
       <div className="field-row">
         <label>
           Name
@@ -78,14 +78,39 @@ export function IntroForm() {
           />
         </label>
       </div>
-      <input type="hidden" name="interest" value="In-person coaching" />
+      <fieldset className="coaching-interest">
+        <legend>What kind of coaching?</legend>
+        <div className="coaching-choices">
+          {[
+            { value: 'Online coaching', label: 'Online', detail: 'From anywhere' },
+            { value: 'In-person coaching', label: 'In person', detail: 'Los Angeles' },
+          ].map((choice) => (
+            <label className="coaching-choice" key={choice.value}>
+              <input
+                type="radio"
+                name="interest"
+                value={choice.value}
+                aria-label={choice.value}
+                required
+              />
+              <span className="coaching-choice-copy">
+                <span>{choice.label}</span>
+                <small>{choice.detail}</small>
+              </span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
       <label>
-        Anything I should know? <span className="optional">Optional</span>
+        <span className="intro-notes-heading">
+          <span>Tell me about yourself and your goals.</span>
+          <span className="optional">Optional</span>
+        </span>
         <textarea
           name="notes"
           rows={3}
           maxLength={2000}
-          placeholder="Your goals, where you’re based in LA, and your availability…"
+          placeholder="The more detail the better!"
         />
       </label>
       <label className="honeypot" aria-hidden="true">
@@ -108,7 +133,6 @@ export function IntroForm() {
           </>
         )}
       </button>
-      <p className="form-note">For in-person coaching in Los Angeles. Steve will reply by email.</p>
     </form>
   )
 }

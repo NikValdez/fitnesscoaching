@@ -22,10 +22,10 @@ vi.mock('../src/lib/db.server', () => ({
 vi.mock('stripe', async () => {
   const actual = await vi.importActual<typeof import('stripe')>('stripe')
   return {
-    default: class {
-      checkout = {
+    default: class extends actual.default {
+      checkout: Stripe['checkout'] = {
         sessions: { create: mocks.create, retrieve: mocks.retrieve, expire: mocks.expire },
-      }
+      } as unknown as Stripe['checkout']
       webhooks = new actual.default('sk_test_local_fixture').webhooks
     },
   }
