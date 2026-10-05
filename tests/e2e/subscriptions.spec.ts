@@ -9,10 +9,12 @@ test('pricing and the application action share one panel without online signup',
   await page.goto('/work-with-me#online-coaching')
   await waitForHydration(page)
   const offering = page.locator('#online-coaching')
-  const processHeading = page.locator('.work-process-heading')
   await expect(offering.getByRole('link', { name: 'Apply for coaching' })).toBeVisible()
   await expect(offering.locator('.coaching-plan-badge')).toHaveCount(0)
-  await expect(processHeading.locator('#online-coaching')).toBeVisible()
+  await expect(page.locator('.work-process #online-coaching')).toBeVisible()
+  await expect(offering.locator('.coaching-plan-terms')).toHaveText(
+    'Starts with a free 30-minute call. Billed monthly until you cancel.',
+  )
   await expect(offering.locator('.coaching-plan-price')).toHaveText('$1,000 / month')
   await expect(offering.locator('.coaching-plan-price')).not.toContainText('USD')
   await expect(page.locator('.online-coaching')).toHaveCount(0)
@@ -34,9 +36,14 @@ test('pricing fits a mobile viewport and links to the application form', async (
     content: document.documentElement.scrollWidth,
   }))
   expect(viewport.content).toBeLessThanOrEqual(viewport.width)
+  // Phones read the process before the price.
+  const steps = await page.locator('.work-process-steps').boundingBox()
+  const pricing = await page.locator('#online-coaching').boundingBox()
+  expect(pricing!.y).toBeGreaterThan(steps!.y + steps!.height)
   await page.getByRole('link', { name: 'Apply for coaching', exact: true }).click()
   await expect(page).toHaveURL(/#work-title$/)
   await expect(page.getByRole('heading', { name: 'Wellth Management', exact: true })).toBeVisible()
+  await expect(page.getByRole('radio', { name: 'Online coaching' })).toBeChecked()
 })
 
 test('checkout and billing management reject anonymous and cross-origin requests', async ({
@@ -65,11 +72,13 @@ test('yearly billing shows 20% savings and stays selected after reloading', asyn
   const offering = page.locator('#online-coaching')
   const billing = offering.getByRole('group', { name: 'Billing frequency' })
   await billing.getByRole('button', { name: 'Yearly Save 20%' }).click()
-  await expect(offering.locator('.coaching-plan-price')).toHaveText('$9,600 / year')
+  await expect(offering.locator('.coaching-plan-price')).toHaveText('$800 / month')
   await expect(offering.locator('.coaching-plan-savings')).toHaveText(
-    'Equivalent to $800 / month. Save $2,400 per year.',
+    '$9,600 billed once a year. Save $2,400.',
   )
-  await expect(offering.locator('.coaching-plan-terms')).toContainText('Billed in full once a year')
+  await expect(offering.locator('.coaching-plan-terms')).toContainText(
+    'Renews annually until you cancel.',
+  )
   await expect(billing.getByRole('button', { name: 'Yearly Save 20%' })).toHaveAttribute(
     'aria-pressed',
     'true',
@@ -77,7 +86,7 @@ test('yearly billing shows 20% savings and stays selected after reloading', asyn
   await expect(page).toHaveURL(/billing=yearly/)
   await page.reload()
   await waitForHydration(page)
-  await expect(offering.locator('.coaching-plan-price')).toHaveText('$9,600 / year')
+  await expect(offering.locator('.coaching-plan-price')).toHaveText('$800 / month')
   await expect(billing.getByRole('button', { name: 'Yearly Save 20%' })).toHaveAttribute(
     'aria-pressed',
     'true',

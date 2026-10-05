@@ -9,7 +9,7 @@ export const Route = createRootRoute({
     meta: [
       { charSet: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'Steve Rossiter - Just 1% better every day.' },
+      { title: 'Steve Rossiter | Wellth Management' },
       {
         name: 'description',
         content:

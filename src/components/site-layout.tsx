@@ -45,7 +45,6 @@ export function SiteFooter() {
     <footer className="site-footer">
       <div className="container footer-inner">
         <Brand />
-        <span className="eyebrow">One-on-one coaching in Los Angeles</span>
         <SocialLinks className="footer-social" />
         <div className="footer-links">
           <Link to="/">Home</Link>

@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import {
   coachingBillingPlans,
   coachingPriceLabel,
@@ -15,6 +16,8 @@ export function CoachingPricing({
   showMembershipBadge = true,
   disabled = false,
   manageOnline = false,
+  action,
+  note,
 }: {
   billing: CoachingBillingCadence
   price?: { amountCents: number; currency: string }
@@ -23,10 +26,14 @@ export function CoachingPricing({
   showMembershipBadge?: boolean
   disabled?: boolean
   manageOnline?: boolean
+  action?: ReactNode
+  note?: string
 }) {
   const plan = coachingBillingPlans[billing]
   const amount = price?.amountCents ?? plan.amountCents
   const currency = price?.currency ?? onlineCoachingPlan.currency
+  // While choosing a plan, yearly is shown per month so both options compare like for like.
+  const perMonth = showBillingOptions && billing === 'yearly'
 
   return (
     <>
@@ -53,18 +60,20 @@ export function CoachingPricing({
         </div>
       )}
       <p className="coaching-plan-price">
-        {coachingPriceLabel(amount, currency)}
-        <span> / {plan.interval}</span>
+        {coachingPriceLabel(perMonth ? amount / 12 : amount, currency)}
+        <span> / {perMonth ? coachingBillingPlans.monthly.interval : plan.interval}</span>
       </p>
-      {showBillingOptions && billing === 'yearly' && (
+      {perMonth && (
         <p className="coaching-plan-savings">
-          Equivalent to {coachingPriceLabel(amount / 12, currency)} / month. Save{' '}
-          {coachingPriceLabel(yearlyCoachingSavings, currency)} per year.
+          {coachingPriceLabel(amount, currency)} billed once a year. Save{' '}
+          {coachingPriceLabel(yearlyCoachingSavings, currency)}.
         </p>
       )}
+      {action}
       <p className="coaching-plan-terms">
+        {note && <span className="coaching-plan-note">{note} </span>}
         {billing === 'yearly'
-          ? 'Billed in full once a year. Renews annually until you cancel.'
+          ? 'Renews annually until you cancel.'
           : 'Billed monthly until you cancel.'}
         {manageOnline && ' Manage your subscription online.'}
       </p>

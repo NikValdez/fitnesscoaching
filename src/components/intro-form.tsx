@@ -3,7 +3,13 @@ import { ArrowUpRight, Check, LoaderCircle } from 'lucide-react'
 import { requestIntro } from '../lib/functions'
 import { enquirySchema } from '../lib/validation'
 
-export function IntroForm() {
+export function IntroForm({
+  interest,
+  onInterestChange,
+}: {
+  interest: string
+  onInterestChange: (interest: string) => void
+}) {
   const [status, setStatus] = useState<'idle' | 'saving' | 'success'>('idle')
   const [error, setError] = useState('')
   const [notificationSent, setNotificationSent] = useState(true)
@@ -47,6 +53,7 @@ export function IntroForm() {
           setNotificationSent(result.notificationSent)
           setStatus('success')
           form.reset()
+          onInterestChange('')
         } catch {
           setError('Your request wasn’t saved. Please try again shortly.')
           setStatus('idle')
@@ -91,6 +98,8 @@ export function IntroForm() {
                 name="interest"
                 value={choice.value}
                 aria-label={choice.value}
+                checked={interest === choice.value}
+                onChange={(event) => onInterestChange(event.target.value)}
                 required
               />
               <span className="coaching-choice-copy">

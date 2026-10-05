@@ -1,5 +1,6 @@
+import { useState } from 'react'
 import { createFileRoute, type SearchSchemaInput } from '@tanstack/react-router'
-import { ArrowRight, ArrowUpRight } from 'lucide-react'
+import { ArrowDown, ArrowRight } from 'lucide-react'
 import { IntroForm } from '../components/intro-form'
 import { SiteLayout } from '../components/site-layout'
 import { CoachingPricing } from '../components/coaching-pricing'
@@ -70,6 +71,7 @@ function WorkWithMePage() {
   const data = Route.useLoaderData()
   const search = Route.useSearch()
   const navigate = Route.useNavigate()
+  const [interest, setInterest] = useState('')
   return (
     <SiteLayout className="marketing-page">
       <section className="work-intro" aria-labelledby="work-intro-title">
@@ -146,29 +148,6 @@ function WorkWithMePage() {
             <h2 id="work-process-title">
               <em>Ok, buddy, how does it work?</em>
             </h2>
-            <section
-              className="coaching-pricing-panel"
-              id="online-coaching"
-              aria-label="Online coaching pricing"
-            >
-              <CoachingPricing
-                billing={search.billing}
-                showMembershipBadge={false}
-                price={data.prices[search.billing] ?? undefined}
-                onBillingChange={(billing) => {
-                  void navigate({
-                    search: { ...search, billing },
-                    hash: 'online-coaching',
-                    replace: true,
-                    resetScroll: false,
-                    hashScrollIntoView: false,
-                  })
-                }}
-              />
-              <a className="button coaching-pricing-apply" href="#work-title">
-                Apply for coaching <ArrowUpRight size={17} aria-hidden="true" />
-              </a>
-            </section>
           </div>
           <ol className="work-process-steps">
             {coachingSteps.map((step, index) => (
@@ -183,6 +162,36 @@ function WorkWithMePage() {
               </li>
             ))}
           </ol>
+          <section
+            className="coaching-pricing-panel"
+            id="online-coaching"
+            aria-label="Online coaching pricing"
+          >
+            <CoachingPricing
+              billing={search.billing}
+              showMembershipBadge={false}
+              price={data.prices[search.billing] ?? undefined}
+              onBillingChange={(billing) => {
+                void navigate({
+                  search: { ...search, billing },
+                  hash: 'online-coaching',
+                  replace: true,
+                  resetScroll: false,
+                  hashScrollIntoView: false,
+                })
+              }}
+              action={
+                <a
+                  className="button coaching-pricing-apply"
+                  href="#work-title"
+                  onClick={() => setInterest('Online coaching')}
+                >
+                  Apply for coaching <ArrowDown size={17} aria-hidden="true" />
+                </a>
+              }
+              note="Starts with a free 30-minute call."
+            />
+          </section>
         </div>
       </section>
       <section className="booking-section work-contact" aria-labelledby="work-title">
@@ -195,7 +204,7 @@ function WorkWithMePage() {
               and let’s chat!
             </p>
           </div>
-          <IntroForm />
+          <IntroForm interest={interest} onInterestChange={setInterest} />
         </div>
       </section>
     </SiteLayout>

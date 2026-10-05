@@ -8,7 +8,7 @@ export const Route = createFileRoute('/')({
   head: () => ({
     links: [{ rel: 'stylesheet', href: homeStyles }],
     meta: [
-      { title: 'Hi, I’m Steve. — Steve Rossiter' },
+      { title: 'Steve Rossiter | Wellth Management' },
       { name: 'description', content: 'My mission is to help you feel great.' },
     ],
   }),

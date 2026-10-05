@@ -14,6 +14,15 @@
   gap: clamp(40px, 7vw, 100px);
 }
 
+/* Pricing follows the steps in the markup so phones read the process before the price. */
+.work-process-grid {
+  grid-template-areas:
+    'heading steps'
+    'pricing steps';
+  grid-template-rows: auto 1fr;
+  row-gap: 0;
+}
+
 .work-intro-heading > .eyebrow {
   margin-bottom: 24px;
   color: var(--navy);
@@ -108,9 +117,13 @@
   border-top: 1px solid var(--line);
 }
 
+.work-process-heading {
+  grid-area: heading;
+}
+
 .work-process-heading h2 {
   max-width: 460px;
-  margin: 0 0 32px;
+  margin: 0;
   font-family: var(--font-display);
   font-size: clamp(44px, 5vw, 72px);
   font-weight: 500;
@@ -123,6 +136,7 @@
 }
 
 .work-process-steps {
+  grid-area: steps;
   padding: 0;
   margin: 0;
   list-style: none;
@@ -180,8 +194,21 @@
     font-size: clamp(48px, 10vw, 64px);
   }
 
+  .work-process-grid {
+    grid-template-areas:
+      'heading'
+      'steps'
+      'pricing';
+    grid-template-rows: none;
+  }
+
   .work-process-heading h2 {
     font-size: clamp(42px, 9vw, 60px);
+  }
+
+  .work-process-grid > .coaching-pricing-panel {
+    position: static;
+    margin-top: 0;
   }
 
   .work-process-steps li {
@@ -273,6 +300,9 @@
 }
 
 .coaching-pricing-panel {
+  grid-area: pricing;
+  position: sticky;
+  top: 100px;
   margin-top: 40px;
   padding-top: 28px;
   border-top: 1px solid var(--line);
@@ -337,12 +367,12 @@
 }
 
 .coaching-pricing-panel .coaching-plan-savings {
-  margin-bottom: 12px;
+  margin: 0;
   color: var(--navy);
 }
 
 .coaching-pricing-panel .coaching-plan-terms {
-  margin: 0;
+  margin: 14px 0 0;
   padding: 0;
   border: 0;
   max-width: 340px;
@@ -350,7 +380,13 @@
 }
 
 .marketing-page .coaching-pricing-apply {
+  display: flex;
+  width: fit-content;
   margin-top: 28px;
+}
+
+.coaching-plan-note {
+  color: var(--ink);
 }
 
 .coaching-plan-heading {

@@ -1,17 +1,18 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { ArrowUp, ArrowDown, ArrowUpRight } from 'lucide-react'
-import { ShopLayout, shopLinks } from '../components/shop-layout'
+import { SiteLayout } from '../components/site-layout'
 import plan from '../content/69-easy.json'
 import programStyles from '../program.css?url'
 
 export const Route = createFileRoute('/69-easy')({
   head: () => ({
-    links: [...shopLinks, { rel: 'stylesheet', href: programStyles }],
+    links: [{ rel: 'stylesheet', href: programStyles }],
     meta: [
       { title: '69 easy — Just 1% better every day | Steve Rossiter' },
       {
         name: 'description',
-        content: 'Read Steve Rossiter’s free 69 easy plan: 69 days of small, flexible habits to help you feel great. Explore the full guide and get in touch about coaching.',
+        content:
+          'Read Steve Rossiter’s free 69 easy plan: 69 days of small, flexible habits to help you feel great. Explore the full guide and get in touch about coaching.',
       },
     ],
   }),
@@ -30,7 +31,7 @@ const sections = [
 
 function ProgramPage() {
   return (
-    <ShopLayout>
+    <SiteLayout className="marketing-page easy-site">
       <div className="container easy-page" id="top">
         <article aria-labelledby="easy-title">
           <header className="easy-hero">
@@ -158,7 +159,7 @@ function ProgramPage() {
           </div>
         </article>
         <div className="easy-end">
-          <Link className="button button-small" to="/work-with-me">
+          <Link className="button" to="/work-with-me">
             Work With Me <ArrowUpRight size={16} aria-hidden="true" />
           </Link>
           <a className="text-link" href="#top">
@@ -166,6 +167,6 @@ function ProgramPage() {
           </a>
         </div>
       </div>
-    </ShopLayout>
+    </SiteLayout>
   )
 }

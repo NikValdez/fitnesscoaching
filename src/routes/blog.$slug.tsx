@@ -1,6 +1,7 @@
 import { createFileRoute, Link, notFound } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
-import { blogPosts, blogReadingMinutes } from '../content/blog'
+import { blogPosts } from '../content/blog'
+import { BlogContent } from '../components/blog-content'
 
 export const Route = createFileRoute('/blog/$slug')({
   loader: ({ params }) => {
@@ -42,34 +43,13 @@ function BlogPostPage() {
       <article className="blog-article" aria-labelledby="blog-post-title">
         <header className="blog-article-heading">
           <h1 id="blog-post-title">{post.title}</h1>
-          <div className="blog-meta">
-            <span>{blogReadingMinutes(post)} min read</span>
-          </div>
         </header>
         <div className="blog-article-body">
-          <div className="blog-intro">
-            {post.intro.map((paragraph, index) => (
-              <p key={index}>{paragraph}</p>
-            ))}
-          </div>
-          <div className="blog-separator" role="separator">
-            {post.separator}
-          </div>
-          <figure className="blog-quotation">
-            <figcaption className="eyebrow">{post.quoteAuthor}</figcaption>
-            <blockquote>
-              {post.quote.map((paragraph, index) => (
-                <p key={index}>{paragraph}</p>
-              ))}
-            </blockquote>
-          </figure>
+          <BlogContent blocks={post.body} />
           <footer className="blog-article-footer">
             <Link className="text-link" to="/blog">
               <ArrowLeft size={16} aria-hidden="true" /> All posts
             </Link>
-            <span className="blog-signature" aria-hidden="true">
-              Steve.
-            </span>
           </footer>
         </div>
       </article>

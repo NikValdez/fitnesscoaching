@@ -62,6 +62,18 @@ export function SocialLinks({ className, onClick }: SocialLinksProps) {
           <path d="m10 9 5 3-5 3z" />
         </svg>
       </a>
+      <a
+        href="https://www.facebook.com/profile.php?id=61595255605683"
+        aria-label="Steve Rossiter on Facebook"
+        title="Facebook"
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={onClick}
+      >
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+          <path d="M14 21v-8h3l.5-4H14V7c0-1 .3-2 2-2h2V1.2C17.6 1.1 16.3 1 14.9 1 12 1 10 2.8 10 6v3H7v4h3v8z" />
+        </svg>
+      </a>
     </div>
   )
 }

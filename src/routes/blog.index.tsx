@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { ArrowUpRight } from 'lucide-react'
-import { blogPosts, blogReadingMinutes } from '../content/blog'
+import { blogPosts } from '../content/blog'
 
 export const Route = createFileRoute('/blog/')({
   component: BlogPage,
@@ -10,31 +10,20 @@ function BlogPage() {
   return (
     <div className="container blog-index">
       <header className="blog-index-heading">
-        <span className="eyebrow">The blog / Notes from Steve</span>
-        <h1>
-          Better days,
-          <br />
-          one thought at a time.
-        </h1>
-        <p>Thoughts on training, presence, and enjoying the process.</p>
+        <span className="eyebrow">The blog</span>
+        <h1>Helping you feel great.</h1>
+        <p>Hinged thoughts about wellness and life.</p>
       </header>
       <section className="blog-posts" aria-label="Blog posts">
-        {blogPosts.map((post, index) => (
+        {blogPosts.map((post) => (
           <article className="blog-card" key={post.slug} aria-labelledby={`post-${post.slug}`}>
             <div className="blog-card-copy">
-              <span className="eyebrow">
-                Note {String(index + 1).padStart(2, '0')} / Training &amp; perspective
-              </span>
               <h2 id={`post-${post.slug}`}>
                 <Link to="/blog/$slug" params={{ slug: post.slug }}>
                   {post.title}
                 </Link>
               </h2>
               <p>{post.excerpt}</p>
-              <div className="blog-meta">
-                <span>{post.author}</span>
-                <span>{blogReadingMinutes(post)} min read</span>
-              </div>
               <Link
                 className="button"
                 to="/blog/$slug"
@@ -45,9 +34,10 @@ function BlogPage() {
               </Link>
             </div>
             <div className="blog-card-quote" aria-hidden="true">
-              <span className="eyebrow">A thought to take into your next set</span>
               <p>“{post.featuredQuote}”</p>
-              <span className="blog-card-attribution">— {post.quoteAuthor}</span>
+              {post.quoteAuthor && (
+                <span className="blog-card-attribution">— {post.quoteAuthor}</span>
+              )}
             </div>
           </article>
         ))}
