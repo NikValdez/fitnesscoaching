@@ -106,6 +106,15 @@ model ContentScratch {
   @@map("rossiter_content_scratch")
 }
 
+model ContentPad {
+  id        String   @id
+  body      String   @default("")
+  revision  Int      @default(0)
+  updatedAt DateTime @updatedAt
+
+  @@map("rossiter_content_pad")
+}
+
 model CoachingBillingAccount {
   id                      String                 @id @default(cuid())
   userId                  String

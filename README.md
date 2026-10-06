@@ -55,11 +55,11 @@ The additive `202610060001_content_studio` migration creates `rossiter_content_b
 
 ## Ideas scratch pad
 
-The **Ideas** tab at `/admin/ideas` is a shared, admin-only scratch pad. Save freeform thoughts, search saved ideas, and edit or delete them. **Create card** lets you choose a title and format, then creates a Concepts card using the original text as its notes. The original idea stays in the scratch pad with a link to the board. Repeated conversion requests return the same card. Editing or deleting a scratch idea does not change its existing card; deleting its card allows a fresh conversion later.
+The **Ideas** tab at `/admin/ideas` is one shared, admin-only scratch pad. Writing saves automatically after a short pause, on blur, and before navigating to another page. Reloading or returning restores the saved text, including blank text and formatting. Saving never clears the editor or creates individual idea cards. The full-width writing area remains available on desktop and mobile.
 
-The scratch pad checks each idea's revision before edits and deletions, so an outdated tab cannot replace another admin's writing. Refresh ideas to load the latest revision while keeping an open draft. Apply the additive `202610060002_content_scratch` migration before deploying. Admin login, navigation, dialogs, the board, and Ideas share the public site's typography, colors, and rounded panels.
+Saves run sequentially while typing stays enabled. The status shows pending, saving, saved, and failed changes. Failed writes retain the local text and can be retried; reconnecting retries automatically. If another admin changed the saved revision, autosaving stops and offers copying local writing and loading the saved version. Unsaved changes are protected when leaving the page. Each read and save checks the current admin role on the server.
 
-`tests/e2e/content-ideas.spec.ts` covers private access, persistence, stale drafts, conversion retries, retained board cards, role revocation, and mobile overflow. Its uniquely named test accounts and content are removed afterward.
+Apply `202610060003_content_pad` before deployment. This additive migration combines existing saved ideas into the initial pad in creation order, preserving their original rows and existing board cards. `tests/e2e/content-ideas.spec.ts` checks automatic saving, queued typing, stale-tab recovery, reconnecting, navigation, access controls, and mobile layout. It appends unique verification text and removes only that text afterward, preserving other writing.
 
 ## Client questionnaire
 

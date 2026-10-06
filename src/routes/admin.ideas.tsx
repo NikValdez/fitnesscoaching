@@ -1,27 +1,9 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, useBlocker } from '@tanstack/react-router'
 import { useEffect, useRef, useState } from 'react'
-import {
-  ArrowRight,
-  Check,
-  Lightbulb,
-  LoaderCircle,
-  Pencil,
-  Plus,
-  RefreshCw,
-  Search,
-  Trash2,
-} from 'lucide-react'
+import { Check, Copy, LoaderCircle, Pencil, RefreshCw } from 'lucide-react'
 import { AdminWorkspace } from '../components/admin-workspace'
-import { Notice, WorkspaceModal } from '../components/workspace'
-import {
-  getScratchWorkspace,
-  saveScratch,
-  editScratch,
-  deleteScratch,
-  convertScratch,
-} from '../lib/scratch'
-import { scratchTitle } from '../lib/scratch-validation'
-import { contentFormats, contentStages, type ContentFormat } from '../lib/content-validation'
+import { getScratchWorkspace, saveScratchPad } from '../lib/scratch'
+import { scratchPadLimit } from '../lib/scratch-validation'
 import adminStylesheet from '../admin.css?url'
 
 export const Route = createFileRoute('/admin/ideas')({
@@ -39,400 +21,212 @@ export const Route = createFileRoute('/admin/ideas')({
   component: IdeasPage,
 })
 
-type Scratch = Awaited<ReturnType<typeof getScratchWorkspace>>['ideas'][number]
-type Action = { kind: 'edit' | 'convert' | 'delete'; idea: Scratch }
-
 function IdeasPage() {
   const data = Route.useLoaderData()
-  const [ideas, setIdeas] = useState(data.ideas)
-  const [draft, setDraft] = useState('')
-  const [search, setSearch] = useState('')
-  const [busy, setBusy] = useState(false)
-  const pending = useRef(false)
+  const [draft, setDraft] = useState(data.pad.body)
+  const [phase, setPhase] = useState<'saved' | 'unsaved' | 'saving' | 'error' | 'conflict'>('saved')
   const [error, setError] = useState('')
-  const [notice, setNotice] = useState('')
-  const [action, setAction] = useState<Action | null>(null)
-  useEffect(() => setIdeas(data.ideas), [data.ideas])
+  const [copied, setCopied] = useState(false)
+  const saved = useRef(data.pad)
+  const writing = useRef(data.pad.body)
+  const pending = useRef<Promise<void> | null>(null)
+  const blocked = useRef(false)
+  const mounted = useRef(true)
+  const dirty = () => writing.current !== saved.current.body
 
-  async function mutate(change: () => Promise<void>, message: string) {
-    if (pending.current) return false
-    pending.current = true
-    setBusy(true)
-    setError('')
-    setNotice('')
-    try {
-      await change()
-      setNotice(message)
-      return true
-    } catch (cause) {
-      setError(
-        cause instanceof Error ? cause.message : 'Could not save your idea. Please try again.',
+  // Drain saves in order. Responses update the revision, never newer local text.
+  function save() {
+    if (pending.current) return pending.current
+    if (!dirty() || blocked.current) return Promise.resolve()
+    const work = async () => {
+      try {
+        if (mounted.current) {
+          setPhase('saving')
+          setError('')
+        }
+        while (dirty() && !blocked.current) {
+          const result = await saveScratchPad({
+            data: { body: writing.current, revision: saved.current.revision },
+          })
+          if (result.status === 'conflict') {
+            blocked.current = true
+            if (mounted.current) {
+              setPhase('conflict')
+              setError(
+                'Another admin changed the scratch pad. Your writing is still here. Copy anything you want to keep before loading the saved version.',
+              )
+            }
+            return
+          }
+          saved.current = result.pad
+        }
+        if (mounted.current) setPhase('saved')
+      } catch {
+        if (mounted.current) {
+          setPhase('error')
+          setError(
+            'Your latest changes haven’t saved yet. Keep this page open and retry when you’re connected.',
+          )
+        }
+      }
+    }
+    pending.current = work().finally(() => {
+      pending.current = null
+    })
+    return pending.current
+  }
+  const saveRef = useRef(save)
+  saveRef.current = save
+
+  useEffect(() => {
+    mounted.current = true
+    const reconnect = () => void saveRef.current()
+    const hide = () => {
+      if (document.visibilityState === 'hidden') void saveRef.current()
+    }
+    window.addEventListener('online', reconnect)
+    document.addEventListener('visibilitychange', hide)
+    return () => {
+      mounted.current = false
+      window.removeEventListener('online', reconnect)
+      document.removeEventListener('visibilitychange', hide)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!dirty() && !pending.current && data.pad.revision > saved.current.revision) {
+      saved.current = data.pad
+      writing.current = data.pad.body
+      setDraft(data.pad.body)
+      setPhase('saved')
+    }
+  }, [data.pad])
+
+  useEffect(() => {
+    if (!dirty() || blocked.current) return
+    const timer = setTimeout(() => void saveRef.current(), 700)
+    return () => clearTimeout(timer)
+  }, [draft])
+
+  useBlocker({
+    shouldBlockFn: async () => {
+      await saveRef.current()
+      return (
+        dirty() &&
+        !window.confirm('Your latest scratch pad changes haven’t saved. Leave this page anyway?')
       )
-      return false
-    } finally {
-      pending.current = false
-      setBusy(false)
+    },
+    enableBeforeUnload: dirty,
+  })
+
+  async function reloadSaved() {
+    try {
+      const latest = await getScratchWorkspace()
+      saved.current = latest.pad
+      writing.current = latest.pad.body
+      blocked.current = false
+      setDraft(latest.pad.body)
+      setPhase('saved')
+      setError('')
+      setCopied(false)
+    } catch {
+      setError('Could not load the saved scratch pad. Please try again.')
     }
   }
 
-  function replace(idea: Scratch) {
-    setIdeas((current) => current.map((item) => (item.id === idea.id ? idea : item)))
-  }
-
-  async function refresh() {
-    await mutate(async () => {
-      const latest = await getScratchWorkspace()
-      setIdeas(latest.ideas)
-      setAction((current) => {
-        if (!current) return null
-        const idea = latest.ideas.find((item) => item.id === current.idea.id)
-        return idea ? { ...current, idea } : null
-      })
-    }, 'Ideas refreshed. Your unsaved writing is still here.')
-  }
-
-  const filtered = ideas.filter((idea) => idea.body.toLowerCase().includes(search.toLowerCase()))
   return (
     <AdminWorkspace name={data.user.name} current="ideas">
       <div className="admin-page-heading">
         <span className="eyebrow">Room for a little inspiration</span>
         <h1>Ideas, before the plan.</h1>
-        <p>
-          A thought, a hook, a half-formed something. Get it down here. Give it a card when you’re
-          ready.
-        </p>
+        <p>A thought, a hook, a half-formed something. Write it here and pick it up later.</p>
       </div>
-      {error && !action && <Notice error message={error} onClose={() => setError('')} />}
-      {notice && <Notice message={notice} onClose={() => setNotice('')} />}
-      <div className="ideas-layout">
-        <section className="ideas-composer" aria-labelledby="scratch-heading">
-          <div className="ideas-composer-heading">
-            <span className="ideas-icon">
-              <Pencil size={20} />
-            </span>
-            <h2 id="scratch-heading">The scratch pad</h2>
-            <span className="eyebrow">Room to think out loud</span>
-          </div>
-          <form
-            onSubmit={async (event) => {
-              event.preventDefault()
-              await mutate(async () => {
-                const idea = await saveScratch({ data: { body: draft } })
-                setIdeas((current) => [idea, ...current])
-                setDraft('')
-              }, 'Idea saved to your scratch pad.')
-            }}
-          >
-            <label htmlFor="scratch-draft" className="sr-only">
-              Your idea
-            </label>
-            <textarea
-              id="scratch-draft"
-              value={draft}
-              onChange={(event) => setDraft(event.target.value)}
-              disabled={busy}
-              required
-              maxLength={10000}
-              placeholder={
-                'An idea for a reel…\nA question clients keep asking…\nSomething worth coming back to…'
-              }
-            />
-            <div className="ideas-composer-foot">
-              <span>{draft.trim() ? 'Unsaved idea' : 'Only admins can see this.'}</span>
-              <span>{draft.length.toLocaleString()} / 10,000</span>
-            </div>
-            <button className="button" disabled={busy || !draft.trim()}>
-              {busy ? <LoaderCircle size={17} className="spin" /> : <Plus size={17} />}{' '}
-              {busy ? 'Saving…' : 'Save idea'}
-            </button>
-          </form>
-        </section>
-        <section className="ideas-library" aria-labelledby="saved-ideas-heading">
-          <div className="ideas-library-heading">
-            <div>
-              <span className="eyebrow">Keep the spark</span>
-              <h2 id="saved-ideas-heading">
-                Saved ideas <span>{ideas.length}</span>
-              </h2>
-            </div>
-            <button
-              className="icon-button"
-              aria-label="Refresh ideas"
-              disabled={busy}
-              onClick={() => void refresh()}
-            >
-              <RefreshCw size={18} />
-            </button>
-          </div>
-          {ideas.length > 0 && (
-            <label className="ideas-search">
-              <Search size={17} />
-              <span className="sr-only">Search ideas</span>
-              <input
-                type="search"
-                placeholder="Find a thought…"
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-              />
-            </label>
-          )}
-          <div className="ideas-list" aria-busy={busy}>
-            {filtered.map((idea) => (
-              <article className="scratch-note" key={idea.id} data-scratch-id={idea.id}>
-                <div className="scratch-note-meta">
-                  <span className="eyebrow">{idea.card ? 'On the board' : 'A little spark'}</span>
-                  <div>
-                    <button
-                      className="icon-button"
-                      aria-label={`Edit ${scratchTitle(idea.body)}`}
-                      disabled={busy}
-                      onClick={() => {
-                        setError('')
-                        setAction({ kind: 'edit', idea })
-                      }}
-                    >
-                      <Pencil size={16} />
-                    </button>
-                    <button
-                      className="icon-button"
-                      aria-label={`Delete ${scratchTitle(idea.body)}`}
-                      disabled={busy}
-                      onClick={() => {
-                        setError('')
-                        setAction({ kind: 'delete', idea })
-                      }}
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                </div>
-                <h3>{scratchTitle(idea.body)}</h3>
-                <p className="scratch-note-body">
-                  {idea.body.split('\n').slice(1).join('\n').trim()}
-                </p>
-                <div className="scratch-note-foot">
-                  <time dateTime={new Date(idea.createdAt).toISOString()}>
-                    {new Date(idea.createdAt).toLocaleDateString('en-CA', {
-                      month: 'short',
-                      day: 'numeric',
-                      timeZone: 'UTC',
-                    })}
-                  </time>
-                  {idea.card ? (
-                    <Link className="scratch-card-link" to="/admin/content">
-                      <Check size={14} />{' '}
-                      {contentStages.find((stage) => stage.id === idea.card?.stage)?.label}{' '}
-                      <ArrowRight size={15} />
-                    </Link>
-                  ) : (
-                    <button
-                      className="scratch-convert"
-                      disabled={busy}
-                      onClick={() => {
-                        setError('')
-                        setAction({ kind: 'convert', idea })
-                      }}
-                    >
-                      Create card <ArrowRight size={15} />
-                    </button>
-                  )}
-                </div>
-              </article>
-            ))}
-            {!filtered.length && (
-              <div className="ideas-empty">
-                <Lightbulb size={28} />
-                <h3>
-                  {ideas.length
-                    ? 'Nothing here just yet.'
-                    : 'Every good thing starts with an idea.'}
-                </h3>
-                <p>
-                  {ideas.length
-                    ? 'Try a different word or clear your search.'
-                    : 'Save your first thought in the scratch pad. It will be here when you’re ready to take it further.'}
-                </p>
-              </div>
-            )}
-          </div>
-        </section>
-      </div>
-      {action && (
-        <ScratchDialog
-          key={`${action.kind}-${action.idea.id}`}
-          action={action}
-          busy={busy}
-          error={error}
-          onRefresh={refresh}
-          onClose={() => {
-            setAction(null)
-            setError('')
+      <section className="ideas-composer" aria-labelledby="scratch-heading">
+        <div className="ideas-composer-heading">
+          <span className="ideas-icon">
+            <Pencil size={20} />
+          </span>
+          <h2 id="scratch-heading">The scratch pad</h2>
+          <span className="eyebrow">Room to think out loud</span>
+        </div>
+        <label htmlFor="scratch-draft" className="sr-only">
+          Your idea
+        </label>
+        <textarea
+          id="scratch-draft"
+          value={draft}
+          maxLength={scratchPadLimit}
+          placeholder={
+            'An idea for a reel…\nA question clients keep asking…\nSomething worth coming back to…'
+          }
+          onChange={(event) => {
+            writing.current = event.target.value
+            setDraft(event.target.value)
+            setCopied(false)
+            if (!blocked.current) {
+              setPhase(pending.current ? 'saving' : dirty() ? 'unsaved' : 'saved')
+              setError('')
+            }
           }}
-          onSave={async (values) => {
-            const success = await mutate(
-              async () => {
-                const reference = { id: action.idea.id, revision: action.idea.revision }
-                if (action.kind === 'delete') {
-                  await deleteScratch({ data: reference })
-                  setIdeas((current) => current.filter((item) => item.id !== action.idea.id))
-                } else if (action.kind === 'edit') {
-                  replace(await editScratch({ data: { ...reference, body: values.body } }))
-                } else {
-                  replace(
-                    await convertScratch({
-                      data: { ...reference, title: values.title, format: values.format },
-                    }),
-                  )
-                }
-              },
-              action.kind === 'delete'
-                ? 'Idea deleted.'
-                : action.kind === 'convert'
-                  ? 'Card created in Concepts. Your original idea is still here.'
-                  : 'Idea updated.',
-            )
-            if (success) setAction(null)
+          onBlur={() => void save()}
+          onKeyDown={(event) => {
+            if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') {
+              event.preventDefault()
+              void save()
+            }
           }}
         />
-      )}
-    </AdminWorkspace>
-  )
-}
-
-function ScratchDialog({
-  action,
-  busy,
-  error,
-  onRefresh,
-  onClose,
-  onSave,
-}: {
-  action: Action
-  busy: boolean
-  error: string
-  onRefresh: () => Promise<void>
-  onClose: () => void
-  onSave: (values: { body: string; title: string; format: ContentFormat }) => Promise<void>
-}) {
-  const [body, setBody] = useState(action.idea.body)
-  const [title, setTitle] = useState(scratchTitle(action.idea.body))
-  const [format, setFormat] = useState<ContentFormat>('VIDEO')
-  return (
-    <WorkspaceModal
-      title={
-        action.kind === 'edit'
-          ? 'A little more to the idea.'
-          : action.kind === 'convert'
-            ? 'Give this idea a card.'
-            : 'Delete this idea?'
-      }
-      label="Content Studio / Ideas"
-      onClose={onClose}
-      busy={busy}
-    >
-      <form
-        onSubmit={(event) => {
-          event.preventDefault()
-          void onSave({ body, title, format })
-        }}
-      >
-        {action.kind === 'edit' && (
-          <>
-            <div className="scratch-edit-field">
-              <label htmlFor="scratch-edit-body">Idea</label>
-              <textarea
-                id="scratch-edit-body"
-                autoFocus
-                value={body}
-                onChange={(event) => setBody(event.target.value)}
-                required
-                maxLength={10000}
-                rows={10}
-                disabled={busy}
-              />
-            </div>
-            {action.idea.card && (
-              <p className="form-note">Your existing board card keeps its own notes.</p>
-            )}
-          </>
-        )}
-        {action.kind === 'convert' && (
-          <>
-            <p className="scratch-dialog-copy">
-              Create a card in Concepts with this idea as its notes. The original stays in your
-              scratch pad.
-            </p>
-            <label>
-              Card title
-              <input
-                autoFocus
-                value={title}
-                onChange={(event) => setTitle(event.target.value)}
-                required
-                maxLength={160}
-                disabled={busy}
-              />
-            </label>
-            <label>
-              Format
-              <select
-                value={format}
-                onChange={(event) => setFormat(event.target.value as ContentFormat)}
-                disabled={busy}
-              >
-                {contentFormats.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <blockquote className="scratch-preview">{action.idea.body}</blockquote>
-          </>
-        )}
-        {action.kind === 'delete' && (
-          <p className="scratch-dialog-copy">
-            “{scratchTitle(action.idea.body)}” will be removed from Ideas.
-            {action.idea.card ? ' Its board card will stay.' : ''}
-          </p>
-        )}
-        {error && (
-          <>
-            <p className="form-error" role="alert">
-              {error}
-            </p>
-            <button
-              type="button"
-              className="text-link"
-              disabled={busy}
-              onClick={() => void onRefresh()}
-            >
-              Refresh ideas, keep my draft <RefreshCw size={14} />
-            </button>
-          </>
-        )}
-        <div className="button-row">
-          <button
-            className={`button${action.kind === 'delete' ? ' button-danger' : ''}`}
-            disabled={
-              busy ||
-              (action.kind === 'edit' && !body.trim()) ||
-              (action.kind === 'convert' && !title.trim())
-            }
-          >
-            {busy
-              ? 'Saving…'
-              : action.kind === 'edit'
-                ? 'Save changes'
-                : action.kind === 'convert'
-                  ? 'Create card'
-                  : 'Delete idea'}
-          </button>
-          <button type="button" className="button button-outline" disabled={busy} onClick={onClose}>
-            Cancel
-          </button>
+        <div className="ideas-composer-foot">
+          <span className="scratch-save-status" role="status">
+            {phase === 'saving' ? (
+              <LoaderCircle size={14} className="spin" />
+            ) : phase === 'saved' ? (
+              <Check size={14} />
+            ) : null}
+            {phase === 'saved'
+              ? 'All changes saved'
+              : phase === 'saving'
+                ? 'Saving…'
+                : phase === 'unsaved'
+                  ? 'Unsaved changes'
+                  : 'Changes not saved'}
+          </span>
+          <span>
+            {draft.length.toLocaleString()} / {scratchPadLimit.toLocaleString()}
+          </span>
         </div>
-      </form>
-    </WorkspaceModal>
+        {error && (
+          <div className="scratch-save-error">
+            <p role="alert">{error}</p>
+            <div className="button-row">
+              {phase === 'conflict' ? (
+                <>
+                  <button
+                    className="button button-outline"
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(writing.current)
+                        setCopied(true)
+                      } catch {
+                        setError('Select and copy your writing above, then load the saved version.')
+                      }
+                    }}
+                  >
+                    <Copy size={15} /> {copied ? 'Copied' : 'Copy my writing'}
+                  </button>
+                  <button className="button" onClick={() => void reloadSaved()}>
+                    <RefreshCw size={15} /> Load saved version
+                  </button>
+                </>
+              ) : (
+                <button className="button" onClick={() => void save()}>
+                  <RefreshCw size={15} /> Retry saving
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+      </section>
+    </AdminWorkspace>
   )
 }

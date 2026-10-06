@@ -6,22 +6,43 @@ import { waitForHydration } from './hydration'
 const base = process.env.TEST_BASE_URL || 'http://localhost:3000'
 const emails: string[] = []
 const contexts: BrowserContext[] = []
+const markers: string[] = []
+const marker = (name: string) => {
+  const value = `\n\n[Scratchpad verification ${randomUUID()} / ${name}]\n`
+  markers.push(value)
+  return value
+}
 
 test.afterAll(async () => {
   await Promise.all(contexts.map((context) => context.close()))
-  const users = await db.user.findMany({ where: { email: { in: emails } }, select: { id: true } })
-  const authors = { authorId: { in: users.map((user) => user.id) } }
-  await db.contentScratch.deleteMany({ where: authors })
-  await db.contentIdea.deleteMany({ where: authors })
+  // Remove only this run's unique text, preserving any concurrent admin writing.
+  let cleaned = false
+  for (let attempt = 0; attempt < 6; attempt++) {
+    const pad = await db.contentPad.findUniqueOrThrow({ where: { id: 'main' } })
+    const body = markers.reduce((text, value) => text.replaceAll(value, ''), pad.body)
+    if (body === pad.body) {
+      cleaned = true
+      break
+    }
+    const result = await db.contentPad.updateMany({
+      where: { id: pad.id, revision: pad.revision },
+      data: { body, revision: { increment: 1 } },
+    })
+    if (result.count) {
+      cleaned = true
+      break
+    }
+  }
   await db.user.deleteMany({ where: { email: { in: emails } } })
   await db.$disconnect()
+  expect(cleaned, 'Remove this test run’s markers without overwriting other writing').toBe(true)
 })
 
 async function register(context: BrowserContext) {
   const email = `content-ideas-test-${randomUUID()}@example.com`
   emails.push(email)
   const response = await context.request.post(`${base}/api/auth/sign-up/email`, {
-    data: { name: 'Ideas Test', email, password: `Private-${randomUUID()}!` },
+    data: { name: 'Scratch Pad Test', email, password: `Private-${randomUUID()}!` },
     headers: { Origin: base },
   })
   expect(response.ok()).toBe(true)
@@ -39,7 +60,7 @@ async function replay(context: BrowserContext, request: Request) {
   })
 }
 
-test('private scratch pad persists, protects drafts, and creates a single board card', async ({
+test('shared scratch pad autosaves, queues typing, restores state, and protects stale writing', async ({
   browser,
 }, testInfo) => {
   test.setTimeout(180_000)
@@ -56,116 +77,109 @@ test('private scratch pad persists, protects drafts, and creates a single board 
   const page = await adminContext.newPage()
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
+  await page.goto('/admin/ideas')
+  await waitForHydration(page)
+  const textarea = page.getByLabel('Your idea', { exact: true })
+  const status = page.getByRole('status')
+  const original = (await db.contentPad.findUniqueOrThrow({ where: { id: 'main' } })).body
+  await expect(textarea).toHaveValue(original)
+  await expect(page.getByRole('heading', { name: 'Saved ideas' })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Save idea', exact: true })).toHaveCount(0)
+  const writing = original + marker('saved')
+  const saving = page.waitForRequest(
+    (request) => request.method() === 'POST' && request.url().includes('/_serverFn/'),
+  )
+  await textarea.fill(writing)
+  const saveRequest = await saving
+  await expect(status).toHaveText('All changes saved')
+  await expect(textarea).toHaveValue(writing)
+  await page.reload()
+  await waitForHydration(page)
+  await expect(textarea).toHaveValue(writing)
+  const revision = (await db.contentPad.findUniqueOrThrow({ where: { id: 'main' } })).revision
+  await replay(clientContext, saveRequest)
+  await replay(anonymous, saveRequest)
+  await replay(adminContext, saveRequest)
+  expect((await db.contentPad.findUniqueOrThrow({ where: { id: 'main' } })).revision).toBe(revision)
   const anonPage = await anonymous.newPage()
   await anonPage.goto('/admin/ideas')
   await expect(anonPage).toHaveURL(/\/admin\/login/)
   const clientPage = await clientContext.newPage()
   await clientPage.goto('/admin/ideas')
   await expect(clientPage).not.toHaveURL(/\/admin\//)
-  await page.goto('/admin/content')
-  await waitForHydration(page)
-  await page.getByRole('link', { name: 'Ideas', exact: true }).click()
-  await expect(page).toHaveURL(/\/admin\/ideas/)
-  const title = `Three small habits ${randomUUID().slice(0, 8)}`
-  const body = `${title}\n\nA hook about starting with one habit.\nFilm a walk and a simple meal.`
-  const mutation = () =>
-    page.waitForRequest(
-      (request) => request.method() === 'POST' && request.url().includes('/_serverFn/'),
-    )
-  await page.getByLabel('Your idea', { exact: true }).fill(body)
-  const saving = mutation()
-  await page.getByRole('button', { name: 'Save idea', exact: true }).click()
-  const saveRequest = await saving
-  await expect(page.getByLabel('Your idea', { exact: true })).toHaveValue('')
-  const idea = await db.contentScratch.findFirstOrThrow({ where: { body, authorId: admin.id } })
-  const note = page.locator(`[data-scratch-id="${idea.id}"]`)
-  await expect(note).toContainText(title)
-  await replay(clientContext, saveRequest)
-  await replay(anonymous, saveRequest)
-  expect(await db.contentScratch.count({ where: { body } })).toBe(1)
-  await page.reload()
-  await waitForHydration(page)
-  await expect(note).toContainText('Film a walk and a simple meal.')
 
-  const other = await adminContext.newPage()
-  await other.goto('/admin/ideas')
-  await waitForHydration(other)
-  await note.getByRole('button', { name: `Edit ${title}`, exact: true }).click()
-  const dialog = page.getByRole('dialog')
-  const revised = `${body}\nEnd with a question for the audience.`
-  await dialog.getByLabel('Idea', { exact: true }).fill(revised)
-  await other
-    .locator(`[data-scratch-id="${idea.id}"]`)
-    .getByRole('button', { name: `Edit ${title}`, exact: true })
-    .click()
-  await other
-    .getByRole('dialog')
-    .getByLabel('Idea', { exact: true })
-    .fill(`${body}\nAnother tab’s note.`)
-  await other.getByRole('button', { name: 'Save changes', exact: true }).click()
-  await expect(other.getByRole('dialog')).not.toBeVisible()
-  await dialog.getByRole('button', { name: 'Save changes', exact: true }).click()
-  await expect(dialog.getByRole('alert')).toContainText('changed in another tab')
-  await expect(dialog.getByLabel('Idea', { exact: true })).toHaveValue(revised)
-  await dialog.getByRole('button', { name: 'Refresh ideas, keep my draft' }).click()
-  await expect(dialog.getByRole('alert')).not.toBeVisible()
-  await expect(dialog.getByLabel('Idea', { exact: true })).toHaveValue(revised)
-  const editing = mutation()
-  await dialog.getByRole('button', { name: 'Save changes', exact: true }).click()
-  const editRequest = await editing
-  await expect(dialog).not.toBeVisible()
-  await replay(clientContext, editRequest)
-  await replay(anonymous, editRequest)
-  expect((await db.contentScratch.findUniqueOrThrow({ where: { id: idea.id } })).body).toBe(revised)
-
-  await note.getByRole('button', { name: 'Create card', exact: true }).click()
-  await expect(dialog.getByLabel('Card title')).toHaveValue(title)
-  const cardTitle = `${title} — reel`
-  await dialog.getByLabel('Card title').fill(cardTitle)
-  const converting = mutation()
-  await dialog.getByRole('button', { name: 'Create card', exact: true }).click()
-  const conversionRequest = await converting
-  await expect(dialog).not.toBeVisible()
-  const converted = await db.contentScratch.findUniqueOrThrow({
-    where: { id: idea.id },
-    include: { card: true },
+  // Hold a successful response while the user keeps typing. The next save must
+  // use the new revision and must never replace the textarea with older text.
+  let release!: () => void
+  let held!: () => void
+  const responseHeld = new Promise<void>((resolve) => {
+    held = resolve
   })
-  expect(converted.body).toBe(revised)
-  expect(converted.card).toMatchObject({ title: cardTitle, stage: 'CONCEPTS', notes: revised })
-  await Promise.all([
-    replay(adminContext, conversionRequest),
-    replay(adminContext, conversionRequest),
-    replay(clientContext, conversionRequest),
-    replay(anonymous, conversionRequest),
-  ])
-  expect(await db.contentIdea.count({ where: { title: cardTitle } })).toBe(1)
-  await expect(note.getByRole('button', { name: 'Create card', exact: true })).toHaveCount(0)
-  await expect(note.getByRole('link', { name: /Concepts/ })).toBeVisible()
-  await page.screenshot({ path: testInfo.outputPath('ideas-desktop.png'), fullPage: true })
+  const responseRelease = new Promise<void>((resolve) => {
+    release = resolve
+  })
+  let holdNext = true
+  await page.route('**/_serverFn/**', async (route) => {
+    if (!holdNext || route.request().method() !== 'POST') return route.continue()
+    holdNext = false
+    const response = await route.fetch()
+    held()
+    await responseRelease
+    await route.fulfill({ response })
+  })
+  const firstQueued = writing + marker('first queued')
+  const newest = firstQueued + marker('newest queued')
+  await textarea.fill(firstQueued)
+  await responseHeld
+  await expect(textarea).toBeEnabled()
+  await textarea.fill(newest)
+  release()
+  await expect(status).toHaveText('All changes saved')
+  await expect(textarea).toHaveValue(newest)
+  expect((await db.contentPad.findUniqueOrThrow({ where: { id: 'main' } })).body).toBe(newest)
+  await page.unroute('**/_serverFn/**')
 
-  await page.setViewportSize({ width: 390, height: 844 })
-  await expect(page.getByRole('link', { name: 'Ideas', exact: true })).toBeVisible()
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
-    true,
-  )
-  await page.screenshot({ path: testInfo.outputPath('ideas-mobile.png'), fullPage: true })
-  await note.getByRole('link', { name: /Concepts/ }).click()
-  await expect(page.getByRole('heading', { name: cardTitle, exact: true })).toBeVisible()
-  await page.screenshot({ path: testInfo.outputPath('board-mobile.png'), fullPage: true })
+  const stale = await adminContext.newPage()
+  await stale.goto('/admin/ideas')
+  await waitForHydration(stale)
+  const latest = newest + marker('another tab')
+  await textarea.fill(latest)
+  await expect(status).toHaveText('All changes saved')
+  const staleWriting = newest + marker('stale draft')
+  await stale.getByLabel('Your idea', { exact: true }).fill(staleWriting)
+  await expect(stale.getByRole('alert')).toContainText('Another admin changed')
+  await expect(stale.getByLabel('Your idea', { exact: true })).toHaveValue(staleWriting)
+  expect((await db.contentPad.findUniqueOrThrow({ where: { id: 'main' } })).body).toBe(latest)
+  await stale.getByRole('button', { name: 'Load saved version' }).click()
+  await expect(stale.getByLabel('Your idea', { exact: true })).toHaveValue(latest)
+
+  await adminContext.setOffline(true)
+  const offline = latest + marker('offline recovery')
+  await textarea.fill(offline)
+  await expect(page.getByRole('alert')).toContainText('haven’t saved yet')
+  await expect(textarea).toHaveValue(offline)
+  await adminContext.setOffline(false)
+  await expect(status).toHaveText('All changes saved')
+  expect((await db.contentPad.findUniqueOrThrow({ where: { id: 'main' } })).body).toBe(offline)
+
+  // Navigating immediately after typing flushes the debounce before leaving.
+  const navigationDraft = offline + marker('navigation flush')
+  await textarea.fill(navigationDraft)
+  await page.getByRole('link', { name: 'Production board', exact: true }).click()
+  await expect(page).toHaveURL(/\/admin\/content/)
   await page.getByRole('link', { name: 'Ideas', exact: true }).click()
-  await note.getByRole('button', { name: `Delete ${title}`, exact: true }).click()
-  await expect(dialog).toContainText('Its board card will stay.')
-  const deleting = mutation()
-  await dialog.getByRole('button', { name: 'Delete idea', exact: true }).click()
-  const deleteRequest = await deleting
-  await expect(dialog).not.toBeVisible()
-  await expect(note).toHaveCount(0)
-  expect(await db.contentIdea.count({ where: { id: converted.cardId! } })).toBe(1)
-  await replay(clientContext, deleteRequest)
-  await replay(anonymous, deleteRequest)
+  await expect(textarea).toHaveValue(navigationDraft)
+  await page.screenshot({ path: testInfo.outputPath('scratch-pad-desktop.png'), fullPage: true })
+  await page.setViewportSize({ width: 390, height: 844 })
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  await page.screenshot({ path: testInfo.outputPath('scratch-pad-mobile.png'), fullPage: true })
+
   await db.user.update({ where: { id: admin.id }, data: { role: 'CLIENT' } })
+  const beforeRevoke = await db.contentPad.findUniqueOrThrow({ where: { id: 'main' } })
   await replay(adminContext, saveRequest)
-  expect(await db.contentScratch.count({ where: { authorId: admin.id } })).toBe(0)
+  expect((await db.contentPad.findUniqueOrThrow({ where: { id: 'main' } })).body).toBe(
+    beforeRevoke.body,
+  )
   await page.goto('/admin/ideas')
   await expect(page).not.toHaveURL(/\/admin\//)
   expect(errors).toEqual([])
