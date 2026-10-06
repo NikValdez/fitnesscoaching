@@ -4,6 +4,8 @@ import { Check, Copy, LoaderCircle, Pencil, RefreshCw } from 'lucide-react'
 import { AdminWorkspace } from '../components/admin-workspace'
 import { getScratchWorkspace, saveScratchPad } from '../lib/scratch'
 import { scratchPadLimit } from '../lib/scratch-validation'
+import { padDocument, richTextPlainText } from '../lib/rich-text'
+import { ScratchEditor } from '../components/scratch-editor'
 import adminStylesheet from '../admin.css?url'
 
 export const Route = createFileRoute('/admin/ideas')({
@@ -23,16 +25,17 @@ export const Route = createFileRoute('/admin/ideas')({
 
 function IdeasPage() {
   const data = Route.useLoaderData()
-  const [draft, setDraft] = useState(data.pad.body)
+  const [draft, setDraft] = useState(() => padDocument(data.pad))
+  const draftText = richTextPlainText(JSON.parse(draft))
   const [phase, setPhase] = useState<'saved' | 'unsaved' | 'saving' | 'error' | 'conflict'>('saved')
   const [error, setError] = useState('')
   const [copied, setCopied] = useState(false)
   const saved = useRef(data.pad)
-  const writing = useRef(data.pad.body)
+  const writing = useRef(padDocument(data.pad))
   const pending = useRef<Promise<void> | null>(null)
   const blocked = useRef(false)
   const mounted = useRef(true)
-  const dirty = () => writing.current !== saved.current.body
+  const dirty = () => writing.current !== padDocument(saved.current)
 
   // Drain saves in order. Responses update the revision, never newer local text.
   function save() {
@@ -46,7 +49,11 @@ function IdeasPage() {
         }
         while (dirty() && !blocked.current) {
           const result = await saveScratchPad({
-            data: { body: writing.current, revision: saved.current.revision },
+            data: {
+              body: richTextPlainText(JSON.parse(writing.current)),
+              document: writing.current,
+              revision: saved.current.revision,
+            },
           })
           if (result.status === 'conflict') {
             blocked.current = true
@@ -96,8 +103,8 @@ function IdeasPage() {
   useEffect(() => {
     if (!dirty() && !pending.current && data.pad.revision > saved.current.revision) {
       saved.current = data.pad
-      writing.current = data.pad.body
-      setDraft(data.pad.body)
+      writing.current = padDocument(data.pad)
+      setDraft(padDocument(data.pad))
       setPhase('saved')
     }
   }, [data.pad])
@@ -123,9 +130,9 @@ function IdeasPage() {
     try {
       const latest = await getScratchWorkspace()
       saved.current = latest.pad
-      writing.current = latest.pad.body
+      writing.current = padDocument(latest.pad)
       blocked.current = false
-      setDraft(latest.pad.body)
+      setDraft(padDocument(latest.pad))
       setPhase('saved')
       setError('')
       setCopied(false)
@@ -149,32 +156,18 @@ function IdeasPage() {
           <h2 id="scratch-heading">The scratch pad</h2>
           <span className="eyebrow">Room to think out loud</span>
         </div>
-        <label htmlFor="scratch-draft" className="sr-only">
-          Your idea
-        </label>
-        <textarea
-          id="scratch-draft"
+        <ScratchEditor
           value={draft}
-          maxLength={scratchPadLimit}
-          placeholder={
-            'An idea for a reel…\nA question clients keep asking…\nSomething worth coming back to…'
-          }
-          onChange={(event) => {
-            writing.current = event.target.value
-            setDraft(event.target.value)
+          onChange={(document) => {
+            writing.current = document
+            setDraft(document)
             setCopied(false)
             if (!blocked.current) {
               setPhase(pending.current ? 'saving' : dirty() ? 'unsaved' : 'saved')
               setError('')
             }
           }}
-          onBlur={() => void save()}
-          onKeyDown={(event) => {
-            if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') {
-              event.preventDefault()
-              void save()
-            }
-          }}
+          onSave={() => void save()}
         />
         <div className="ideas-composer-foot">
           <span className="scratch-save-status" role="status">
@@ -192,7 +185,7 @@ function IdeasPage() {
                   : 'Changes not saved'}
           </span>
           <span>
-            {draft.length.toLocaleString()} / {scratchPadLimit.toLocaleString()}
+            {draftText.length.toLocaleString()} / {scratchPadLimit.toLocaleString()}
           </span>
         </div>
         {error && (
@@ -205,7 +198,9 @@ function IdeasPage() {
                     className="button button-outline"
                     onClick={async () => {
                       try {
-                        await navigator.clipboard.writeText(writing.current)
+                        await navigator.clipboard.writeText(
+                          richTextPlainText(JSON.parse(writing.current)),
+                        )
                         setCopied(true)
                       } catch {
                         setError('Select and copy your writing above, then load the saved version.')

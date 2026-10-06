@@ -18,12 +18,15 @@ export const saveScratchPad = createServerFn({ method: 'POST' })
     return db.$transaction(async (tx) => {
       const result = await tx.contentPad.updateMany({
         where: { id: 'main', revision: data.revision },
-        data: { body: data.body, revision: { increment: 1 } },
+        data: { body: data.body, document: data.document ?? null, revision: { increment: 1 } },
       })
       const pad = await tx.contentPad.findUniqueOrThrow({ where: { id: 'main' } })
       // A lost response can be retried safely. Different stale text needs review.
       return {
-        status: result.count || pad.body === data.body ? ('saved' as const) : ('conflict' as const),
+        status:
+          result.count || (pad.body === data.body && pad.document === (data.document ?? null))
+            ? ('saved' as const)
+            : ('conflict' as const),
         pad,
       }
     })

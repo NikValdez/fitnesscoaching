@@ -108,6 +108,9 @@ test('admin sign-in, persistent ideas, drag and reorder, mobile, and server acce
   const title = `Build a stronger week ${randomUUID().slice(0, 8)}`
   await page.getByRole('button', { name: 'New idea', exact: true }).click()
   await page.getByLabel('Idea title').fill(title)
+  for (const name of ['Instagram', 'TikTok', 'Facebook', 'YouTube', 'Twitter', 'LinkedIn']) {
+    await page.getByRole('dialog').getByRole('button', { name, exact: true }).click()
+  }
   await page
     .getByLabel('Notes & direction')
     .fill('Hook: start with one small habit.\nFilm three simple exercises.')
@@ -118,6 +121,14 @@ test('admin sign-in, persistent ideas, drag and reorder, mobile, and server acce
   const createRequest = await createPromise
   await expect(page.getByRole('dialog')).not.toBeVisible()
   const idea = await db.contentIdea.findFirstOrThrow({ where: { title, authorId: admin.id } })
+  expect(idea.platforms).toEqual([
+    'INSTAGRAM',
+    'TIKTOK',
+    'FACEBOOK',
+    'YOUTUBE',
+    'TWITTER',
+    'LINKEDIN',
+  ])
   await replay(clientContext, createRequest)
   await replay(anonymous, createRequest)
   expect(await db.contentIdea.count({ where: { title } })).toBe(1)
@@ -137,6 +148,11 @@ test('admin sign-in, persistent ideas, drag and reorder, mobile, and server acce
   await expect(
     page.locator('[data-stage="CONCEPTS"]').getByRole('heading', { name: title }),
   ).toBeVisible()
+  const tags = page
+    .locator(`[data-idea-id="${idea.id}"]`)
+    .getByRole('list', { name: 'Social platforms' })
+  await expect(tags.getByRole('listitem')).toHaveCount(6)
+  await expect(tags).toContainText('InstagramTikTokFacebookYouTubeTwitterLinkedIn')
   const movePromise = page.waitForRequest(
     (request) => request.method() === 'POST' && request.url().includes('/_serverFn/'),
   )
@@ -162,6 +178,10 @@ test('admin sign-in, persistent ideas, drag and reorder, mobile, and server acce
   // Changes from another tab cannot silently replace a stale admin's draft.
   await page.getByRole('button', { name: `Edit ${title}`, exact: true }).click()
   await page.getByLabel('Idea title').fill(`${title} updated`)
+  await expect(
+    page.getByRole('dialog').getByRole('button', { name: 'Instagram', exact: true }),
+  ).toHaveAttribute('aria-pressed', 'true')
+  await page.getByRole('dialog').getByRole('button', { name: 'Twitter', exact: true }).click()
   await db.contentBoard.update({ where: { id: 'main' }, data: { revision: { increment: 1 } } })
   await page.getByRole('button', { name: 'Save changes' }).click()
   await expect(page.getByRole('dialog').getByRole('alert')).toContainText('board changed')
@@ -174,6 +194,13 @@ test('admin sign-in, persistent ideas, drag and reorder, mobile, and server acce
   await page.getByRole('button', { name: 'Save changes' }).click()
   const editRequest = await editPromise
   await expect(page.getByRole('dialog')).not.toBeVisible()
+  expect((await db.contentIdea.findUniqueOrThrow({ where: { id: idea.id } })).platforms).toEqual([
+    'INSTAGRAM',
+    'TIKTOK',
+    'FACEBOOK',
+    'YOUTUBE',
+    'LINKEDIN',
+  ])
   await db.contentIdea.update({ where: { id: idea.id }, data: { title } })
   await replay(clientContext, editRequest)
   await replay(anonymous, editRequest)
@@ -270,7 +297,9 @@ test('admin sign-in, persistent ideas, drag and reorder, mobile, and server acce
       .filter({ has: page.getByRole('heading', { name: title, exact: true }) }),
   ).toHaveCount(1)
   await expect(page.getByText('Saving…', { exact: true })).toHaveCount(0)
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  await expect
+    .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth))
+    .toBe(true)
   await page.screenshot({ path: 'test-results/content-studio-mobile.png', fullPage: true })
   await page.setViewportSize({ width: 1600, height: 1000 })
   await page.reload()

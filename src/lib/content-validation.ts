@@ -38,6 +38,16 @@ export const contentFormats = [
 export type ContentStage = (typeof contentStages)[number]['id']
 export type ContentFormat = (typeof contentFormats)[number]['id']
 
+export const contentPlatforms = [
+  { id: 'INSTAGRAM', label: 'Instagram' },
+  { id: 'TIKTOK', label: 'TikTok' },
+  { id: 'FACEBOOK', label: 'Facebook' },
+  { id: 'YOUTUBE', label: 'YouTube' },
+  { id: 'TWITTER', label: 'Twitter' },
+  { id: 'LINKEDIN', label: 'LinkedIn' },
+] as const
+export type ContentPlatform = (typeof contentPlatforms)[number]['id']
+
 const revision = z.number().int().nonnegative()
 const id = z.string().min(1).max(100)
 const stage = z.enum(['CONCEPTS', 'PRE_PRODUCTION', 'FILMING', 'DONE'])
@@ -50,6 +60,11 @@ export const saveContentIdeaSchema = z
     notes: z.string().trim().max(10000),
     format: z.enum(['VIDEO', 'POST', 'STORY', 'ARTICLE', 'OTHER']),
     stage,
+    platforms: z
+      .array(z.enum(['INSTAGRAM', 'TIKTOK', 'FACEBOOK', 'YOUTUBE', 'TWITTER', 'LINKEDIN']))
+      .max(6)
+      .refine((values) => new Set(values).size === values.length, 'Choose each platform once.')
+      .optional(),
   })
   .strict()
 

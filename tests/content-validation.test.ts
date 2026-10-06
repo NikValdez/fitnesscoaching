@@ -32,6 +32,14 @@ describe('content board inputs', () => {
       expect(saveContentIdeaSchema.safeParse({ ...idea, ...change }).success).toBe(false)
     }
   })
+  it('allows multiple supported platforms and rejects unknown or duplicated tags', () => {
+    const platforms = ['INSTAGRAM', 'TIKTOK', 'FACEBOOK', 'YOUTUBE', 'TWITTER', 'LINKEDIN']
+    expect(saveContentIdeaSchema.parse({ ...idea, platforms }).platforms).toEqual(platforms)
+    expect(saveContentIdeaSchema.parse({ ...idea, platforms: [] }).platforms).toEqual([])
+    for (const tags of [['INSTAGRAM', 'INSTAGRAM'], ['UNSUPPORTED'], ['role:ADMIN']]) {
+      expect(saveContentIdeaSchema.safeParse({ ...idea, platforms: tags }).success).toBe(false)
+    }
+  })
   it('rejects forged permissions, board identifiers and missing revisions', () => {
     for (const change of [
       { role: 'ADMIN' },

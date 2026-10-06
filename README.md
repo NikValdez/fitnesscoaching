@@ -51,11 +51,15 @@ Open `/admin/content`, or choose **Content Studio** in the coach workspace. Sign
 
 The shared board has **Concepts → Pre production → Filming → Done**. Add ideas with a title, format, and optional notes; open a card to edit or delete it. Drag its grip to change stages or reorder within a stage, or use the stage selector. The grip also supports keyboard dragging (Space, arrow keys, Space to drop; Escape to cancel). The board scrolls horizontally on small screens. Ideas and their order persist in PostgreSQL for all admins. An outdated tab cannot overwrite a newer board revision; refresh and save again without losing the open draft. **Refresh board** loads other admins' latest changes.
 
+Cards can have multiple social platform tags: Instagram, TikTok, Facebook, YouTube, Twitter, and LinkedIn. Choose the icons in the card editor; selected icons appear on the card and stay attached when it moves.
+
 The additive `202610060001_content_studio` migration creates `rossiter_content_board`, `rossiter_content_idea`, and the content stage enum. Apply it with `npm run db:migrate` before deploying this version. Every read and mutation checks the current database role; private responses disable caching and search indexing. This first version provides the ideas and production board; automated content generation can be added later.
 
 ## Ideas scratch pad
 
 The **Ideas** tab at `/admin/ideas` is one shared, admin-only scratch pad. Writing saves automatically after a short pause, on blur, and before navigating to another page. Reloading or returning restores the saved text, including blank text and formatting. Saving never clears the editor or creates individual idea cards. The full-width writing area remains available on desktop and mobile.
+
+The rich-text toolbar supports headings, bold, italic, underline, strikethrough, highlighting, bullet and numbered lists, checklists, quotes, alignment, links, code, dividers, clearing formatting, and undo/redo. Formatting saves with the writing. Existing plain text loads as literal text, preserving its contents. The server validates a restricted JSON document and safe link protocols rather than accepting arbitrary HTML. Apply the additive `202610060004_rich_scratch_platforms` migration before deploying this version.
 
 Saves run sequentially while typing stays enabled. The status shows pending, saving, saved, and failed changes. Failed writes retain the local text and can be retried; reconnecting retries automatically. If another admin changed the saved revision, autosaving stops and offers copying local writing and loading the saved version. Unsaved changes are protected when leaving the page. Each read and save checks the current admin role on the server.
 

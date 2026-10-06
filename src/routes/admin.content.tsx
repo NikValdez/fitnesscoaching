@@ -34,6 +34,7 @@ import {
 } from 'lucide-react'
 import { WorkspaceModal, Notice } from '../components/workspace'
 import { AdminWorkspace } from '../components/admin-workspace'
+import { PlatformPicker, PlatformTags } from '../components/content-platforms'
 import {
   getContentWorkspace,
   saveContentIdea,
@@ -45,6 +46,7 @@ import {
   contentStages,
   type ContentStage,
   type ContentFormat,
+  type ContentPlatform,
 } from '../lib/content-validation'
 import contentStylesheet from '../content-studio.css?url'
 import adminStylesheet from '../admin.css?url'
@@ -69,7 +71,13 @@ export const Route = createFileRoute('/admin/content')({
 
 type Board = Awaited<ReturnType<typeof getContentWorkspace>>['board']
 type Idea = Board['ideas'][number]
-type IdeaDraft = { title: string; notes: string; format: ContentFormat; stage: ContentStage }
+type IdeaDraft = {
+  title: string
+  notes: string
+  format: ContentFormat
+  stage: ContentStage
+  platforms: ContentPlatform[]
+}
 
 const collisionDetection: CollisionDetection = (args) => {
   const hits = pointerWithin(args)
@@ -352,6 +360,7 @@ function ContentStudio() {
                 </div>
                 <h3>{activeIdea.title}</h3>
                 <p>{activeIdea.notes || 'A good idea in the making.'}</p>
+                <PlatformTags platforms={activeIdea.platforms} />
               </div>
             )}
           </DragOverlay>
@@ -536,6 +545,7 @@ function IdeaCard({
           <span className="content-card-no-notes">Add notes, a hook, or a little direction.</span>
         )}
       </button>
+      <PlatformTags platforms={idea.platforms} />
       <label className="content-card-stage">
         <span>Stage</span>
         <select
@@ -579,6 +589,7 @@ function IdeaEditor({
     notes: initial?.notes ?? '',
     format: (initial?.format as ContentFormat) ?? 'VIDEO',
     stage,
+    platforms: (initial?.platforms as ContentPlatform[]) ?? [],
   })
   return (
     <WorkspaceModal
@@ -637,6 +648,10 @@ function IdeaEditor({
               </select>
             </label>
           </div>
+          <PlatformPicker
+            value={draft.platforms}
+            onChange={(platforms) => setDraft({ ...draft, platforms })}
+          />
           <label>
             Notes &amp; direction
             <textarea

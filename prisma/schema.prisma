@@ -79,6 +79,7 @@ model ContentIdea {
   title     String
   notes     String       @default("")
   format    String       @default("VIDEO")
+  platforms String[]     @default([])
   stage     ContentStage @default(CONCEPTS)
   position  Int          @default(0)
   authorId  String?
@@ -109,6 +110,7 @@ model ContentScratch {
 model ContentPad {
   id        String   @id
   body      String   @default("")
+  document  String?
   revision  Int      @default(0)
   updatedAt DateTime @updatedAt
 
