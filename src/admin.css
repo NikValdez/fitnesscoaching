@@ -291,7 +291,7 @@
 }
 .ideas-layout {
   display: grid;
-  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: clamp(28px, 4vw, 64px);
   align-items: start;
 }
@@ -303,13 +303,13 @@
 .ideas-composer-heading {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 30px;
+  gap: 16px;
+  margin-bottom: 24px;
   color: var(--navy);
 }
 .ideas-composer-heading .eyebrow {
   font-size: 9px;
+  margin-left: auto;
 }
 .ideas-icon {
   display: grid;
@@ -321,22 +321,16 @@
 }
 .ideas-composer h2 {
   font-family: var(--font-display);
-  font-size: clamp(30px, 3vw, 40px);
+  font-size: clamp(26px, 2.5vw, 34px);
   font-weight: 450;
   letter-spacing: -0.03em;
-  margin: 0 0 12px;
-}
-.ideas-composer > p {
-  color: #536078;
-  font-size: 14px;
-  line-height: 1.7;
-  max-width: 350px;
-  margin-bottom: 26px;
+  margin: 0;
 }
 .ideas-composer textarea {
-  min-height: 300px;
+  min-height: clamp(480px, 65dvh, 1000px);
+  font-size: 16px;
   line-height: 1.9;
-  padding: 22px;
+  padding: 28px;
   background: #ffffffb8;
   border-color: #2b4a7d1c;
   border-radius: 20px;
@@ -353,14 +347,10 @@
   margin: 14px 0 22px;
 }
 .ideas-composer form > .button {
-  width: 100%;
-}
-.ideas-scribble {
-  display: block;
-  font: 24px var(--font-accent);
-  color: var(--navy);
-  text-align: center;
-  margin-top: 28px;
+  display: flex;
+  width: auto;
+  min-width: 150px;
+  margin-left: auto;
 }
 .ideas-library {
   min-width: 0;
@@ -413,6 +403,8 @@
 }
 .ideas-list {
   display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
   gap: 18px;
 }
 .scratch-note {
@@ -491,6 +483,7 @@
   background: #dbe3f0;
 }
 .ideas-empty {
+  grid-column: 1 / -1;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -586,10 +579,6 @@
     max-width: 140px;
     line-height: 1.8;
   }
-  .ideas-layout {
-    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-    gap: 24px;
-  }
   .admin-auth .auth-aside {
     padding: 30px;
   }
@@ -684,9 +673,15 @@
     gap: 40px;
   }
   .ideas-composer textarea {
-    min-height: 240px;
+    min-height: clamp(420px, 65dvh, 800px);
     font-size: 16px;
     padding: 18px;
+  }
+  .ideas-composer-heading .eyebrow {
+    display: none;
+  }
+  .ideas-list {
+    grid-template-columns: minmax(0, 1fr);
   }
   .admin-page-heading {
     margin-bottom: 30px;

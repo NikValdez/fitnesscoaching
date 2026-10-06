@@ -110,10 +110,9 @@ function IdeasPage() {
             <span className="ideas-icon">
               <Pencil size={20} />
             </span>
-            <span className="eyebrow">The scratch pad</span>
+            <h2 id="scratch-heading">The scratch pad</h2>
+            <span className="eyebrow">Room to think out loud</span>
           </div>
-          <h2 id="scratch-heading">Start with a thought.</h2>
-          <p>No brief needed. Just make a little room for what’s on your mind.</p>
           <form
             onSubmit={async (event) => {
               event.preventDefault()
@@ -147,7 +146,6 @@ function IdeasPage() {
               {busy ? 'Saving…' : 'Save idea'}
             </button>
           </form>
-          <span className="ideas-scribble">Good things start somewhere.</span>
         </section>
         <section className="ideas-library" aria-labelledby="saved-ideas-heading">
           <div className="ideas-library-heading">
