@@ -4,35 +4,45 @@ import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { tanstackStartCookies } from 'better-auth/tanstack-start'
 import { db } from './db.server'
 
-export const isGoogleEnabled = () => Boolean(
-  process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET,
-)
+export const isGoogleEnabled = () =>
+  Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET)
 
 function createAuth() {
-return betterAuth({
-  appName: 'Steve Rossiter',
-  baseURL: process.env.BETTER_AUTH_URL,
-  secret: process.env.BETTER_AUTH_SECRET,
-  advanced: { ipAddress: { ipAddressHeaders: ['cf-connecting-ip'] } },
-  database: prismaAdapter(db, { provider: 'postgresql' }),
-  user: {
-    additionalFields: {
-      role: { type: ['CLIENT', 'ADMIN'], defaultValue: 'CLIENT', input: false, required: false },
+  const productionHosts = [
+    'steverossiter.com',
+    'www.steverossiter.com',
+    'steve-rossiter-coaching.nikcochran.workers.dev',
+  ]
+  const configuredURL = process.env.BETTER_AUTH_URL
+  return betterAuth({
+    appName: 'Steve Rossiter',
+    // Keep OAuth state cookies, Google's callback, and the session on the same
+    // host. A fixed workers.dev URL breaks sign-in from the custom domains.
+    baseURL:
+      configuredURL && productionHosts.includes(new URL(configuredURL).host)
+        ? { allowedHosts: productionHosts, protocol: 'https' }
+        : configuredURL,
+    secret: process.env.BETTER_AUTH_SECRET,
+    advanced: { ipAddress: { ipAddressHeaders: ['cf-connecting-ip'] } },
+    database: prismaAdapter(db, { provider: 'postgresql' }),
+    user: {
+      additionalFields: {
+        role: { type: ['CLIENT', 'ADMIN'], defaultValue: 'CLIENT', input: false, required: false },
+      },
     },
-  },
-  emailAndPassword: { enabled: true, minPasswordLength: 10, maxPasswordLength: 128 },
-  socialProviders: isGoogleEnabled()
-    ? {
-        google: {
-          clientId: process.env.GOOGLE_CLIENT_ID!,
-          clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-          prompt: 'select_account',
-        },
-      }
-    : {},
-  rateLimit: { enabled: true, window: 60, max: 60 },
-  plugins: [tanstackStartCookies()],
-})
+    emailAndPassword: { enabled: true, minPasswordLength: 10, maxPasswordLength: 128 },
+    socialProviders: isGoogleEnabled()
+      ? {
+          google: {
+            clientId: process.env.GOOGLE_CLIENT_ID!,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+            prompt: 'select_account',
+          },
+        }
+      : {},
+    rateLimit: { enabled: true, window: 60, max: 60 },
+    plugins: [tanstackStartCookies()],
+  })
 }
 
 // Auth configuration can be reused across requests. The database proxy still
