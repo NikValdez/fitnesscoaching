@@ -49,8 +49,44 @@ model User {
   nutritionLogs    NutritionLog[]
   intake           ClientIntake?
   billingAccounts  CoachingBillingAccount[]
+  contentIdeas     ContentIdea[]
 
   @@map("rossiter_user")
+}
+
+enum ContentStage {
+  CONCEPTS
+  PRE_PRODUCTION
+  FILMING
+  DONE
+
+  @@map("rossiter_content_stage")
+}
+
+model ContentBoard {
+  id       String        @id
+  revision Int           @default(0)
+  ideas    ContentIdea[]
+
+  @@map("rossiter_content_board")
+}
+
+model ContentIdea {
+  id        String       @id @default(cuid())
+  boardId   String       @default("main")
+  board     ContentBoard @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  title     String
+  notes     String       @default("")
+  format    String       @default("VIDEO")
+  stage     ContentStage @default(CONCEPTS)
+  position  Int          @default(0)
+  authorId  String?
+  author    User?        @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@index([boardId, stage, position])
+  @@map("rossiter_content_idea")
 }
 
 model CoachingBillingAccount {

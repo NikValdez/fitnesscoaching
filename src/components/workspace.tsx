@@ -16,6 +16,7 @@ import {
   ListChecks,
   Settings,
   CreditCard,
+  Clapperboard,
 } from 'lucide-react'
 import { Brand, BrandMark } from './brand'
 import { authClient } from '../lib/auth-client'
@@ -43,6 +44,7 @@ export const tabIcons: Record<string, typeof CalendarDays> = {
 
 export function Workspace({
   coach = false,
+  contentStudio = false,
   name,
   tab,
   tabs,
@@ -50,6 +52,7 @@ export function Workspace({
   children,
 }: {
   coach?: boolean
+  contentStudio?: boolean
   name: string
   tab: string
   tabs: { id: string; label: string }[]
@@ -63,7 +66,7 @@ export function Workspace({
       <header className="workspace-header">
         <Brand />
         <span className={`workspace-role ${coach ? 'is-coach' : ''}`}>
-          {coach ? 'Coach workspace' : 'Client portal'}
+          {contentStudio ? 'Admin workspace' : coach ? 'Coach workspace' : 'Client portal'}
         </span>
         <div className="workspace-header-right">
           <Link to="/" className="text-link">
@@ -97,6 +100,12 @@ export function Workspace({
         <aside className="workspace-sidebar">
           <span className="eyebrow">{coach ? 'Your practice' : 'Your next chapter'}</span>
           <nav aria-label={coach ? 'Coach navigation' : 'Client navigation'}>
+            {contentStudio && (
+              <Link to="/coach">
+                <LayoutDashboard size={18} strokeWidth={1.6} />
+                Coach workspace
+              </Link>
+            )}
             {tabs.map((item) => {
               const Icon = tabIcons[item.id] || ListChecks
               return (
@@ -117,14 +126,26 @@ export function Workspace({
                 Training &amp; check-ins
               </Link>
             )}
+            {coach && (
+              <Link
+                to="/admin/content"
+                className={contentStudio ? 'active' : undefined}
+                aria-current={contentStudio ? 'page' : undefined}
+              >
+                <Clapperboard size={18} strokeWidth={1.6} />
+                Content Studio
+              </Link>
+            )}
             <Link to="/account">
               <Settings size={18} strokeWidth={1.6} />
               Account
             </Link>
-            {!coach && <Link to="/work-with-me" hash="online-coaching">
-              <CreditCard size={18} strokeWidth={1.6} />
-              Coaching subscription
-            </Link>}
+            {!coach && (
+              <Link to="/work-with-me" hash="online-coaching">
+                <CreditCard size={18} strokeWidth={1.6} />
+                Coaching subscription
+              </Link>
+            )}
           </nav>
           <div className="workspace-sidebar-foot">
             <BrandMark />

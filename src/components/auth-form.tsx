@@ -9,10 +9,12 @@ export function AuthForm({
   signup,
   googleEnabled,
   oauthError,
+  admin = false,
 }: {
   signup?: boolean
   googleEnabled: boolean
   oauthError?: string
+  admin?: boolean
 }) {
   const navigate = useNavigate()
   const [busy, setBusy] = useState(false)
@@ -40,12 +42,26 @@ export function AuthForm({
           Back to Steve Rossiter
         </Link>
         <div className="auth-form-wrap">
-          <span className="eyebrow">{signup ? 'Your next chapter' : 'Your client space'}</span>
-          <h2>{signup ? 'Let’s make this personal.' : 'Good to have you back.'}</h2>
+          <span className="eyebrow">
+            {admin
+              ? 'Admin access / Content studio'
+              : signup
+                ? 'Your next chapter'
+                : 'Your client space'}
+          </span>
+          <h2>
+            {admin
+              ? 'A space for your ideas.'
+              : signup
+                ? 'Let’s make this personal.'
+                : 'Good to have you back.'}
+          </h2>
           <p>
-            {signup
-              ? 'Create your free account, then tell Steve what kind of support you’re looking for.'
-              : 'Sign in to pick up where you left off.'}
+            {admin
+              ? 'Sign in with your admin account to open the content board.'
+              : signup
+                ? 'Create your free account, then tell Steve what kind of support you’re looking for.'
+                : 'Sign in to pick up where you left off.'}
           </p>
           <button
             className="button button-outline google-button"
@@ -56,8 +72,8 @@ export function AuthForm({
               try {
                 const result = await authClient.signIn.social({
                   provider: 'google',
-                  callbackURL: '/portal',
-                  errorCallbackURL: '/login',
+                  callbackURL: admin ? '/admin/content' : '/portal',
+                  errorCallbackURL: admin ? '/admin/login' : '/login',
                 })
                 if (result.error) {
                   setError(result.error.message ?? 'Google sign-in failed.')
@@ -118,7 +134,7 @@ export function AuthForm({
                   setBusy(false)
                   return
                 }
-                await navigate({ to: '/portal' })
+                await navigate({ to: admin ? '/admin/content' : '/portal' })
               } catch {
                 setError('We couldn’t connect. Please try again.')
                 setBusy(false)
@@ -190,17 +206,22 @@ export function AuthForm({
               )}
             </button>
           </form>
-          <p className="auth-switch">
-            {signup ? 'Already have an account?' : 'New to Steve Rossiter?'}{' '}
-            <Link to={signup ? '/login' : '/signup'}>
-              {signup ? 'Sign in' : 'Create an account'}
-            </Link>
+          {!admin && (
+            <p className="auth-switch">
+              {signup ? 'Already have an account?' : 'New to Steve Rossiter?'}{' '}
+              <Link to={signup ? '/login' : '/signup'}>
+                {signup ? 'Sign in' : 'Create an account'}
+              </Link>
+            </p>
+          )}
+          <p className="form-note">
+            {admin
+              ? 'Content Studio is available to approved admins only.'
+              : 'Your training record is shared with your coach.'}{' '}
+            <Link to="/privacy">Privacy policy</Link>
           </p>
-          <p className="form-note">Your training record is shared with your coach. <Link to="/privacy">Privacy policy</Link></p>
         </div>
-        <span className="auth-copyright">
-          © 2026 Steve Rossiter Strength &amp; Nutrition
-        </span>
+        <span className="auth-copyright">© 2026 Steve Rossiter Strength &amp; Nutrition</span>
       </div>
     </main>
   )

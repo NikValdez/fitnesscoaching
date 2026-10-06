@@ -3,15 +3,17 @@ import { getRequestHeaders } from '@tanstack/react-start/server'
 import { getAuth } from './auth.server'
 import { db } from './db.server'
 
-export async function requireAccount() {
+export async function requireAccount({
+  loginTo = '/login',
+}: { loginTo?: '/login' | '/admin/login' } = {}) {
   const session = await getAuth().api.getSession({ headers: getRequestHeaders() })
-  if (!session) throw redirect({ to: '/login' })
+  if (!session) throw redirect({ to: loginTo })
   // Read the live database role on every request, including after a role change.
   const user = await db.user.findUnique({
     where: { id: session.user.id },
     select: { id: true, name: true, email: true, role: true, intake: { select: { userId: true } } },
   })
-  if (!user) throw redirect({ to: '/login' })
+  if (!user) throw redirect({ to: loginTo })
   return user
 }
 

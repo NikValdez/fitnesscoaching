@@ -45,6 +45,14 @@ Sign-in opens `/portal`. Clients see only their own information; coaches are red
 
 Clients without a completed questionnaire are directed to `/onboarding` before entering either private client area. This also covers returning clients with no answers and new Google accounts using the normal `/portal` callback. Admins bypass the questionnaire and go to `/coach`.
 
+## Admin content studio
+
+Open `/admin/content`, or choose **Content Studio** in the coach workspace. Signed-out visitors go to `/admin/login`; sign in with an existing admin account's email and password (or its linked Google account). Client accounts cannot access the page or its server operations. The existing `admin:grant` command controls access; there is no shared password or public admin registration.
+
+The shared board has **Concepts → Pre production → Filming → Done**. Add ideas with a title, format, and optional notes; open a card to edit or delete it. Drag its grip to change stages or reorder within a stage, or use the stage selector. The grip also supports keyboard dragging (Space, arrow keys, Space to drop; Escape to cancel). The board scrolls horizontally on small screens. Ideas and their order persist in PostgreSQL for all admins. An outdated tab cannot overwrite a newer board revision; refresh and save again without losing the open draft. **Refresh board** loads other admins' latest changes.
+
+The additive `202610060001_content_studio` migration creates `rossiter_content_board`, `rossiter_content_idea`, and the content stage enum. Apply it with `npm run db:migrate` before deploying this version. Every read and mutation checks the current database role; private responses disable caching and search indexing. This first version provides the ideas and production board; automated content generation can be added later.
+
 ## Client questionnaire
 
 Clients can select any combination of **Fitness coaching, Nutrition, Accountability, and Lifestyle**. Each selected service gets an independent tier: **Essential**, **Ongoing support**, or **In person** (the highest tier, in Los Angeles). These selections express interest; they do not create a subscription, change program assignments, set prices, or book sessions. Steve confirms the details separately.
@@ -189,6 +197,8 @@ npm run test:e2e
 ```
 
 The browser suite checks landing-page interactions, enquiry persistence, mobile overflow/navigation, role routing, signup/login/logout, questionnaire validation and editing, coach visibility of preferences, workout persistence/deletion, check-in upserts/review, program assignment, calendar completion, nutrition tracking, and account isolation. Security checks replay coach and questionnaire mutations without the required access, attempt cross-client completion and role escalation, and verify immediate role revocation. Tests create unique `rossiter-test-…@example.com`, `rossiter-portal-test-…@example.com`, and `rossiter-intake-test-…@example.com` accounts, then remove only those exact test identities and their records. Prefer a dedicated Neon test branch for future runs. Screenshots and traces are written to ignored `test-results/`.
+
+`tests/e2e/content-studio.spec.ts` covers admin password sign-in, mouse/touch dragging, keyboard reordering, persistent edits, stale-tab recovery, mobile overflow, client/anonymous access denial, role revocation, and cross-site request rejection. It creates unique `content-studio-test-…@example.com` accounts and removes their ideas and identities after the run. Existing board content is preserved.
 
 ## Production build
 

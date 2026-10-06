@@ -23,6 +23,8 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ProgramRouteImport } from './routes/program'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as WorkWithMeRouteImport } from './routes/work-with-me'
+import { Route as AdminContentRouteImport } from './routes/admin.content'
+import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as ApiCheckoutRouteImport } from './routes/api/checkout'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
@@ -103,6 +105,16 @@ const WorkWithMeRoute = WorkWithMeRouteImport.update({
   path: '/work-with-me',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminContentRoute = AdminContentRouteImport.update({
+  id: '/admin/content',
+  path: '/admin/content',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminLoginRoute = AdminLoginRouteImport.update({
+  id: '/admin/login',
+  path: '/admin/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiCheckoutRoute = ApiCheckoutRouteImport.update({
   id: '/api/checkout',
   path: '/api/checkout',
@@ -164,6 +176,8 @@ export interface FileRoutesByFullPath {
   '/program': typeof ProgramRoute
   '/signup': typeof SignupRoute
   '/work-with-me': typeof WorkWithMeRoute
+  '/admin/content': typeof AdminContentRoute
+  '/admin/login': typeof AdminLoginRoute
   '/api/checkout': typeof ApiCheckoutRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/purchase/success': typeof PurchaseSuccessRoute
@@ -188,6 +202,8 @@ export interface FileRoutesByTo {
   '/program': typeof ProgramRoute
   '/signup': typeof SignupRoute
   '/work-with-me': typeof WorkWithMeRoute
+  '/admin/content': typeof AdminContentRoute
+  '/admin/login': typeof AdminLoginRoute
   '/api/checkout': typeof ApiCheckoutRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/purchase/success': typeof PurchaseSuccessRoute
@@ -214,6 +230,8 @@ export interface FileRoutesById {
   '/program': typeof ProgramRoute
   '/signup': typeof SignupRoute
   '/work-with-me': typeof WorkWithMeRoute
+  '/admin/content': typeof AdminContentRoute
+  '/admin/login': typeof AdminLoginRoute
   '/api/checkout': typeof ApiCheckoutRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/purchase/success': typeof PurchaseSuccessRoute
@@ -241,6 +259,8 @@ export interface FileRouteTypes {
     | '/program'
     | '/signup'
     | '/work-with-me'
+    | '/admin/content'
+    | '/admin/login'
     | '/api/checkout'
     | '/blog/$slug'
     | '/purchase/success'
@@ -265,6 +285,8 @@ export interface FileRouteTypes {
     | '/program'
     | '/signup'
     | '/work-with-me'
+    | '/admin/content'
+    | '/admin/login'
     | '/api/checkout'
     | '/blog/$slug'
     | '/purchase/success'
@@ -290,6 +312,8 @@ export interface FileRouteTypes {
     | '/program'
     | '/signup'
     | '/work-with-me'
+    | '/admin/content'
+    | '/admin/login'
     | '/api/checkout'
     | '/blog/$slug'
     | '/purchase/success'
@@ -316,6 +340,8 @@ export interface RootRouteChildren {
   ProgramRoute: typeof ProgramRoute
   SignupRoute: typeof SignupRoute
   WorkWithMeRoute: typeof WorkWithMeRoute
+  AdminContentRoute: typeof AdminContentRoute
+  AdminLoginRoute: typeof AdminLoginRoute
   ApiCheckoutRoute: typeof ApiCheckoutRoute
   PurchaseSuccessRoute: typeof PurchaseSuccessRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -425,6 +451,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkWithMeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/content': {
+      id: '/admin/content'
+      path: '/admin/content'
+      fullPath: '/admin/content'
+      preLoaderRoute: typeof AdminContentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/login': {
+      id: '/admin/login'
+      path: '/admin/login'
+      fullPath: '/admin/login'
+      preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/checkout': {
       id: '/api/checkout'
       path: '/api/checkout'
@@ -518,6 +558,8 @@ const rootRouteChildren: RootRouteChildren = {
   ProgramRoute: ProgramRoute,
   SignupRoute: SignupRoute,
   WorkWithMeRoute: WorkWithMeRoute,
+  AdminContentRoute: AdminContentRoute,
+  AdminLoginRoute: AdminLoginRoute,
   ApiCheckoutRoute: ApiCheckoutRoute,
   PurchaseSuccessRoute: PurchaseSuccessRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
