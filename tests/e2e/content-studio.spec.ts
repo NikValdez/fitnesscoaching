@@ -52,7 +52,9 @@ async function drag(page: Page, ideaId: string, stage: string) {
   await page.mouse.move(source.x + source.width / 2 + 10, source.y + source.height / 2, {
     steps: 3,
   })
-  await page.mouse.move(target.x + target.width / 2, target.y + target.height - 25, { steps: 20 })
+  await expect(page.locator('.content-card-overlay')).toBeVisible()
+  await page.mouse.move(target.x + target.width / 2, target.y + 150, { steps: 20 })
+  await expect(column).toHaveClass(/is-over/)
   await page.mouse.up()
 }
 
@@ -222,6 +224,15 @@ test('admin sign-in, persistent ideas, drag and reorder, mobile, and server acce
     element.scrollIntoView({ block: 'center', behavior: 'instant' })
     element.scrollLeft = 0
   })
+  await page.locator(`[data-idea-id="${second.id}"] .content-drag-handle`).evaluate((element) => {
+    element.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'instant' })
+  })
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+      ),
+  )
   const touchHandle = await page
     .locator(`[data-idea-id="${second.id}"] .content-drag-handle`)
     .boundingBox()

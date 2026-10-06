@@ -53,6 +53,14 @@ The shared board has **Concepts → Pre production → Filming → Done**. Add i
 
 The additive `202610060001_content_studio` migration creates `rossiter_content_board`, `rossiter_content_idea`, and the content stage enum. Apply it with `npm run db:migrate` before deploying this version. Every read and mutation checks the current database role; private responses disable caching and search indexing. This first version provides the ideas and production board; automated content generation can be added later.
 
+## Ideas scratch pad
+
+The **Ideas** tab at `/admin/ideas` is a shared, admin-only scratch pad. Save freeform thoughts, search saved ideas, and edit or delete them. **Create card** lets you choose a title and format, then creates a Concepts card using the original text as its notes. The original idea stays in the scratch pad with a link to the board. Repeated conversion requests return the same card. Editing or deleting a scratch idea does not change its existing card; deleting its card allows a fresh conversion later.
+
+The scratch pad checks each idea's revision before edits and deletions, so an outdated tab cannot replace another admin's writing. Refresh ideas to load the latest revision while keeping an open draft. Apply the additive `202610060002_content_scratch` migration before deploying. Admin login, navigation, dialogs, the board, and Ideas share the public site's typography, colors, and rounded panels.
+
+`tests/e2e/content-ideas.spec.ts` covers private access, persistence, stale drafts, conversion retries, retained board cards, role revocation, and mobile overflow. Its uniquely named test accounts and content are removed afterward.
+
 ## Client questionnaire
 
 Clients can select any combination of **Fitness coaching, Nutrition, Accountability, and Lifestyle**. Each selected service gets an independent tier: **Essential**, **Ongoing support**, or **In person** (the highest tier, in Los Angeles). These selections express interest; they do not create a subscription, change program assignments, set prices, or book sessions. Steve confirms the details separately.

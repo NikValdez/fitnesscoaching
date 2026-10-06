@@ -32,7 +32,8 @@ import {
   ShieldCheck,
   Trash2,
 } from 'lucide-react'
-import { Workspace, WorkspaceModal, Notice } from '../components/workspace'
+import { WorkspaceModal, Notice } from '../components/workspace'
+import { AdminWorkspace } from '../components/admin-workspace'
 import {
   getContentWorkspace,
   saveContentIdea,
@@ -46,6 +47,7 @@ import {
   type ContentFormat,
 } from '../lib/content-validation'
 import contentStylesheet from '../content-studio.css?url'
+import adminStylesheet from '../admin.css?url'
 
 export const Route = createFileRoute('/admin/content')({
   head: () => ({
@@ -53,7 +55,10 @@ export const Route = createFileRoute('/admin/content')({
       { title: 'Content Studio — Steve Rossiter' },
       { name: 'robots', content: 'noindex, nofollow, noarchive' },
     ],
-    links: [{ rel: 'stylesheet', href: contentStylesheet }],
+    links: [
+      { rel: 'stylesheet', href: contentStylesheet },
+      { rel: 'stylesheet', href: adminStylesheet },
+    ],
   }),
   headers: () => ({ 'Cache-Control': 'private, no-store', 'X-Robots-Tag': 'noindex, noarchive' }),
   staleTime: 0,
@@ -144,7 +149,7 @@ function ContentStudio() {
     )
   }
 
-  function onDragEnd({ active, over }: DragEndEvent) {
+  function onDragEnd({ active, over, activatorEvent }: DragEndEvent) {
     setActiveId(null)
     if (!over || active.id === over.id || pending.current) return
     const idea = board.ideas.find((item) => item.id === active.id)
@@ -155,7 +160,12 @@ function ContentStudio() {
     let beforeId = targetIdea?.id ?? null
     if (targetIdea) {
       const rect = active.rect.current.translated
-      const isAfter = rect && rect.top + rect.height / 2 > over.rect.top + over.rect.height / 2
+      // Keyboard sorting follows the direction of travel. Comparing card centers
+      // can reverse an upward move when the dragged card is taller than its target.
+      const isAfter =
+        activatorEvent.type === 'keydown'
+          ? rect && rect.top > (active.rect.current.initial?.top ?? rect.top)
+          : rect && rect.top + rect.height / 2 > over.rect.top + over.rect.height / 2
       if (isAfter) {
         const column = board.ideas.filter((item) => item.stage === stage && item.id !== idea.id)
         beforeId = column[column.findIndex((item) => item.id === targetIdea.id) + 1]?.id ?? null
@@ -175,7 +185,7 @@ function ContentStudio() {
     'the board'
 
   return (
-    <Workspace coach contentStudio name={data.user.name} tab="content" tabs={[]} onTab={() => {}}>
+    <AdminWorkspace name={data.user.name} current="content">
       <div className="content-studio">
         <div className="workspace-page-heading content-heading">
           <div>
@@ -424,7 +434,7 @@ function ContentStudio() {
           </WorkspaceModal>
         )}
       </div>
-    </Workspace>
+    </AdminWorkspace>
   )
 }
 

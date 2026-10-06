@@ -21,18 +21,35 @@ export function AuthForm({
   const [error, setError] = useState(googleAuthError(oauthError))
   const [showPassword, setShowPassword] = useState(false)
   return (
-    <main id="main" className="auth-page">
+    <main id="main" className={`auth-page${admin ? ' admin-auth' : ''}`}>
       <div className="auth-aside">
         <Brand />
         <div>
-          <span className="eyebrow">Strength is a practice.</span>
+          <span className="eyebrow">
+            {admin ? 'A space to create.' : 'Strength is a practice.'}
+          </span>
           <h1>
-            A little stronger.
-            <br />A little steadier.
-            <br />
-            <span>Every week.</span>
+            {admin ? (
+              <>
+                A little spark.
+                <br />A little progress.
+                <br />
+                <span>Something to share.</span>
+              </>
+            ) : (
+              <>
+                A little stronger.
+                <br />A little steadier.
+                <br />
+                <span>Every week.</span>
+              </>
+            )}
           </h1>
-          <p>A place for the work you put in—and the progress that follows.</p>
+          <p>
+            {admin
+              ? 'Make room for the ideas that become something good.'
+              : 'A place for the work you put in—and the progress that follows.'}
+          </p>
         </div>
         <span className="eyebrow">Steve Rossiter / Strength &amp; Nutrition</span>
       </div>
@@ -58,7 +75,7 @@ export function AuthForm({
           </h2>
           <p>
             {admin
-              ? 'Sign in with your admin account to open the content board.'
+              ? 'Sign in with your admin account to open your ideas and production board.'
               : signup
                 ? 'Create your free account, then tell Steve what kind of support you’re looking for.'
                 : 'Sign in to pick up where you left off.'}

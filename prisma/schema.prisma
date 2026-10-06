@@ -50,6 +50,7 @@ model User {
   intake           ClientIntake?
   billingAccounts  CoachingBillingAccount[]
   contentIdeas     ContentIdea[]
+  scratchIdeas     ContentScratch[]
 
   @@map("rossiter_user")
 }
@@ -84,9 +85,25 @@ model ContentIdea {
   author    User?        @relation(fields: [authorId], references: [id], onDelete: SetNull)
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
+  scratch   ContentScratch?
 
   @@index([boardId, stage, position])
   @@map("rossiter_content_idea")
+}
+
+model ContentScratch {
+  id        String       @id @default(cuid())
+  body      String
+  revision  Int          @default(0)
+  cardId    String?      @unique
+  card      ContentIdea? @relation(fields: [cardId], references: [id], onDelete: SetNull)
+  authorId  String?
+  author    User?        @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@index([createdAt])
+  @@map("rossiter_content_scratch")
 }
 
 model CoachingBillingAccount {
