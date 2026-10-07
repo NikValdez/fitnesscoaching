@@ -2,6 +2,8 @@ export { toBase64, fromBase64 } from 'lib0/buffer'
 import * as decoding from 'lib0/decoding'
 import * as encoding from 'lib0/encoding'
 
+export type StudioChannel = 'pad' | 'board' | 'library'
+
 export type StudioPhase = 'connecting' | 'saved' | 'saving' | 'offline' | 'error' | 'denied'
 export type StudioState = {
   phase: StudioPhase

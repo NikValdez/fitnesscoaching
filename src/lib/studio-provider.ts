@@ -5,7 +5,7 @@ import {
   encodeAwarenessUpdate,
   removeAwarenessStates,
 } from 'y-protocols/awareness'
-import { fromBase64, toBase64, type StudioState } from './studio-protocol'
+import { fromBase64, toBase64, type StudioState, type StudioChannel } from './studio-protocol'
 
 const initial: StudioState = {
   phase: 'connecting',
@@ -32,10 +32,10 @@ export class StudioProvider {
   private updates: Uint8Array[] = []
   private attempts = 0
   private listeners = new Set<() => void>()
-  private boardListeners = new Set<() => void>()
+  private refreshListeners = new Set<() => void>()
   private state = initial
 
-  constructor(readonly channel: 'pad' | 'board') {
+  constructor(readonly channel: StudioChannel) {
     this.document.on('update', (update: Uint8Array, origin: unknown) => {
       if (origin === this) return
       this.sequence++
@@ -72,10 +72,10 @@ export class StudioProvider {
       this.listeners.delete(listener)
     }
   }
-  onBoard = (listener: () => void) => {
-    this.boardListeners.add(listener)
+  onRefresh = (listener: () => void) => {
+    this.refreshListeners.add(listener)
     return () => {
-      this.boardListeners.delete(listener)
+      this.refreshListeners.delete(listener)
     }
   }
   private change(state: Partial<StudioState>) {
@@ -153,7 +153,7 @@ export class StudioProvider {
             })
           }
           if (this.channel === 'pad') this.sendAwareness()
-          this.boardListeners.forEach((listener) => listener())
+          this.refreshListeners.forEach((listener) => listener())
         } else if (message.type === 'update')
           Y.applyUpdate(this.document, fromBase64(message.update), this)
         else if (message.type === 'awareness')
@@ -166,7 +166,8 @@ export class StudioProvider {
             error: '',
           })
         } else if (message.type === 'peers') this.change({ peers: message.names })
-        else if (message.type === 'board') this.boardListeners.forEach((listener) => listener())
+        else if (message.type === this.channel)
+          this.refreshListeners.forEach((listener) => listener())
         else if (message.type === 'error') this.change({ phase: 'error', error: message.message })
       } catch {
         this.change({
@@ -235,6 +236,6 @@ export class StudioProvider {
     this.awareness.destroy()
     this.document.destroy()
     this.listeners.clear()
-    this.boardListeners.clear()
+    this.refreshListeners.clear()
   }
 }

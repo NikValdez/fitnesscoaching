@@ -123,7 +123,7 @@ function ContentStudio() {
         /* A reconnect or the next focus will retry without discarding an open card. */
       }
     }
-    const stop = provider.onBoard(() => void refresh())
+    const stop = provider.onRefresh(() => void refresh())
     const timer = setInterval(() => void refresh(), 15000)
     window.addEventListener('focus', refresh)
     void refresh()

@@ -51,14 +51,18 @@ export async function updateContentBoard(
     },
     { timeout: 15000 },
   )
+  await notifyStudioChange('board')
+  return result
+}
+
+export async function notifyStudioChange(channel: 'board' | 'library') {
   try {
     const { env } = await import('cloudflare:workers')
-    await env.ADMIN_STUDIO.getByName('main').fetch('https://studio/board-changed', {
+    await env.ADMIN_STUDIO.getByName('main').fetch(`https://studio/${channel}-changed`, {
       method: 'POST',
     })
   } catch (error) {
     // The database change is already committed; reconnect/focus polling recovers.
-    console.error('Could not broadcast the board update.', error)
+    console.error(`Could not broadcast the ${channel} update.`, error)
   }
-  return result
 }

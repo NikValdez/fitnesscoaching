@@ -71,6 +71,14 @@ Apply database migrations through `202610060005_shared_admin_studio`, and deploy
 
 `tests/studio-document.test.ts` checks concurrent edits, formatting, offline differences, idempotent retries, binary restoration, and invalid documents. `tests/e2e/content-ideas.spec.ts` uses isolated local Durable Object storage and two separate admin accounts to check live editing, cursors, offline merging, local undo, persistence, access revocation, and mobile layout. `tests/e2e/content-sharing.spec.ts` verifies live board updates and that shared cards survive deletion of their creator's account.
 
+## Shared content library
+
+The **Content library** tab at `/admin/library` saves Instagram Reels/video posts and TikTok video/share links for inspiration. Paste a link, optionally add a title and notes, and open the original video in a new tab. The platform is detected automatically. Search titles, notes, and URLs, or filter by Instagram and TikTok. Every entry has Edit and Delete controls; deletion requires confirmation.
+
+The library is shared by all admins and updates across open sessions through the authenticated `library` WebSocket channel, with reconnect/focus recovery and a 15-second fallback refresh. Entries have no user ownership. Concurrent changes to different entries retry against the latest library revision; stale edits to the same entry retain the local draft for review. The server accepts only HTTPS video/share URLs on the supported platform hosts, removes sharing trackers, and prevents duplicate normalized links.
+
+Apply the additive `202610060006_content_library` migration before deployment. It creates the singleton `rossiter_content_library` and its `rossiter_content_library_entry` records without changing existing accounts, cards, or scratch-pad data. `tests/library-validation.test.ts` checks URL safety, normalization, and mutation inputs. `tests/e2e/content-library.spec.ts` verifies sharing, CRUD, search/filtering, duplicate detection, stale drafts, access controls, persistence, and mobile navigation.
+
 ## Client questionnaire
 
 Clients can select any combination of **Fitness coaching, Nutrition, Accountability, and Lifestyle**. Each selected service gets an independent tier: **Essential**, **Ongoing support**, or **In person** (the highest tier, in Los Angeles). These selections express interest; they do not create a subscription, change program assignments, set prices, or book sessions. Steve confirms the details separately.

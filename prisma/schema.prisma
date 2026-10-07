@@ -111,6 +111,30 @@ model ContentPad {
   @@map("rossiter_content_pad")
 }
 
+model ContentLibrary {
+  id       String                @id
+  revision Int                   @default(0)
+  entries  ContentLibraryEntry[]
+
+  @@map("rossiter_content_library")
+}
+
+model ContentLibraryEntry {
+  id        String         @id @default(cuid())
+  libraryId String         @default("main")
+  library   ContentLibrary @relation(fields: [libraryId], references: [id], onDelete: Cascade)
+  url       String
+  platform  String
+  title     String
+  notes     String         @default("")
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@unique([libraryId, url])
+  @@index([libraryId, createdAt])
+  @@map("rossiter_content_library_entry")
+}
+
 model CoachingBillingAccount {
   id                      String                 @id @default(cuid())
   userId                  String

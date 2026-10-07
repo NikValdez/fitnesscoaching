@@ -2,13 +2,19 @@ import { DurableObject } from 'cloudflare:workers'
 import * as Y from 'yjs'
 import { db, withIsolatedDatabaseRequest } from './db.server'
 import { seedStudioDocument, mergeStudioUpdate } from './studio-document'
-import { toBase64, fromBase64, awarenessFrame, readAwarenessFrame } from './studio-protocol'
+import {
+  toBase64,
+  fromBase64,
+  awarenessFrame,
+  readAwarenessFrame,
+  type StudioChannel,
+} from './studio-protocol'
 
 type Connection = {
   session: string
   name: string
   client: number
-  channel: 'pad' | 'board'
+  channel: StudioChannel
   clock: number
   awareness?: string
 }
@@ -69,7 +75,7 @@ export class AdminStudio extends DurableObject {
     }
   }
 
-  private broadcast(message: unknown, except?: WebSocket, channel?: 'pad') {
+  private broadcast(message: unknown, except?: WebSocket, channel?: StudioChannel) {
     for (const ws of this.ctx.getWebSockets()) {
       if (ws !== except && (!channel || ws.deserializeAttachment()?.channel === channel))
         this.send(ws, message)
@@ -103,9 +109,11 @@ export class AdminStudio extends DurableObject {
   }
 
   async fetch(request: Request) {
-    if (new URL(request.url).pathname === '/board-changed' && request.method === 'POST') {
+    const path = new URL(request.url).pathname
+    if (['/board-changed', '/library-changed'].includes(path) && request.method === 'POST') {
       await this.authorizedConnections()
-      this.broadcast({ type: 'board' })
+      const channel = path === '/library-changed' ? 'library' : 'board'
+      this.broadcast({ type: channel }, undefined, channel)
       return new Response(null, { status: 204 })
     }
     const session = request.headers.get('X-Studio-Session')
@@ -119,7 +127,9 @@ export class AdminStudio extends DurableObject {
       clientId > 4294967295
     )
       return new Response('Forbidden', { status: 403 })
-    const channel = request.headers.get('X-Studio-Channel') === 'board' ? 'board' : 'pad'
+    const requested = request.headers.get('X-Studio-Channel')
+    const channel: StudioChannel =
+      requested === 'board' || requested === 'library' ? requested : 'pad'
     const pair = new WebSocketPair()
     const [client, server] = Object.values(pair)
     server.serializeAttachment({
