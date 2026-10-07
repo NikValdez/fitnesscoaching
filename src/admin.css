@@ -131,6 +131,15 @@
 .admin-auth label {
   font-size: 13px;
 }
+.admin-workspace .content-editor-fields select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 44px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2351565b' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 15px center;
+  background-size: 16px 16px;
+}
 .admin-workspace .workspace-modal {
   border-radius: var(--radius-panel);
   padding: 36px;
@@ -848,6 +857,10 @@
   .admin-workspace select,
   .admin-auth input {
     font-size: 16px;
+  }
+  .content-editor-fields .field-row {
+    grid-template-columns: 1fr;
+    gap: 18px;
   }
   .scratch-toolbar {
     padding: 10px;
