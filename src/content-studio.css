@@ -201,8 +201,16 @@
   min-width: 0;
   margin: 0;
 }
-.content-card > .content-platform-tags {
+.content-card-footer {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
   margin-top: 10px;
+}
+.content-card-footer .content-platform-tags {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
 }
 .content-card-details {
   margin-top: 14px;
@@ -242,7 +250,7 @@
   flex-shrink: 0;
   width: 30px;
   height: 30px;
-  margin: -4px -6px 0 0;
+  margin-left: auto;
   border-radius: 4px;
   color: var(--navy);
 }

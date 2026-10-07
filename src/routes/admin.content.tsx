@@ -583,18 +583,7 @@ function IdeaCard({
         >
           <GripVertical size={17} />
         </button>
-        <button
-          type="button"
-          className="content-card-toggle icon-button"
-          onClick={() => setExpanded((current) => !current)}
-          aria-label={`${expanded ? 'Collapse' : 'Expand'} ${idea.title}`}
-          aria-expanded={expanded}
-          aria-controls={detailsId}
-        >
-          <ChevronDown size={17} aria-hidden="true" />
-        </button>
       </div>
-      <PlatformTags platforms={idea.platforms} />
       <div id={detailsId} className="content-card-details" hidden={!expanded}>
         <span className="content-card-meta">
           {idea.format === 'VIDEO' ? <Clapperboard size={11} /> : <FileText size={11} />}
@@ -643,6 +632,19 @@ function IdeaCard({
             Delete
           </button>
         </div>
+      </div>
+      <div className="content-card-footer">
+        <PlatformTags platforms={idea.platforms} />
+        <button
+          type="button"
+          className="content-card-toggle icon-button"
+          onClick={() => setExpanded((current) => !current)}
+          aria-label={`${expanded ? 'Collapse' : 'Expand'} ${idea.title}`}
+          aria-expanded={expanded}
+          aria-controls={detailsId}
+        >
+          <ChevronDown size={17} aria-hidden="true" />
+        </button>
       </div>
     </article>
   )
