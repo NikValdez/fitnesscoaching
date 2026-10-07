@@ -1,10 +1,10 @@
-import { parseVideoLink } from './library-validation'
+import { parseLibraryLink } from './library-validation'
 import { videoEmbedUrl } from './video-preview'
 
 const unavailable = 'This video cannot be previewed here. Open the original video to watch it.'
 
 export async function resolveVideoEmbedUrl(value: string, request: typeof fetch = fetch) {
-  let link = parseVideoLink(value)
+  let link = parseLibraryLink(value)
   if (!link) throw new Error(unavailable)
   const direct = videoEmbedUrl(link.url)
   if (direct) return direct
@@ -25,7 +25,7 @@ export async function resolveVideoEmbedUrl(value: string, request: typeof fetch 
     if (![301, 302, 303, 307, 308].includes(response.status) || !location) break
     try {
       // Validate every redirect before any request; never follow arbitrary hosts.
-      link = parseVideoLink(new URL(location, link.url).href)
+      link = parseLibraryLink(new URL(location, link.url).href)
     } catch {
       break
     }

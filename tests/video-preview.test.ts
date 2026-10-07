@@ -18,6 +18,15 @@ describe('library video previews', () => {
     expect(videoEmbedUrl(video)).toBe(
       'https://www.tiktok.com/player/v1/7123456789012345678?autoplay=0&rel=0',
     )
+    expect(videoEmbedUrl('https://youtu.be/Abc_123-xyz?si=tracking')).toBe(
+      'https://www.youtube.com/embed/Abc_123-xyz?autoplay=0&rel=0',
+    )
+    for (const url of [
+      'https://www.facebook.com/reel/123456/',
+      'https://x.com/creator/status/123456',
+      'https://www.linkedin.com/feed/update/urn:li:activity:123456/',
+    ])
+      expect(videoEmbedUrl(url)).toBeNull()
     expect(videoEmbedUrl('https://vm.tiktok.com/Share123/')).toBeNull()
     expect(videoEmbedUrl('https://www.tiktok.com/player/v1/7123456789012345678')).toBeNull()
     expect(videoEmbedUrl('https://evil.test/reel/Abc_123/')).toBeNull()
@@ -29,6 +38,12 @@ describe('library video previews', () => {
     expect(await resolveVideoEmbedUrl('https://www.instagram.com/reel/Abc_123/', request)).toBe(
       'https://www.instagram.com/reel/Abc_123/embed/',
     )
+    expect(await resolveVideoEmbedUrl('https://www.youtube.com/shorts/Abc_123-xyz', request)).toBe(
+      'https://www.youtube.com/embed/Abc_123-xyz?autoplay=0&rel=0',
+    )
+    await expect(
+      resolveVideoEmbedUrl('https://www.facebook.com/reel/123456/', request),
+    ).rejects.toThrow('cannot be previewed')
     expect(request).not.toHaveBeenCalled()
     await expect(resolveVideoEmbedUrl('https://evil.test/reel/Abc_123/', request)).rejects.toThrow(
       'cannot be previewed',
@@ -63,6 +78,8 @@ describe('library video previews', () => {
     'https://user:password@www.tiktok.com/@creator/video/123/',
     'https://www.tiktok.com:444/@creator/video/123/',
     'https://www.instagram.com/reel/Abc_123/',
+    'https://www.youtube.com/watch?v=Abc_123-xyz',
+    'https://www.facebook.com/reel/123456/',
     'javascript:alert(1)',
   ])('never follows a share redirect to %s', async (location) => {
     const request = vi
@@ -97,15 +114,13 @@ describe('library video previews', () => {
 
   it('bounds long share-link redirect chains', async () => {
     let hop = 0
-    const request = vi
-      .fn<typeof fetch>()
-      .mockImplementation(
-        async () =>
-          new Response(null, {
-            status: 302,
-            headers: { location: `https://vm.tiktok.com/Share${++hop}/` },
-          }),
-      )
+    const request = vi.fn<typeof fetch>().mockImplementation(
+      async () =>
+        new Response(null, {
+          status: 302,
+          headers: { location: `https://vm.tiktok.com/Share${++hop}/` },
+        }),
+    )
     await expect(resolveVideoEmbedUrl('https://vm.tiktok.com/Share0/', request)).rejects.toThrow(
       'cannot be previewed',
     )

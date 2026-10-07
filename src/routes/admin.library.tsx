@@ -11,13 +11,19 @@ import {
   Search,
   Trash2,
 } from 'lucide-react'
-import { SiInstagram, SiTiktok } from 'react-icons/si'
 import { AdminWorkspace } from '../components/admin-workspace'
 import { Notice, WorkspaceModal } from '../components/workspace'
 import { useStudio, useStudioState } from '../components/use-studio'
 import { LibraryVideoPreview } from '../components/library-video-preview'
+import { platformIcons } from '../components/content-platforms'
 import { getLibraryWorkspace, saveLibraryEntry, deleteLibraryEntry } from '../lib/library'
-import { libraryPlatforms, parseVideoLink, type LibraryPlatform } from '../lib/library-validation'
+import {
+  libraryPlatforms,
+  libraryLinkHelp,
+  parseLibraryLink,
+  type LibraryPlatform,
+} from '../lib/library-validation'
+import { supportsVideoPreview } from '../lib/video-preview'
 import adminStylesheet from '../admin.css?url'
 import libraryStylesheet from '../content-library.css?url'
 
@@ -42,7 +48,6 @@ export const Route = createFileRoute('/admin/library')({
 type SavedLibrary = Awaited<ReturnType<typeof getLibraryWorkspace>>['library']
 type Entry = SavedLibrary['entries'][number]
 type Draft = { url: string; title: string; notes: string }
-const platformIcons = { INSTAGRAM: SiInstagram, TIKTOK: SiTiktok }
 const dateLabel = (date: Date) =>
   new Intl.DateTimeFormat('en-US', {
     month: 'short',
@@ -141,7 +146,7 @@ function ContentLibrary() {
           <span className="eyebrow">Keep what sparks an idea</span>
           <h1>Content library.</h1>
           <p>
-            A shared collection of Instagram and TikTok videos. Save a good hook, a fresh angle, or
+            A shared collection of social posts and videos. Save a good hook, a fresh angle, or
             something worth coming back to.
           </p>
         </div>
@@ -215,9 +220,9 @@ function ContentLibrary() {
       {entries.length ? (
         <div className="library-grid" aria-label="Saved inspiration">
           {entries.map((entry) => {
-            const isInstagram = entry.platform === 'INSTAGRAM'
-            const Icon = isInstagram ? SiInstagram : SiTiktok
-            const label = isInstagram ? 'Instagram' : 'TikTok'
+            const item = libraryPlatforms.find((item) => item.id === entry.platform)
+            const Icon = item ? platformIcons[item.id] : Library
+            const label = item?.label ?? 'Original site'
             return (
               <article key={entry.id} className="library-entry" data-library-id={entry.id}>
                 <div className="library-entry-top">
@@ -232,16 +237,18 @@ function ContentLibrary() {
                 <p className="library-entry-url" title={entry.url}>
                   {entry.url.replace('https://', '')}
                 </p>
-                <button
-                  type="button"
-                  className="library-preview-button"
-                  aria-label={`Preview ${entry.title}`}
-                  aria-haspopup="dialog"
-                  onClick={() => setPreviewId(entry.id)}
-                >
-                  <PlayCircle size={18} aria-hidden="true" />
-                  Preview video
-                </button>
+                {supportsVideoPreview(entry.platform) && (
+                  <button
+                    type="button"
+                    className="library-preview-button"
+                    aria-label={`Preview ${entry.title}`}
+                    aria-haspopup="dialog"
+                    onClick={() => setPreviewId(entry.id)}
+                  >
+                    <PlayCircle size={18} aria-hidden="true" />
+                    Preview video
+                  </button>
+                )}
                 <a
                   className="library-watch"
                   href={entry.url}
@@ -294,7 +301,7 @@ function ContentLibrary() {
           <p>
             {library.entries.length
               ? 'Try another platform or search for a different word.'
-              : 'Save an Instagram or TikTok video for the whole team to revisit.'}
+              : 'Save a social post or video for the whole team to revisit.'}
           </p>
           {library.entries.length ? (
             <button
@@ -318,7 +325,10 @@ function ContentLibrary() {
       {preview && (
         <WorkspaceModal
           title="Video preview."
-          label={preview.platform === 'INSTAGRAM' ? 'Instagram' : 'TikTok'}
+          label={
+            libraryPlatforms.find((item) => item.id === preview.platform)?.label ??
+            'Content library'
+          }
           className="library-preview-modal"
           onClose={() => setPreviewId(null)}
         >
@@ -424,12 +434,12 @@ function LibraryEditor({
     notes: initial?.notes ?? '',
   })
   const [validation, setValidation] = useState('')
-  const link = parseVideoLink(draft.url)
+  const link = parseLibraryLink(draft.url)
   const Icon = link ? platformIcons[link.platform] : null
   return (
     <WorkspaceModal
       title={initial ? 'Keep the inspiration clear.' : 'Found something good?'}
-      label={initial ? 'Edit saved link' : 'Save a video'}
+      label={initial ? 'Edit saved link' : 'Save inspiration'}
       busy={busy}
       onClose={onClose}
     >
@@ -437,7 +447,7 @@ function LibraryEditor({
         onSubmit={(event) => {
           event.preventDefault()
           if (!link) {
-            setValidation('Paste an Instagram Reel, video post, or TikTok video link.')
+            setValidation(libraryLinkHelp)
             return
           }
           setValidation('')
@@ -446,7 +456,7 @@ function LibraryEditor({
       >
         <fieldset disabled={busy} className="library-editor-fields">
           <label>
-            Video link
+            Content link
             <input
               type="url"
               autoFocus
@@ -463,11 +473,11 @@ function LibraryEditor({
           {link && Icon ? (
             <span className="library-link-platform">
               <Icon size={15} aria-hidden="true" />
-              {link.platform === 'INSTAGRAM' ? 'Instagram' : 'TikTok'} video
+              {libraryPlatforms.find((item) => item.id === link.platform)?.label}
             </span>
           ) : (
             <p className="form-note">
-              Instagram Reels and video posts, TikTok videos, and TikTok share links.
+              Instagram, TikTok, Facebook, YouTube, Twitter/X, and LinkedIn posts or videos.
             </p>
           )}
           <label>

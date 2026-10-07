@@ -3,7 +3,7 @@ import { FaTwitter, FaLinkedinIn } from 'react-icons/fa6'
 import { Newspaper } from 'lucide-react'
 import { contentPlatforms, type ContentPlatform } from '../lib/content-validation'
 
-const icons = {
+export const platformIcons = {
   INSTAGRAM: SiInstagram,
   TIKTOK: SiTiktok,
   FACEBOOK: SiFacebook,
@@ -20,7 +20,7 @@ export function PlatformTags({ platforms }: { platforms: string[] }) {
       {contentPlatforms
         .filter((platform) => platforms.includes(platform.id))
         .map((platform) => {
-          const Icon = icons[platform.id]
+          const Icon = platformIcons[platform.id]
           return (
             <li
               key={platform.id}
@@ -50,7 +50,7 @@ export function PlatformPicker({
       </legend>
       <div className="platform-options">
         {contentPlatforms.map((platform) => {
-          const Icon = icons[platform.id]
+          const Icon = platformIcons[platform.id]
           const selected = value.includes(platform.id)
           return (
             <button

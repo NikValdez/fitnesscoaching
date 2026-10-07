@@ -3,7 +3,8 @@ import { z } from 'zod'
 import {
   deleteLibraryEntrySchema,
   saveLibraryEntrySchema,
-  parseVideoLink,
+  parseLibraryLink,
+  libraryPlatforms,
 } from './library-validation'
 
 export const getLibraryWorkspace = createServerFn({ method: 'GET' }).handler(async () => {
@@ -34,7 +35,7 @@ export const saveLibraryEntry = createServerFn({ method: 'POST' })
     const { updateContentLibrary } = await import('./library.server')
     await requireContentAdmin()
     return updateContentLibrary(data.revision, async (tx) => {
-      const link = parseVideoLink(data.url)!
+      const link = parseLibraryLink(data.url)!
       const existing = data.id
         ? await tx.contentLibraryEntry.findFirst({ where: { id: data.id, libraryId: 'main' } })
         : null
@@ -50,12 +51,12 @@ export const saveLibraryEntry = createServerFn({ method: 'POST' })
           ...(data.id ? { id: { not: data.id } } : {}),
         },
       })
-      if (duplicate)
-        throw new Error(`This video is already in the library as “${duplicate.title}”.`)
+      if (duplicate) throw new Error(`This link is already in the library as “${duplicate.title}”.`)
       const values = {
         ...link,
         title:
-          data.title || `${link.platform === 'INSTAGRAM' ? 'Instagram' : 'TikTok'} inspiration`,
+          data.title ||
+          `${libraryPlatforms.find((item) => item.id === link.platform)!.label} inspiration`,
         notes: data.notes,
       }
       return existing

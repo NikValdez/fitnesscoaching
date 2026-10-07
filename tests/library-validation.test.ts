@@ -1,35 +1,90 @@
 import { describe, expect, it } from 'vitest'
 import {
-  parseVideoLink,
+  parseLibraryLink,
   saveLibraryEntrySchema,
   deleteLibraryEntrySchema,
 } from '../src/lib/library-validation'
 
 describe('inspiration library links', () => {
   it('recognizes supported video and share links and removes tracking parameters', () => {
-    expect(parseVideoLink(' https://instagram.com/reel/ABC_-12?igsh=tracking#fragment ')).toEqual({
-      url: 'https://www.instagram.com/reel/ABC_-12/',
-      platform: 'INSTAGRAM',
-    })
+    expect(parseLibraryLink(' https://instagram.com/reel/ABC_-12?igsh=tracking#fragment ')).toEqual(
+      {
+        url: 'https://www.instagram.com/reel/ABC_-12/',
+        platform: 'INSTAGRAM',
+      },
+    )
     for (const url of [
       'https://www.instagram.com/p/ABC123/',
       'https://www.instagram.com/reels/ABC123/',
       'https://www.instagram.com/tv/ABC123/',
     ])
-      expect(parseVideoLink(url)?.platform).toBe('INSTAGRAM')
+      expect(parseLibraryLink(url)?.platform).toBe('INSTAGRAM')
     for (const url of [
       'https://www.tiktok.com/@creator.name/video/123456789?is_from_webapp=1',
       'https://www.tiktok.com/t/ZAB123/',
       'https://vm.tiktok.com/ZAB123/',
       'https://vt.tiktok.com/ZAB123/',
     ])
-      expect(parseVideoLink(url)?.platform).toBe('TIKTOK')
-    expect(parseVideoLink('https://m.tiktok.com/@creator/video/123')).toEqual({
+      expect(parseLibraryLink(url)?.platform).toBe('TIKTOK')
+    expect(parseLibraryLink('https://m.tiktok.com/@creator/video/123')).toEqual({
       url: 'https://www.tiktok.com/@creator/video/123/',
       platform: 'TIKTOK',
     })
   })
-  it('rejects unsafe URLs, lookalike hosts, profiles, and non-video links', () => {
+  it('normalizes YouTube video formats without losing the video identifier', () => {
+    for (const url of [
+      'https://youtu.be/Abc_123-xyz?si=tracking',
+      'https://m.youtube.com/watch?v=Abc_123-xyz&list=playlist&t=12',
+      'https://www.youtube.com/shorts/Abc_123-xyz?feature=share',
+      'https://www.youtube.com/live/Abc_123-xyz/',
+      'https://www.youtube.com/embed/Abc_123-xyz',
+    ])
+      expect(parseLibraryLink(url)).toEqual({
+        url: 'https://www.youtube.com/watch?v=Abc_123-xyz',
+        platform: 'YOUTUBE',
+      })
+  })
+  it('supports Facebook videos, posts, and share links while keeping required query parameters', () => {
+    for (const url of [
+      'https://m.facebook.com/reel/123456?mibextid=tracking',
+      'https://www.facebook.com/creator/videos/123456/',
+      'https://www.facebook.com/creator/posts/pfbidABC123/',
+      'https://www.facebook.com/groups/fitness/posts/123456/',
+      'https://www.facebook.com/share/v/Share123/',
+      'https://www.facebook.com/share/r/Share123/',
+      'https://www.facebook.com/share/p/Share123/',
+      'https://fb.watch/Share123/',
+    ])
+      expect(parseLibraryLink(url)?.platform).toBe('FACEBOOK')
+    for (const path of ['watch/', 'video.php'])
+      expect(parseLibraryLink(`https://m.facebook.com/${path}?v=123456&tracking=1`)).toEqual({
+        url: 'https://www.facebook.com/watch/?v=123456',
+        platform: 'FACEBOOK',
+      })
+    expect(
+      parseLibraryLink(
+        'https://www.facebook.com/permalink.php?story_fbid=pfbidABC123&id=456&tracking=1',
+      ),
+    ).toEqual({
+      url: 'https://www.facebook.com/permalink.php?story_fbid=pfbidABC123&id=456',
+      platform: 'FACEBOOK',
+    })
+  })
+  it('recognizes Twitter/X and LinkedIn post links without tracking parameters', () => {
+    for (const host of ['x.com', 'twitter.com', 'mobile.twitter.com'])
+      expect(parseLibraryLink(`https://${host}/creator/status/123456/video/1?s=20`)).toEqual({
+        url: 'https://x.com/creator/status/123456',
+        platform: 'TWITTER',
+      })
+    for (const url of [
+      'https://www.linkedin.com/feed/update/urn:li:activity:123456/?utm_source=share',
+      'https://www.linkedin.com/feed/update/urn:li:ugcPost:123456/',
+      'https://www.linkedin.com/posts/creator_fitness-advice-activity-123456-Abc1?utm_medium=share',
+      'https://www.linkedin.com/pulse/fitness-advice-creator/',
+    ])
+      expect(parseLibraryLink(url)?.platform).toBe('LINKEDIN')
+  })
+  it('rejects unsafe URLs, lookalike hosts, profiles, and unsupported links', () => {
     for (const url of [
       'javascript:alert(1)',
       'data:text/html,bad',
@@ -45,9 +100,24 @@ describe('inspiration library links', () => {
       'https://www.tiktok.com/search?q=inspiration',
       'https://vm.tiktok.com/',
       'https://youtube.com/watch?v=123',
+      'https://youtube.com/watch?list=playlist',
+      'https://youtube.com/@creator',
+      'https://youtu.be.evil.test/Abc_123-xyz',
+      'https://youtube.com/redirect?q=https://evil.test',
+      'https://www.facebook.com/profile.php?id=123456',
+      'https://www.facebook.com/watch/?v=https://evil.test',
+      'https://facebook.com.evil.test/reel/123456/',
+      'https://www.facebook.com/l.php?u=https://evil.test',
+      'https://www.facebook.com/creator/',
+      'https://x.com/creator',
+      'https://x.com.evil.test/creator/status/123456',
+      'https://twitter.com/creator/status/not-a-post',
+      'https://www.linkedin.com/in/creator/',
+      'https://www.linkedin.com/company/fitness/',
+      'https://www.linkedin.com.evil.test/feed/update/urn:li:activity:123456/',
       'not a link',
     ])
-      expect(parseVideoLink(url), url).toBeNull()
+      expect(parseLibraryLink(url), url).toBeNull()
   })
   it('requires a saved version for edits/deletes and rejects ownership inputs', () => {
     const draft = { revision: 0, title: '', notes: '', url: 'https://www.instagram.com/reel/ABC/' }

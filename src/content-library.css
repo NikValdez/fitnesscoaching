@@ -18,11 +18,12 @@
   padding: 24px;
   border-radius: 22px;
   background: var(--blue-tint);
+  flex-wrap: wrap;
 }
 .library-search {
   position: relative;
   flex: 1;
-  min-width: 0;
+  min-width: min(100%, 240px);
 }
 .library-search > svg {
   position: absolute;
@@ -38,7 +39,7 @@
 .library-filters {
   display: flex;
   gap: 6px;
-  flex-shrink: 0;
+  flex-wrap: wrap;
 }
 .library-filters button {
   display: inline-flex;
@@ -104,7 +105,7 @@
   height: 40px;
   border-radius: 50%;
   background: var(--tint);
-  color: var(--ink);
+  color: var(--platform-color, var(--ink));
 }
 .library-platform.platform-instagram {
   color: #ba326e;
@@ -341,12 +342,11 @@
     padding: 18px;
   }
   .library-filters {
-    justify-content: space-between;
+    justify-content: flex-start;
     flex-wrap: wrap;
     gap: 4px;
   }
   .library-filters button {
-    flex: 1;
     padding: 10px;
     font-size: 12px;
   }

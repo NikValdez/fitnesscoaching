@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { ArrowUpRight, LoaderCircle, VideoOff } from 'lucide-react'
 import { getLibraryPreview } from '../lib/library'
+import { libraryPlatforms } from '../lib/library-validation'
 
 export function LibraryVideoPreview({
   entry,
@@ -11,7 +12,8 @@ export function LibraryVideoPreview({
   const [phase, setPhase] = useState<'loading' | 'ready' | 'slow' | 'error'>('loading')
   const [error, setError] = useState('')
   const frame = useRef<HTMLIFrameElement>(null)
-  const label = entry.platform === 'INSTAGRAM' ? 'Instagram' : 'TikTok'
+  const label =
+    libraryPlatforms.find((item) => item.id === entry.platform)?.label ?? 'Original site'
 
   useEffect(() => {
     let disposed = false

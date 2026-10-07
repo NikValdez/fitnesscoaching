@@ -49,7 +49,7 @@ async function replay(context: BrowserContext, request: Request, origin = base) 
 }
 async function save(page: Page, title: string, url: string, notes = '') {
   await page.getByRole('button', { name: 'Save link', exact: true }).click()
-  await page.getByLabel('Video link', { exact: true }).fill(url)
+  await page.getByLabel('Content link', { exact: true }).fill(url)
   await page.getByLabel('Title (optional)', { exact: true }).fill(title)
   await page.getByLabel('Notes (optional)', { exact: true }).fill(notes)
   const request = page.waitForRequest(
@@ -92,6 +92,12 @@ test('admins share, find, edit, and delete inspiration links with private access
       route.fulfill({
         contentType: 'text/html',
         body: `<html><body style="background:#111;color:white;display:grid;place-items:center;height:90vh;font:16px sans-serif">TikTok player fixture<button onclick="parent.postMessage({'x-tiktok-player':true,type:'onPlayerError',value:{errorCode:1001}}, '*')">Simulate unavailable video</button></body></html>`,
+      }),
+    )
+    await page.route('https://www.youtube.com/embed/**', (route) =>
+      route.fulfill({
+        contentType: 'text/html',
+        body: '<html><body>YouTube player fixture</body></html>',
       }),
     )
   }
@@ -210,12 +216,88 @@ test('admins share, find, edit, and delete inspiration links with private access
   )
   await a.getByRole('button', { name: 'Close dialog', exact: true }).click()
 
+  // Each additional platform persists, appears for another admin, and filters independently.
+  const youtubeId = suffix.slice(0, 11)
+  const additions = [
+    {
+      platform: 'FACEBOOK',
+      label: 'Facebook',
+      url: `https://www.facebook.com/watch/?v=${tiktokId}`,
+      input: `https://m.facebook.com/watch/?v=${tiktokId}&mibextid=tracking`,
+    },
+    {
+      platform: 'YOUTUBE',
+      label: 'YouTube',
+      url: `https://www.youtube.com/watch?v=${youtubeId}`,
+      input: `https://youtu.be/${youtubeId}?si=tracking`,
+    },
+    {
+      platform: 'TWITTER',
+      label: 'Twitter / X',
+      url: `https://x.com/library_test/status/${tiktokId}`,
+      input: `https://twitter.com/library_test/status/${tiktokId}?s=20`,
+    },
+    {
+      platform: 'LINKEDIN',
+      label: 'LinkedIn',
+      url: `https://www.linkedin.com/feed/update/urn:li:activity:${tiktokId}/`,
+      input: `https://www.linkedin.com/feed/update/urn:li:activity:${tiktokId}/?utm_source=share`,
+    },
+  ]
+  urls.push(...additions.map((item) => item.url))
+  for (const item of additions) {
+    const savedTitle = `${item.label} reference ${suffix.slice(0, 8)}`
+    await save(
+      a,
+      item.platform === 'LINKEDIN' ? '' : savedTitle,
+      item.input,
+      'A fresh angle to try.',
+    )
+    const saved = await db.contentLibraryEntry.findUniqueOrThrow({
+      where: { libraryId_url: { libraryId: 'main', url: item.url } },
+    })
+    expect(saved.platform).toBe(item.platform)
+    expect(saved.title).toBe(item.platform === 'LINKEDIN' ? 'LinkedIn inspiration' : savedTitle)
+    const savedCard = a.locator(`[data-library-id="${saved.id}"]`)
+    await expect(b.locator(`[data-library-id="${saved.id}"]`)).toContainText(saved.title, {
+      timeout: 5000,
+    })
+    await expect(savedCard.locator('.library-platform svg')).toHaveCount(1)
+    await expect(
+      savedCard.getByRole('link', { name: `Open on ${item.label}`, exact: false }),
+    ).toHaveAttribute('href', item.url)
+    await a
+      .getByRole('group', { name: 'Filter by platform' })
+      .getByRole('button', { name: item.label, exact: true })
+      .click()
+    await expect(savedCard).toBeVisible()
+    await expect(card(a)).toHaveCount(0)
+    if (item.platform === 'YOUTUBE') {
+      await savedCard.getByRole('button', { name: `Preview ${saved.title}`, exact: true }).click()
+      await expect(a.getByRole('dialog').locator('iframe')).toHaveAttribute(
+        'src',
+        `https://www.youtube.com/embed/${youtubeId}?autoplay=0&rel=0`,
+      )
+      await expect(
+        a.getByRole('dialog').getByRole('link', { name: /Open on YouTube/ }),
+      ).toHaveAttribute('href', item.url)
+      await a.getByRole('button', { name: 'Close dialog', exact: true }).click()
+    } else
+      await expect(
+        savedCard.getByRole('button', { name: `Preview ${saved.title}`, exact: true }),
+      ).toHaveCount(0)
+    await a
+      .getByRole('group', { name: 'Filter by platform' })
+      .getByRole('button', { name: 'All', exact: true })
+      .click()
+  }
+
   // Validation and duplicate detection preserve the existing shared entry.
   await a.getByRole('button', { name: 'Save link', exact: true }).click()
-  await a.getByLabel('Video link', { exact: true }).fill('https://www.instagram.com/profile/')
+  await a.getByLabel('Content link', { exact: true }).fill('https://www.instagram.com/profile/')
   await a.getByRole('dialog').getByRole('button', { name: 'Save link', exact: true }).click()
   await expect(a.getByRole('dialog').getByRole('alert')).toContainText('video link')
-  await a.getByLabel('Video link', { exact: true }).fill(`${instagram}?utm_source=another`)
+  await a.getByLabel('Content link', { exact: true }).fill(`${instagram}?utm_source=another`)
   await a.getByRole('dialog').getByRole('button', { name: 'Save link', exact: true }).click()
   await expect(a.getByRole('dialog').getByRole('alert')).toContainText('already in the library')
   await a.getByRole('button', { name: 'Cancel', exact: true }).click()
@@ -253,8 +335,18 @@ test('admins share, find, edit, and delete inspiration links with private access
   await expect(card(a)).toContainText('Shared notes from Bob.')
   await a.screenshot({ path: 'test-results/content-library-desktop.png', fullPage: true })
   await a.setViewportSize({ width: 390, height: 844 })
+  await a.getByRole('link', { name: 'Content library', exact: true }).scrollIntoViewIfNeeded()
   await expect(a.getByRole('link', { name: 'Content library', exact: true })).toBeInViewport()
   expect(await a.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  for (const item of additions) {
+    const filter = a
+      .getByRole('group', { name: 'Filter by platform' })
+      .getByRole('button', { name: item.label, exact: true })
+    await expect(filter).toBeVisible()
+    expect(
+      await filter.evaluate((element) => element.getBoundingClientRect().right <= innerWidth),
+    ).toBe(true)
+  }
   await a.screenshot({ path: 'test-results/content-library-mobile.png', fullPage: true })
   await a.getByRole('button', { name: `Preview ${updated}`, exact: true }).click()
   await expect(a.getByRole('dialog').locator('iframe')).toHaveAttribute('src', instagramEmbed)
