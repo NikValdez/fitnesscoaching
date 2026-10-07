@@ -22,6 +22,7 @@ import {
 import { CSS } from '@dnd-kit/utilities'
 import {
   Check,
+  ChevronDown,
   Clapperboard,
   FileText,
   GripVertical,
@@ -311,7 +312,8 @@ function ContentStudio() {
         </div>
 
         <p className="content-drag-hint" id="content-board-help">
-          Drag the grip to move or reorder ideas. You can also change the stage on any card.
+          Drag the grip to move or reorder ideas. Expand a card to see its notes and change its
+          stage.
         </p>
         <DndContext
           id="content-board"
@@ -404,11 +406,7 @@ function ContentStudio() {
           <DragOverlay dropAnimation={null}>
             {activeIdea && (
               <div className="content-card content-card-overlay">
-                <div className="content-card-meta">
-                  {contentFormats.find((format) => format.id === activeIdea.format)?.label}
-                </div>
                 <h3>{activeIdea.title}</h3>
-                <p>{activeIdea.notes || 'A good idea in the making.'}</p>
                 <PlatformTags platforms={activeIdea.platforms} />
               </div>
             )}
@@ -550,6 +548,8 @@ function IdeaCard({
   onDelete: () => void
   onMove: (stage: ContentStage) => void
 }) {
+  const [expanded, setExpanded] = useState(false)
+  const detailsId = `content-card-details-${idea.id}`
   const {
     attributes,
     listeners,
@@ -572,10 +572,7 @@ function IdeaCard({
       style={{ transform: CSS.Transform.toString(transform), transition }}
     >
       <div className="content-card-top">
-        <span className="content-card-meta">
-          {idea.format === 'VIDEO' ? <Clapperboard size={11} /> : <FileText size={11} />}
-          {contentFormats.find((format) => format.id === idea.format)?.label}
-        </span>
+        <h3>{idea.title}</h3>
         <button
           ref={setActivatorNodeRef}
           className="content-drag-handle icon-button"
@@ -586,59 +583,66 @@ function IdeaCard({
         >
           <GripVertical size={17} />
         </button>
+        <button
+          type="button"
+          className="content-card-toggle icon-button"
+          onClick={() => setExpanded((current) => !current)}
+          aria-label={`${expanded ? 'Collapse' : 'Expand'} ${idea.title}`}
+          aria-expanded={expanded}
+          aria-controls={detailsId}
+        >
+          <ChevronDown size={17} aria-hidden="true" />
+        </button>
       </div>
-      <button
-        className="content-card-open"
-        disabled={busy}
-        onClick={onEdit}
-        aria-label={`Open ${idea.title}`}
-        aria-haspopup="dialog"
-      >
-        <h3>{idea.title}</h3>
+      <PlatformTags platforms={idea.platforms} />
+      <div id={detailsId} className="content-card-details" hidden={!expanded}>
+        <span className="content-card-meta">
+          {idea.format === 'VIDEO' ? <Clapperboard size={11} /> : <FileText size={11} />}
+          {contentFormats.find((format) => format.id === idea.format)?.label}
+        </span>
         {idea.notes ? (
           <p>{idea.notes}</p>
         ) : (
           <span className="content-card-no-notes">Add notes, a hook, or a little direction.</span>
         )}
-      </button>
-      <PlatformTags platforms={idea.platforms} />
-      <label className="content-card-stage">
-        <span>Stage</span>
-        <select
-          aria-label={`Stage for ${idea.title}`}
-          value={idea.stage}
-          disabled={busy}
-          onChange={(event) => onMove(event.target.value as ContentStage)}
-        >
-          {contentStages.map((stage) => (
-            <option key={stage.id} value={stage.id}>
-              {stage.label}
-            </option>
-          ))}
-        </select>
-      </label>
-      <div className="content-card-actions" role="group" aria-label={`Actions for ${idea.title}`}>
-        <button
-          type="button"
-          disabled={busy}
-          onClick={onEdit}
-          aria-label={`Edit ${idea.title}`}
-          aria-haspopup="dialog"
-        >
-          <Pencil size={14} aria-hidden="true" />
-          Edit
-        </button>
-        <button
-          type="button"
-          className="content-card-delete"
-          disabled={busy}
-          onClick={onDelete}
-          aria-label={`Delete ${idea.title}`}
-          aria-haspopup="dialog"
-        >
-          <Trash2 size={14} aria-hidden="true" />
-          Delete
-        </button>
+        <label className="content-card-stage">
+          <span>Stage</span>
+          <select
+            aria-label={`Stage for ${idea.title}`}
+            value={idea.stage}
+            disabled={busy}
+            onChange={(event) => onMove(event.target.value as ContentStage)}
+          >
+            {contentStages.map((stage) => (
+              <option key={stage.id} value={stage.id}>
+                {stage.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <div className="content-card-actions" role="group" aria-label={`Actions for ${idea.title}`}>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={onEdit}
+            aria-label={`Edit ${idea.title}`}
+            aria-haspopup="dialog"
+          >
+            <Pencil size={14} aria-hidden="true" />
+            Edit
+          </button>
+          <button
+            type="button"
+            className="content-card-delete"
+            disabled={busy}
+            onClick={onDelete}
+            aria-label={`Delete ${idea.title}`}
+            aria-haspopup="dialog"
+          >
+            <Trash2 size={14} aria-hidden="true" />
+            Delete
+          </button>
+        </div>
       </div>
     </article>
   )

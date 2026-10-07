@@ -193,10 +193,24 @@
 }
 .content-card-top {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 7px;
-  margin-bottom: 13px;
+  align-items: flex-start;
+  gap: 4px;
+}
+.content-card-top h3 {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}
+.content-card > .content-platform-tags {
+  margin-top: 10px;
+}
+.content-card-details {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #eeece6;
+}
+.content-card-details .content-card-meta {
+  margin-bottom: 10px;
 }
 .content-card-meta {
   display: inline-flex;
@@ -213,7 +227,8 @@
   color: #8e948c;
   width: 30px;
   height: 30px;
-  margin: -6px -6px -6px 0;
+  flex-shrink: 0;
+  margin-top: -4px;
   border-radius: 4px;
 }
 .content-drag-handle:active {
@@ -223,16 +238,19 @@
   background: #eeede9;
   color: var(--ink);
 }
-.content-card-open {
-  display: block;
-  width: 100%;
-  text-align: left;
-  padding: 0;
-  background: transparent;
-  border: 0;
-}
-.content-card-open:hover h3 {
+.content-card-toggle.icon-button {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  margin: -4px -6px 0 0;
+  border-radius: 4px;
   color: var(--navy);
+}
+.content-card-toggle:hover {
+  background: #eeede9;
+}
+.content-card-toggle[aria-expanded='true'] svg {
+  transform: rotate(180deg);
 }
 .content-card h3 {
   margin: 0 0 9px;
@@ -249,10 +267,6 @@
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   margin: 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 .content-card-no-notes {
   display: block;
@@ -315,7 +329,7 @@
   border-color: #e4c8c8;
 }
 .content-card-actions button:focus-visible,
-.content-card-open:focus-visible {
+.content-card-toggle:focus-visible {
   outline: 2px solid var(--navy);
   outline-offset: 3px;
 }
@@ -374,9 +388,6 @@
   cursor: grabbing;
   border-color: #a2aea0;
   transform: rotate(2deg);
-}
-.content-card-overlay .content-card-meta {
-  margin-bottom: 14px;
 }
 .content-footer {
   display: flex;
@@ -505,9 +516,10 @@
     padding-inline: 12px;
     font-size: 12px;
   }
-  .content-drag-handle.icon-button {
-    width: 38px;
-    height: 38px;
+  .content-drag-handle.icon-button,
+  .content-card-toggle.icon-button {
+    width: 44px;
+    height: 44px;
   }
 }
 @media (prefers-reduced-motion: reduce) {

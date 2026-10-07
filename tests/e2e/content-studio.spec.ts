@@ -162,6 +162,12 @@ test('admin sign-in, persistent ideas, drag and reorder, mobile, and server acce
     .getByRole('list', { name: 'Social platforms' })
   await expect(tags.getByRole('listitem')).toHaveCount(6)
   await expect(tags).toContainText('InstagramTikTokFacebookYouTubeTwitterLinkedIn')
+  await expect(tags).toBeVisible()
+  const firstCard = page.locator(`[data-idea-id="${idea.id}"]`)
+  await expect(
+    firstCard.getByText('Hook: start with one small habit.', { exact: false }),
+  ).not.toBeVisible()
+  await expect(firstCard.getByRole('combobox')).toHaveCount(0)
   const movePromise = page.waitForRequest(
     (request) => request.method() === 'POST' && request.url().includes('/_serverFn/'),
   )
@@ -185,6 +191,7 @@ test('admin sign-in, persistent ideas, drag and reorder, mobile, and server acce
   await waitForHydration(page)
 
   // Changes from another tab cannot silently replace a stale admin's draft.
+  await page.getByRole('button', { name: `Expand ${title}`, exact: true }).click()
   await page.getByRole('button', { name: `Edit ${title}`, exact: true }).click()
   await page.getByLabel('Idea title').fill(`${title} updated`)
   await expect(
@@ -306,6 +313,7 @@ test('admin sign-in, persistent ideas, drag and reorder, mobile, and server acce
   await expect(page.getByText('Saving…', { exact: true })).toHaveCount(0)
   await touchSession.send('Emulation.setTouchEmulationEnabled', { enabled: false })
   await touchSession.detach()
+  await page.getByRole('button', { name: `Expand ${title}`, exact: true }).click()
   await page.getByLabel(`Stage for ${title}`, { exact: true }).selectOption('FILMING')
   await expect(
     page
@@ -320,6 +328,7 @@ test('admin sign-in, persistent ideas, drag and reorder, mobile, and server acce
   await page.setViewportSize({ width: 1600, height: 1000 })
   await page.reload()
   await waitForHydration(page)
+  await page.getByRole('button', { name: `Expand ${title}`, exact: true }).click()
   await page.getByLabel(`Stage for ${title}`, { exact: true }).selectOption('DONE')
   await expect(
     page.locator('[data-stage="DONE"]').getByRole('heading', { name: title, exact: true }),
@@ -337,6 +346,7 @@ test('admin sign-in, persistent ideas, drag and reorder, mobile, and server acce
   await expect(anonymousPage).toHaveURL(/\/admin\/login/)
   expect(await anonymousResponse?.text()).not.toContain(title)
 
+  await page.getByRole('button', { name: `Expand ${title}`, exact: true }).click()
   await page.getByRole('button', { name: `Edit ${title}`, exact: true }).click()
   await page.getByRole('button', { name: 'Delete idea', exact: true }).click()
   await page.getByRole('button', { name: 'Keep idea' }).click()

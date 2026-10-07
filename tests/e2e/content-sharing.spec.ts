@@ -70,12 +70,30 @@ test('separate admins see live cards and keep workspace data after its creator l
   await expect(card(bobPage).getByRole('list', { name: 'Social platforms' })).toContainText(
     'Instagram',
   )
+  await expect(card(bobPage).getByRole('combobox')).toHaveCount(0)
+  await expect(
+    card(bobPage).getByRole('button', { name: `Edit ${title}`, exact: true }),
+  ).toHaveCount(0)
+  await expect(card(bobPage).locator('.content-card-meta')).not.toBeVisible()
+  const collapsedHeight = (await card(bobPage).boundingBox())!.height
+  await bobPage.screenshot({ path: 'test-results/cards-collapsed-desktop.png', fullPage: true })
+  const expand = card(bobPage).getByRole('button', { name: `Expand ${title}`, exact: true })
+  await expect(expand).toHaveAttribute('aria-expanded', 'false')
+  await expand.focus()
+  await bobPage.keyboard.press('Enter')
+  await expect(
+    card(bobPage).getByRole('button', { name: `Collapse ${title}`, exact: true }),
+  ).toHaveAttribute('aria-expanded', 'true')
+  await expect(card(bobPage).getByRole('combobox')).toBeVisible()
+  expect((await card(bobPage).boundingBox())!.height).toBeGreaterThan(collapsedHeight + 80)
+  await expect(card(alicePage).getByRole('combobox')).toHaveCount(0)
   await card(bobPage).getByRole('combobox').selectOption('FILMING')
   await expect(
     alicePage.locator('[data-stage="FILMING"]').getByRole('heading', { name: title }),
   ).toBeVisible({ timeout: 5000 })
 
   // Updates elsewhere refresh the board without replacing an open local draft.
+  await alicePage.getByRole('button', { name: `Expand ${title}`, exact: true }).click()
   await alicePage.getByRole('button', { name: `Edit ${title}`, exact: true }).click()
   await alicePage.getByLabel('Idea title').fill(updated)
   await create(bobPage, second)
@@ -92,6 +110,11 @@ test('separate admins see live cards and keep workspace data after its creator l
   // The explicit card actions are available on mobile and synchronize edits
   // and confirmed deletions without navigating through another card first.
   await alicePage.setViewportSize({ width: 390, height: 844 })
+  await expect(alicePage.getByRole('button', { name: `Edit ${second}`, exact: true })).toHaveCount(
+    0,
+  )
+  await alicePage.screenshot({ path: 'test-results/cards-collapsed-mobile.png', fullPage: true })
+  await alicePage.getByRole('button', { name: `Expand ${second}`, exact: true }).click()
   await alicePage.getByRole('button', { name: `Edit ${second}`, exact: true }).click()
   await alicePage.getByLabel('Notes & direction').fill('Edited using the mobile card action.')
   await alicePage.getByRole('button', { name: 'Save changes', exact: true }).click()
@@ -100,6 +123,25 @@ test('separate admins see live cards and keep workspace data after its creator l
     'Edited using the mobile card action.',
     { timeout: 5000 },
   )
+  const secondCard = alicePage
+    .locator('[data-idea-id]')
+    .filter({ has: alicePage.getByRole('heading', { name: second, exact: true }) })
+  await expect(secondCard.getByRole('list', { name: 'Social platforms' })).toContainText(
+    'Instagram',
+  )
+  await alicePage.getByRole('button', { name: `Collapse ${second}`, exact: true }).click()
+  await expect(
+    secondCard.getByText('Edited using the mobile card action.', { exact: true }),
+  ).not.toBeVisible()
+  await expect(secondCard.getByRole('list', { name: 'Social platforms' })).toBeVisible()
+  await alicePage.getByRole('button', { name: `Expand ${second}`, exact: true }).click()
+  await expect(
+    secondCard.getByText('Edited using the mobile card action.', { exact: true }),
+  ).toBeVisible()
+  await expect
+    .poll(() => alicePage.evaluate(() => document.documentElement.scrollWidth <= innerWidth))
+    .toBe(true)
+  await bobPage.getByRole('button', { name: `Expand ${second}`, exact: true }).click()
   await alicePage.screenshot({ path: 'test-results/card-actions-mobile.png', fullPage: true })
   await bobPage.screenshot({ path: 'test-results/card-actions-desktop.png', fullPage: true })
   await bobPage.getByRole('button', { name: `Delete ${second}`, exact: true }).click()
@@ -125,6 +167,7 @@ test('separate admins see live cards and keep workspace data after its creator l
   await db.user.delete({ where: { id: alice.id } })
   expect(await db.contentIdea.count({ where: { id: idea.id } })).toBe(1)
   await aliceContext.close()
+  await bobPage.getByRole('button', { name: `Expand ${updated}`, exact: true }).click()
   await bobPage.getByRole('button', { name: `Edit ${updated}`, exact: true }).click()
   await bobPage
     .getByLabel('Notes & direction')
@@ -133,6 +176,8 @@ test('separate admins see live cards and keep workspace data after its creator l
   await expect(bobPage.getByRole('dialog')).not.toBeVisible()
   await bobPage.reload()
   await waitForHydration(bobPage)
+  await expect(bobPage.getByRole('button', { name: `Edit ${updated}`, exact: true })).toHaveCount(0)
+  await bobPage.getByRole('button', { name: `Expand ${updated}`, exact: true }).click()
   await bobPage.getByRole('button', { name: `Edit ${updated}`, exact: true }).click()
   await expect(bobPage.getByLabel('Notes & direction')).toHaveValue(
     'Still shared after the creator account is removed.',
