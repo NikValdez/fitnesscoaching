@@ -1,0 +1,7 @@
+{
+  "retryDeletion": "passed",
+  "localUploadLiveDownloadSha256": "passed",
+  "existingOriginalBothEnvironments": "passed",
+  "liveDeletionLocalRefresh": "passed",
+  "pageErrors": []
+}

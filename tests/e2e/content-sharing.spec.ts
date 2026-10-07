@@ -175,7 +175,7 @@ test('separate admins see live cards and keep workspace data after its creator l
   await expect(bobPage.getByRole('button', { name: `Edit ${updated}`, exact: true })).toHaveCount(0)
   await bobPage.getByRole('button', { name: `Expand ${updated}`, exact: true }).click()
   await bobPage.getByRole('button', { name: `Edit ${updated}`, exact: true }).click()
-  await expect(bobPage.getByLabel('Notes & direction')).toHaveValue(
+  await expect(bobPage.getByLabel('Notes & direction')).toHaveText(
     'Still shared after the creator account is removed.',
   )
   await bobPage.getByRole('button', { name: 'Delete idea', exact: true }).click()

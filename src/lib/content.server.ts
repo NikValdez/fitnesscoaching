@@ -55,7 +55,7 @@ export async function updateContentBoard(
   return result
 }
 
-export async function notifyStudioChange(channel: 'board' | 'library') {
+export async function notifyStudioChange(channel: 'board' | 'library' | 'media') {
   try {
     const { env } = await import('cloudflare:workers')
     await env.ADMIN_STUDIO.getByName('main').fetch(`https://studio/${channel}-changed`, {

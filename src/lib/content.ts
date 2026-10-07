@@ -17,7 +17,8 @@ export const saveContentIdea = createServerFn({ method: 'POST' })
     const { requireContentAdmin, updateContentBoard } = await import('./content.server')
     await requireContentAdmin()
     return updateContentBoard(data.revision, async (tx) => {
-      const { id, revision: _revision, expectedUpdatedAt, ...values } = data
+      const { id, revision: _revision, expectedUpdatedAt, notesDocument, ...rest } = data
+      const values = { ...rest, notesDocument: notesDocument ?? null }
       const existing = id
         ? await tx.contentIdea.findFirst({ where: { id, boardId: 'main' } })
         : null

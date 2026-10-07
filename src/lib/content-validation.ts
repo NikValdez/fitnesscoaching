@@ -1,4 +1,7 @@
 import { z } from 'zod'
+import { richTextPlainText, validRichDocument } from './rich-text'
+
+export const contentNotesLimit = 10000
 
 export const contentStages = [
   {
@@ -59,7 +62,8 @@ export const saveContentIdeaSchema = z
     expectedUpdatedAt: z.string().datetime().optional(),
     revision,
     title: z.string().trim().min(1, 'Give your idea a title.').max(160),
-    notes: z.string().trim().max(10000),
+    notes: z.string().trim().max(contentNotesLimit),
+    notesDocument: z.string().max(1000000).nullable().optional(),
     format: z.enum(['VIDEO', 'POST', 'STORY', 'ARTICLE', 'OTHER']),
     stage,
     platforms: z
@@ -69,6 +73,18 @@ export const saveContentIdeaSchema = z
       .optional(),
   })
   .strict()
+  .refine(
+    (data) => {
+      if (data.notesDocument == null) return true
+      try {
+        const document: unknown = JSON.parse(data.notesDocument)
+        return validRichDocument(document) && richTextPlainText(document).trim() === data.notes
+      } catch {
+        return false
+      }
+    },
+    { message: 'The notes contain unsupported formatting.', path: ['notesDocument'] },
+  )
 
 export const moveContentIdeaSchema = z
   .object({

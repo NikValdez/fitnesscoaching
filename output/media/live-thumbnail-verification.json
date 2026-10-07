@@ -1,0 +1,17 @@
+{
+  "existingVideoThumbnail": "passed",
+  "dimensions": {
+    "width": 360,
+    "height": 640
+  },
+  "mobileOverflow": false,
+  "errors": [],
+  "newUploadThumbnail": "passed",
+  "originalDownloadSha256": "passed",
+  "clickToPlay": "passed",
+  "deletion": "passed",
+  "sharedMediaBrowserTests": 3,
+  "mediaUnitTests": 8,
+  "typecheck": "passed",
+  "build": "passed"
+}

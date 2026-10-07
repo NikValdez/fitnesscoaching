@@ -66,6 +66,109 @@ async function drag(page: Page, ideaId: string, stage: string) {
   await page.mouse.up()
 }
 
+async function focusNotesEnd(page: Page) {
+  await page
+    .getByRole('textbox', { name: 'Notes & direction', exact: true })
+    .evaluate(async (element) => {
+      ;(element as HTMLElement).focus()
+      const range = document.createRange()
+      range.selectNodeContents(element)
+      range.collapse(false)
+      const selection = window.getSelection()!
+      selection.removeAllRanges()
+      selection.addRange(range)
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+      )
+    })
+}
+
+test('notes preserve legacy text and rich formatting through saving, reopening, and mobile edits', async ({
+  browser,
+}) => {
+  const context = await browser.newContext({
+    baseURL: base,
+    viewport: { width: 1440, height: 1000 },
+  })
+  contexts.push(context)
+  const user = await register(context, 'Rich Notes Admin')
+  await db.user.update({ where: { id: user.id }, data: { role: 'ADMIN' } })
+  const title = `Rich notes ${randomUUID()}`
+  titles.push(title)
+  const legacy = 'A legacy hook.\n<Keep this literal>'
+  const idea = await db.contentIdea.create({ data: { title, notes: legacy } })
+  const page = await context.newPage()
+  const errors: string[] = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  await page.goto('/admin/content')
+  await waitForHydration(page)
+  await page.getByRole('button', { name: `Expand ${title}`, exact: true }).click()
+  await page.getByRole('button', { name: `Edit ${title}`, exact: true }).click()
+  const notes = page.getByRole('textbox', { name: 'Notes & direction', exact: true })
+  await expect(notes.locator('p')).toHaveText(['A legacy hook.', '<Keep this literal>'])
+  await notes.fill('Strong hook')
+  await notes.press('ControlOrMeta+a')
+  await page.getByRole('button', { name: 'Bold', exact: true }).click()
+  await page.getByLabel('Text style', { exact: true }).selectOption('h2')
+  await page.getByRole('button', { name: 'Add or edit link', exact: true }).click()
+  await page.getByLabel('Link URL', { exact: true }).fill('https://example.com/inspiration')
+  await page.getByLabel('Link URL', { exact: true }).press('Enter')
+  await expect(page.getByRole('dialog')).toBeVisible()
+  await expect(notes.locator('h2 strong')).toHaveText('Strong hook')
+  await expect(notes.locator('a')).toHaveAttribute('href', 'https://example.com/inspiration')
+  await focusNotesEnd(page)
+  await notes.press('Enter')
+  await page.getByRole('button', { name: 'Clear formatting', exact: true }).click()
+  await page.getByRole('button', { name: 'Bullet list', exact: true }).click()
+  await page.keyboard.insertText('Film a warm-up')
+  await expect(notes.locator('h2 strong')).toHaveText('Strong hook')
+  await page.getByRole('button', { name: 'Save changes', exact: true }).click()
+  await expect(page.getByRole('dialog')).not.toBeVisible()
+  await page.reload()
+  await waitForHydration(page)
+  await page.getByRole('button', { name: `Expand ${title}`, exact: true }).click()
+  const card = page.locator(`[data-idea-id="${idea.id}"]`)
+  await expect(card.locator('.content-card-notes h2 strong')).toHaveText('Strong hook')
+  await expect(card.locator('.content-card-notes a')).toHaveAttribute(
+    'href',
+    'https://example.com/inspiration',
+  )
+  await expect(card.locator('.content-card-notes ul li')).toContainText('Film a warm-up')
+  await page.getByRole('button', { name: `Edit ${title}`, exact: true }).click()
+  await expect(notes.locator('h2 strong')).toHaveText('Strong hook')
+  await expect(notes.locator('ul li')).toContainText('Film a warm-up')
+  await page.screenshot({ path: 'test-results/rich-notes-desktop.png', fullPage: true })
+  await page.setViewportSize({ width: 390, height: 844 })
+  await focusNotesEnd(page)
+  await notes.press('Enter')
+  await notes.press('Enter')
+  await page.getByRole('button', { name: 'Checklist', exact: true }).click()
+  await page.keyboard.insertText('Edit the footage')
+  await notes.locator('input[type="checkbox"]').check()
+  await expect(notes.locator('li[data-type="taskItem"]')).toHaveAttribute('data-checked', 'true')
+  await expect
+    .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth))
+    .toBe(true)
+  await page.screenshot({ path: 'test-results/rich-notes-mobile.png', fullPage: true })
+  await page.getByRole('button', { name: 'Save changes', exact: true }).click()
+  await expect(page.getByRole('dialog')).not.toBeVisible()
+  await page.reload()
+  await waitForHydration(page)
+  await page.getByRole('button', { name: `Expand ${title}`, exact: true }).click()
+  await expect(card.locator('.content-card-notes li[data-type="taskItem"]')).toContainText(
+    'Edit the footage',
+  )
+  await expect(card.locator('.content-card-notes input[type="checkbox"]')).toBeChecked()
+  await page.getByRole('button', { name: `Edit ${title}`, exact: true }).click()
+  await notes.fill('')
+  await page.getByRole('button', { name: 'Save changes', exact: true }).click()
+  await expect(page.getByRole('dialog')).not.toBeVisible()
+  await expect(card).toContainText('Add notes, a hook, or a little direction.')
+  const saved = await db.contentIdea.findUniqueOrThrow({ where: { id: idea.id } })
+  expect(saved.notes).toBe('')
+  expect(errors).toEqual([])
+})
+
 test('admin sign-in, persistent ideas, drag and reorder, mobile, and server access checks', async ({
   browser,
 }) => {
@@ -208,14 +311,14 @@ test('admin sign-in, persistent ideas, drag and reorder, mobile, and server acce
   await db.contentBoard.update({ where: { id: 'main' }, data: { revision: { increment: 1 } } })
   await db.contentIdea.update({
     where: { id: idea.id },
-    data: { notes: 'Another admin updated this card.' },
+    data: { notes: 'Another admin updated this card.', notesDocument: null },
   })
   await page.getByRole('button', { name: 'Save changes' }).click()
   await expect(page.getByRole('dialog').getByRole('alert')).toContainText('card was edited')
   await expect(page.getByLabel('Idea title')).toHaveValue(`${title} updated`)
   await page.getByRole('button', { name: 'Cancel', exact: true }).click()
   await page.getByRole('button', { name: `Edit ${title}`, exact: true }).click()
-  await expect(page.getByLabel('Notes & direction')).toHaveValue('Another admin updated this card.')
+  await expect(page.getByLabel('Notes & direction')).toHaveText('Another admin updated this card.')
   await page.getByLabel('Idea title').fill(`${title} updated`)
   await page.getByRole('dialog').getByRole('button', { name: 'Twitter', exact: true }).click()
   const editPromise = page.waitForRequest(

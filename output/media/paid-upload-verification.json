@@ -1,0 +1,17 @@
+{
+  "eventsObserved": 85,
+  "httpRequests": 53,
+  "resourceLimitFailures": 0,
+  "otherFailures": 0,
+  "highestCpuMs": 443,
+  "verified": [
+    "simultaneous 24 MB MOV/MP4 uploads",
+    "pause and resume after reload without retransmitting saved chunks",
+    "visibility to a second admin",
+    "original-byte SHA-256 integrity",
+    "byte-range downloads",
+    "video playback and seeking"
+  ],
+  "originalUploadsPreserved": 2,
+  "reviewAssetsRemaining": 0
+}

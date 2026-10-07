@@ -23,13 +23,13 @@ const ScratchLink = LinkExtension.extend({
   },
 })
 
-export function scratchExtensions() {
+export function scratchExtensions({ collaborative = true } = {}) {
   return [
     StarterKit.configure({
       heading: { levels: [1, 2, 3] },
       trailingNode: false,
       link: false,
-      undoRedo: false,
+      undoRedo: collaborative ? false : {},
     }),
     ScratchLink.configure({
       openOnClick: false,

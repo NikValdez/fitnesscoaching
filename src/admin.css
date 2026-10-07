@@ -131,7 +131,10 @@
 .admin-auth label {
   font-size: 13px;
 }
-.admin-workspace .content-editor-fields select {
+.admin-workspace .content-editor-fields select,
+.admin-workspace .media-upload-controls select,
+.admin-workspace .media-card-filter select,
+.admin-workspace .media-editor select {
   appearance: none;
   -webkit-appearance: none;
   padding-right: 44px;
@@ -298,6 +301,40 @@
   background: var(--blue-tint);
   border-radius: var(--radius-panel);
   padding: clamp(24px, 3vw, 40px);
+}
+.ideas-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  width: fit-content;
+  max-width: 100%;
+  margin-bottom: 28px;
+  padding: 5px;
+  border: 1px solid #2b4a7d1c;
+  border-radius: 16px;
+  background: #ffffff80;
+}
+.ideas-tabs button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 11px;
+  background: transparent;
+  color: #52617a;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.ideas-tabs button[aria-selected='true'] {
+  background: var(--navy);
+  color: #fff;
+}
+.ideas-tabs button:focus-visible {
+  outline: 2px solid var(--navy);
+  outline-offset: 2px;
 }
 .ideas-composer-heading {
   display: flex;
@@ -505,6 +542,10 @@
 .scratch-editor .tiptap li[data-type='taskItem'] > div {
   flex: 1;
   min-width: 0;
+}
+.todo-editor .tiptap li[data-checked='true'] > div > p {
+  color: #7d8798;
+  text-decoration: line-through;
 }
 .scratch-editor .tiptap p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
@@ -771,7 +812,7 @@
   .admin-navigation nav {
     width: 100%;
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
   .admin-navigation nav a {
     flex-direction: column;
@@ -904,4 +945,13 @@
   .admin-auth .auth-form-wrap h2 {
     font-size: 42px;
   }
+}
+.content-card-actions .media-board-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--navy);
+  font-size: 11px;
+  padding: 8px 0;
+  margin-right: auto;
 }

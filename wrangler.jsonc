@@ -8,6 +8,10 @@
   "workers_dev": true,
   "preview_urls": false,
   "observability": { "enabled": true },
+  "r2_buckets": [
+    { "binding": "SHARED_MEDIA", "bucket_name": "steve-rossiter-shared-media", "remote": true },
+  ],
+  "triggers": { "crons": ["17 9 * * *"] },
   "durable_objects": { "bindings": [{ "name": "ADMIN_STUDIO", "class_name": "AdminStudio" }] },
   "migrations": [{ "tag": "admin-studio-v1", "new_sqlite_classes": ["AdminStudio"] }],
   "send_email": [

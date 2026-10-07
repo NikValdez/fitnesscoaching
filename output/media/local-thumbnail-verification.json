@@ -1,0 +1,9 @@
+{
+  "existingVideoThumbnail": "passed",
+  "dimensions": {
+    "width": 360,
+    "height": 640
+  },
+  "mobileOverflow": false,
+  "errors": []
+}

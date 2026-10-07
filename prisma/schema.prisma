@@ -76,6 +76,7 @@ model ContentIdea {
   board     ContentBoard @relation(fields: [boardId], references: [id], onDelete: Cascade)
   title     String
   notes     String       @default("")
+  notesDocument String?
   format    String       @default("VIDEO")
   platforms String[]     @default([])
   stage     ContentStage @default(CONCEPTS)
@@ -83,6 +84,7 @@ model ContentIdea {
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
   scratch   ContentScratch?
+  media     MediaAsset[]
 
   @@index([boardId, stage, position])
   @@map("rossiter_content_idea")
@@ -133,6 +135,48 @@ model ContentLibraryEntry {
   @@unique([libraryId, url])
   @@index([libraryId, createdAt])
   @@map("rossiter_content_library_entry")
+}
+
+model MediaLibrary {
+  id       String @id
+  revision Int    @default(0)
+
+  @@map("rossiter_media_library")
+}
+
+model MediaAsset {
+  id           String   @id
+  objectKey    String   @unique
+  filename     String
+  contentType  String
+  size         BigInt
+  lastModified Float
+  title        String
+  notes        String   @default("")
+  category     String   @default("RAW")
+  tags         String[] @default([])
+  cardId       String?
+  card         ContentIdea? @relation(fields: [cardId], references: [id], onDelete: SetNull)
+  status       String   @default("UPLOADING")
+  uploadId     String?
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  parts        MediaUploadPart[]
+
+  @@index([status, createdAt])
+  @@index([cardId])
+  @@map("rossiter_media_asset")
+}
+
+model MediaUploadPart {
+  assetId    String
+  asset      MediaAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  partNumber Int
+  etag       String
+
+  @@id([assetId, partNumber])
+  @@map("rossiter_media_upload_part")
 }
 
 model CoachingBillingAccount {

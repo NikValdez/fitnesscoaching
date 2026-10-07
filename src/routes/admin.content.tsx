@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import {
   DndContext,
@@ -37,7 +37,10 @@ import {
 import { WorkspaceModal, Notice } from '../components/workspace'
 import { AdminWorkspace } from '../components/admin-workspace'
 import { PlatformPicker, PlatformTags } from '../components/content-platforms'
+import { RichTextEditor } from '../components/rich-text-editor'
+import { RichTextContent } from '../components/rich-text-content'
 import { useStudio, useStudioState } from '../components/use-studio'
+import { padDocument, richTextPlainText } from '../lib/rich-text'
 import {
   getContentWorkspace,
   saveContentIdea,
@@ -46,6 +49,7 @@ import {
 } from '../lib/content'
 import {
   contentFormats,
+  contentNotesLimit,
   contentStages,
   type ContentStage,
   type ContentFormat,
@@ -77,6 +81,7 @@ type Idea = Board['ideas'][number]
 type IdeaDraft = {
   title: string
   notes: string
+  notesDocument: string | null
   format: ContentFormat
   stage: ContentStage
   platforms: ContentPlatform[]
@@ -590,7 +595,7 @@ function IdeaCard({
           {contentFormats.find((format) => format.id === idea.format)?.label}
         </span>
         {idea.notes ? (
-          <p>{idea.notes}</p>
+          <RichTextContent document={idea.notesDocument} fallback={idea.notes} />
         ) : (
           <span className="content-card-no-notes">Add notes, a hook, or a little direction.</span>
         )}
@@ -610,6 +615,9 @@ function IdeaCard({
           </select>
         </label>
         <div className="content-card-actions" role="group" aria-label={`Actions for ${idea.title}`}>
+          <Link to="/admin/media" search={{ card: idea.id }} className="media-board-link">
+            <Clapperboard size={14} aria-hidden="true" /> Clips
+          </Link>
           <button
             type="button"
             disabled={busy}
@@ -672,6 +680,7 @@ function IdeaEditor({
   const [draft, setDraft] = useState<IdeaDraft>({
     title: initial?.title ?? '',
     notes: initial?.notes ?? '',
+    notesDocument: initial?.notesDocument ?? null,
     format: (initial?.format as ContentFormat) ?? 'VIDEO',
     stage,
     platforms: (initial?.platforms as ContentPlatform[]) ?? [],
@@ -737,16 +746,24 @@ function IdeaEditor({
             value={draft.platforms}
             onChange={(platforms) => setDraft({ ...draft, platforms })}
           />
-          <label>
-            Notes &amp; direction
-            <textarea
-              rows={7}
-              maxLength={10000}
-              value={draft.notes}
+          <div className="content-notes-field">
+            <span className="content-notes-label">Notes &amp; direction</span>
+            <RichTextEditor
+              initialDocument={padDocument({ body: draft.notes, document: draft.notesDocument })}
+              label="Notes & direction"
               placeholder="The hook, talking points, a shot list, or a link for inspiration…"
-              onChange={(event) => setDraft({ ...draft, notes: event.target.value })}
+              characterLimit={contentNotesLimit}
+              editable={!busy}
+              className="content-notes-editor"
+              onChange={(notesDocument) =>
+                setDraft((current) => ({
+                  ...current,
+                  notes: richTextPlainText(JSON.parse(notesDocument)),
+                  notesDocument,
+                }))
+              }
             />
-          </label>
+          </div>
         </fieldset>
         {error && (
           <div>

@@ -1,7 +1,7 @@
 import { DurableObject } from 'cloudflare:workers'
 import * as Y from 'yjs'
 import { db, withIsolatedDatabaseRequest } from './db.server'
-import { seedStudioDocument, mergeStudioUpdate } from './studio-document'
+import { seedStudioDocument, mergeStudioUpdate, ensureStudioTodo } from './studio-document'
 import {
   toBase64,
   fromBase64,
@@ -50,6 +50,7 @@ export class AdminStudio extends DurableObject {
         initial.destroy()
         this.persist(Y.encodeStateAsUpdate(this.document))
       }
+      if (ensureStudioTodo(this.document)) this.persist(Y.encodeStateAsUpdate(this.document))
     })
   }
 
@@ -110,9 +111,13 @@ export class AdminStudio extends DurableObject {
 
   async fetch(request: Request) {
     const path = new URL(request.url).pathname
-    if (['/board-changed', '/library-changed'].includes(path) && request.method === 'POST') {
+    if (
+      ['/board-changed', '/library-changed', '/media-changed'].includes(path) &&
+      request.method === 'POST'
+    ) {
       await this.authorizedConnections()
-      const channel = path === '/library-changed' ? 'library' : 'board'
+      const channel =
+        path === '/library-changed' ? 'library' : path === '/media-changed' ? 'media' : 'board'
       this.broadcast({ type: channel }, undefined, channel)
       return new Response(null, { status: 204 })
     }
@@ -129,7 +134,7 @@ export class AdminStudio extends DurableObject {
       return new Response('Forbidden', { status: 403 })
     const requested = request.headers.get('X-Studio-Channel')
     const channel: StudioChannel =
-      requested === 'board' || requested === 'library' ? requested : 'pad'
+      requested === 'board' || requested === 'library' || requested === 'media' ? requested : 'pad'
     const pair = new WebSocketPair()
     const [client, server] = Object.values(pair)
     server.serializeAttachment({

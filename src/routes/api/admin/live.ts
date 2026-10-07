@@ -25,7 +25,7 @@ export const Route = createFileRoute('/api/admin/live')({
         headers.set('X-Studio-Client', url.searchParams.get('client') ?? '')
         headers.set(
           'X-Studio-Channel',
-          ['board', 'library'].includes(url.searchParams.get('channel') ?? '')
+          ['board', 'library', 'media'].includes(url.searchParams.get('channel') ?? '')
             ? url.searchParams.get('channel')!
             : 'pad',
         )

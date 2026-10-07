@@ -1,6 +1,14 @@
 import { useState, type ReactNode } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { ArrowUpRight, Clapperboard, Library, Lightbulb, LogOut, ShieldCheck } from 'lucide-react'
+import {
+  ArrowUpRight,
+  Clapperboard,
+  Film,
+  Library,
+  Lightbulb,
+  LogOut,
+  ShieldCheck,
+} from 'lucide-react'
 import { Brand } from './brand'
 import { Notice } from './workspace'
 import { authClient } from '../lib/auth-client'
@@ -11,7 +19,7 @@ export function AdminWorkspace({
   children,
 }: {
   name: string
-  current: 'content' | 'ideas' | 'library'
+  current: 'content' | 'ideas' | 'library' | 'media'
   children: ReactNode
 }) {
   const navigate = useNavigate()
@@ -79,6 +87,13 @@ export function AdminWorkspace({
               aria-current={current === 'library' ? 'page' : undefined}
             >
               <Library size={17} /> Content library
+            </Link>
+            <Link
+              to="/admin/media"
+              className={current === 'media' ? 'active' : ''}
+              aria-current={current === 'media' ? 'page' : undefined}
+            >
+              <Film size={17} /> Shared media
             </Link>
           </nav>
         </div>

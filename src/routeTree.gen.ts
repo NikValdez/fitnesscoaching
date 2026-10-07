@@ -27,16 +27,19 @@ import { Route as AdminContentRouteImport } from './routes/admin.content'
 import { Route as AdminIdeasRouteImport } from './routes/admin.ideas'
 import { Route as AdminLibraryRouteImport } from './routes/admin.library'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
+import { Route as AdminMediaRouteImport } from './routes/admin.media'
 import { Route as ApiCheckoutRouteImport } from './routes/api/checkout'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as PurchaseSuccessRouteImport } from './routes/purchase.success'
 import { Route as ApiAdminLiveRouteImport } from './routes/api/admin/live'
+import { Route as ApiAdminMediaRouteImport } from './routes/api/admin/media'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiCoachingCheckoutRouteImport } from './routes/api/coaching/checkout'
 import { Route as ApiCoachingPortalRouteImport } from './routes/api/coaching/portal'
 import { Route as ApiProgramDownloadRouteImport } from './routes/api/program/download'
 import { Route as ApiStripeWebhookRouteImport } from './routes/api/stripe/webhook'
+import { Route as ApiAdminMediaIdRouteImport } from './routes/api/admin/media.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -128,6 +131,11 @@ const AdminLoginRoute = AdminLoginRouteImport.update({
   path: '/admin/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminMediaRoute = AdminMediaRouteImport.update({
+  id: '/admin/media',
+  path: '/admin/media',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiCheckoutRoute = ApiCheckoutRouteImport.update({
   id: '/api/checkout',
   path: '/api/checkout',
@@ -151,6 +159,11 @@ const PurchaseSuccessRoute = PurchaseSuccessRouteImport.update({
 const ApiAdminLiveRoute = ApiAdminLiveRouteImport.update({
   id: '/api/admin/live',
   path: '/api/admin/live',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminMediaRoute = ApiAdminMediaRouteImport.update({
+  id: '/api/admin/media',
+  path: '/api/admin/media',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
@@ -178,6 +191,11 @@ const ApiStripeWebhookRoute = ApiStripeWebhookRouteImport.update({
   path: '/api/stripe/webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAdminMediaIdRoute = ApiAdminMediaIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ApiAdminMediaRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -198,16 +216,19 @@ export interface FileRoutesByFullPath {
   '/admin/ideas': typeof AdminIdeasRoute
   '/admin/library': typeof AdminLibraryRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/media': typeof AdminMediaRoute
   '/api/checkout': typeof ApiCheckoutRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/purchase/success': typeof PurchaseSuccessRoute
   '/blog/': typeof BlogIndexRoute
   '/api/admin/live': typeof ApiAdminLiveRoute
+  '/api/admin/media': typeof ApiAdminMediaRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/coaching/checkout': typeof ApiCoachingCheckoutRoute
   '/api/coaching/portal': typeof ApiCoachingPortalRoute
   '/api/program/download': typeof ApiProgramDownloadRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
+  '/api/admin/media/$id': typeof ApiAdminMediaIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -227,16 +248,19 @@ export interface FileRoutesByTo {
   '/admin/ideas': typeof AdminIdeasRoute
   '/admin/library': typeof AdminLibraryRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/media': typeof AdminMediaRoute
   '/api/checkout': typeof ApiCheckoutRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/purchase/success': typeof PurchaseSuccessRoute
   '/blog': typeof BlogIndexRoute
   '/api/admin/live': typeof ApiAdminLiveRoute
+  '/api/admin/media': typeof ApiAdminMediaRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/coaching/checkout': typeof ApiCoachingCheckoutRoute
   '/api/coaching/portal': typeof ApiCoachingPortalRoute
   '/api/program/download': typeof ApiProgramDownloadRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
+  '/api/admin/media/$id': typeof ApiAdminMediaIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -258,16 +282,19 @@ export interface FileRoutesById {
   '/admin/ideas': typeof AdminIdeasRoute
   '/admin/library': typeof AdminLibraryRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/media': typeof AdminMediaRoute
   '/api/checkout': typeof ApiCheckoutRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/purchase/success': typeof PurchaseSuccessRoute
   '/blog/': typeof BlogIndexRoute
   '/api/admin/live': typeof ApiAdminLiveRoute
+  '/api/admin/media': typeof ApiAdminMediaRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/coaching/checkout': typeof ApiCoachingCheckoutRoute
   '/api/coaching/portal': typeof ApiCoachingPortalRoute
   '/api/program/download': typeof ApiProgramDownloadRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
+  '/api/admin/media/$id': typeof ApiAdminMediaIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -290,16 +317,19 @@ export interface FileRouteTypes {
     | '/admin/ideas'
     | '/admin/library'
     | '/admin/login'
+    | '/admin/media'
     | '/api/checkout'
     | '/blog/$slug'
     | '/purchase/success'
     | '/blog/'
     | '/api/admin/live'
+    | '/api/admin/media'
     | '/api/auth/$'
     | '/api/coaching/checkout'
     | '/api/coaching/portal'
     | '/api/program/download'
     | '/api/stripe/webhook'
+    | '/api/admin/media/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -319,16 +349,19 @@ export interface FileRouteTypes {
     | '/admin/ideas'
     | '/admin/library'
     | '/admin/login'
+    | '/admin/media'
     | '/api/checkout'
     | '/blog/$slug'
     | '/purchase/success'
     | '/blog'
     | '/api/admin/live'
+    | '/api/admin/media'
     | '/api/auth/$'
     | '/api/coaching/checkout'
     | '/api/coaching/portal'
     | '/api/program/download'
     | '/api/stripe/webhook'
+    | '/api/admin/media/$id'
   id:
     | '__root__'
     | '/'
@@ -349,16 +382,19 @@ export interface FileRouteTypes {
     | '/admin/ideas'
     | '/admin/library'
     | '/admin/login'
+    | '/admin/media'
     | '/api/checkout'
     | '/blog/$slug'
     | '/purchase/success'
     | '/blog/'
     | '/api/admin/live'
+    | '/api/admin/media'
     | '/api/auth/$'
     | '/api/coaching/checkout'
     | '/api/coaching/portal'
     | '/api/program/download'
     | '/api/stripe/webhook'
+    | '/api/admin/media/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -380,9 +416,11 @@ export interface RootRouteChildren {
   AdminIdeasRoute: typeof AdminIdeasRoute
   AdminLibraryRoute: typeof AdminLibraryRoute
   AdminLoginRoute: typeof AdminLoginRoute
+  AdminMediaRoute: typeof AdminMediaRoute
   ApiCheckoutRoute: typeof ApiCheckoutRoute
   PurchaseSuccessRoute: typeof PurchaseSuccessRoute
   ApiAdminLiveRoute: typeof ApiAdminLiveRoute
+  ApiAdminMediaRoute: typeof ApiAdminMediaRouteWithChildren
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiCoachingCheckoutRoute: typeof ApiCoachingCheckoutRoute
   ApiCoachingPortalRoute: typeof ApiCoachingPortalRoute
@@ -518,6 +556,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/media': {
+      id: '/admin/media'
+      path: '/admin/media'
+      fullPath: '/admin/media'
+      preLoaderRoute: typeof AdminMediaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/checkout': {
       id: '/api/checkout'
       path: '/api/checkout'
@@ -551,6 +596,13 @@ declare module '@tanstack/react-router' {
       path: '/api/admin/live'
       fullPath: '/api/admin/live'
       preLoaderRoute: typeof ApiAdminLiveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/media': {
+      id: '/api/admin/media'
+      path: '/api/admin/media'
+      fullPath: '/api/admin/media'
+      preLoaderRoute: typeof ApiAdminMediaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/auth/$': {
@@ -588,6 +640,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiStripeWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin/media/$id': {
+      id: '/api/admin/media/$id'
+      path: '/$id'
+      fullPath: '/api/admin/media/$id'
+      preLoaderRoute: typeof ApiAdminMediaIdRouteImport
+      parentRoute: typeof ApiAdminMediaRoute
+    }
   }
 }
 
@@ -602,6 +661,18 @@ const BlogRouteChildren: BlogRouteChildren = {
 }
 
 const BlogRouteWithChildren = BlogRoute._addFileChildren(BlogRouteChildren)
+
+interface ApiAdminMediaRouteChildren {
+  ApiAdminMediaIdRoute: typeof ApiAdminMediaIdRoute
+}
+
+const ApiAdminMediaRouteChildren: ApiAdminMediaRouteChildren = {
+  ApiAdminMediaIdRoute: ApiAdminMediaIdRoute,
+}
+
+const ApiAdminMediaRouteWithChildren = ApiAdminMediaRoute._addFileChildren(
+  ApiAdminMediaRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -622,9 +693,11 @@ const rootRouteChildren: RootRouteChildren = {
   AdminIdeasRoute: AdminIdeasRoute,
   AdminLibraryRoute: AdminLibraryRoute,
   AdminLoginRoute: AdminLoginRoute,
+  AdminMediaRoute: AdminMediaRoute,
   ApiCheckoutRoute: ApiCheckoutRoute,
   PurchaseSuccessRoute: PurchaseSuccessRoute,
   ApiAdminLiveRoute: ApiAdminLiveRoute,
+  ApiAdminMediaRoute: ApiAdminMediaRouteWithChildren,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiCoachingCheckoutRoute: ApiCoachingCheckoutRoute,
   ApiCoachingPortalRoute: ApiCoachingPortalRoute,

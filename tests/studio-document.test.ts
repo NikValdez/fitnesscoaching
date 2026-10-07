@@ -4,7 +4,13 @@ import {
   seedStudioDocument,
   readStudioDocument,
   mergeStudioUpdate,
+  ensureStudioTodo,
 } from '../src/lib/studio-document'
+import { getSchema } from '@tiptap/react'
+import { prosemirrorJSONToYDoc } from '@tiptap/y-tiptap'
+import { scratchExtensions } from '../src/lib/scratch-extensions'
+import { plainTextDocument } from '../src/lib/rich-text'
+import { scratchPadLimit } from '../src/lib/scratch-validation'
 
 function clone(doc: Y.Doc) {
   const copy = new Y.Doc()
@@ -53,5 +59,70 @@ describe('shared studio CRDT', () => {
     invalid.getXmlFragment('default').insert(1, [new Y.XmlElement('script')])
     expect(() => mergeStudioUpdate(shared, Y.encodeStateAsUpdate(invalid))).toThrow()
     expect(readStudioDocument(shared).body).toBe('Keep this')
+  })
+  it('adds a single empty checklist to legacy snapshots without changing existing ideas', () => {
+    const legacy = prosemirrorJSONToYDoc(
+      getSchema(scratchExtensions()),
+      plainTextDocument('An existing idea'),
+      'default',
+    )
+    expect(readStudioDocument(legacy).body).toBe('An existing idea')
+    expect(ensureStudioTodo(legacy)).toBe(true)
+    const todo = readStudioDocument(legacy, 'todo')
+    expect(todo.body).toBe('')
+    expect(todo.document.content).toMatchObject([
+      { type: 'taskList', content: [{ type: 'taskItem', attrs: { checked: false } }] },
+    ])
+    expect(ensureStudioTodo(legacy)).toBe(false)
+    expect(readStudioDocument(legacy, 'todo')).toEqual(todo)
+    expect(readStudioDocument(legacy).body).toBe('An existing idea')
+  })
+  it('merges checkbox completion with concurrent task text and preserves it after restoration', () => {
+    const shared = seedStudioDocument({ body: 'Leave this idea alone', document: null })
+    const task = (doc: Y.Doc) =>
+      (doc.getXmlFragment('todo').get(0) as Y.XmlElement).get(0) as Y.XmlElement<{
+        checked: boolean
+      }>
+    const paragraph = task(shared).get(0) as Y.XmlElement
+    const taskText = new Y.XmlText()
+    paragraph.insert(0, [taskText])
+    taskText.insert(0, 'Film a reel')
+    const alice = clone(shared),
+      bob = clone(shared)
+    const vector = Y.encodeStateVector(shared)
+    task(alice).setAttribute('checked', true)
+    ;((task(bob).get(0) as Y.XmlElement).get(0) as Y.XmlText).insert(11, ' tomorrow')
+    const merged = mergeStudioUpdate(
+      mergeStudioUpdate(shared, Y.encodeStateAsUpdate(alice, vector)),
+      Y.encodeStateAsUpdate(bob, vector),
+    )
+    const restored = clone(merged)
+    expect(readStudioDocument(restored).body).toBe('Leave this idea alone')
+    expect(readStudioDocument(restored, 'todo').body).toBe('Film a reel tomorrow')
+    expect(readStudioDocument(restored, 'todo').document.content?.[0].content?.[0].attrs).toEqual({
+      checked: true,
+    })
+  })
+  it('validates both documents and rejects unexpected fields and oversized tasks', () => {
+    const shared = seedStudioDocument({ body: 'Keep this', document: null })
+    for (const field of ['default', 'todo']) {
+      const invalid = clone(shared)
+      invalid.getXmlFragment(field).insert(0, [new Y.XmlElement('script')])
+      expect(() => mergeStudioUpdate(shared, Y.encodeStateAsUpdate(invalid))).toThrow()
+    }
+    const unexpected = clone(shared)
+    unexpected.getMap('extra').set('text', 'Unexpected')
+    expect(() => mergeStudioUpdate(shared, Y.encodeStateAsUpdate(unexpected))).toThrow()
+    const oversized = clone(shared)
+    const task = (oversized.getXmlFragment('todo').get(0) as Y.XmlElement).get(0) as Y.XmlElement
+    const paragraph = task.get(0) as Y.XmlElement
+    const text = new Y.XmlText()
+    paragraph.insert(0, [text])
+    text.insert(0, 'x'.repeat(scratchPadLimit + 1))
+    expect(() => mergeStudioUpdate(shared, Y.encodeStateAsUpdate(oversized))).toThrow(
+      'The to-do list has reached its size limit.',
+    )
+    expect(readStudioDocument(shared).body).toBe('Keep this')
+    expect(readStudioDocument(shared, 'todo').body).toBe('')
   })
 })

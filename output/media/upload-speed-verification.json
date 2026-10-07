@@ -1,0 +1,13 @@
+{
+  "live64MiBTransferSecondsBefore": 18.14,
+  "live64MiBTransferSecondsAfter": 11.9,
+  "transferTimeReductionPercent": 34.4,
+  "localParallelUpload": "passed",
+  "liveParallelUpload": "passed",
+  "originals": "SHA-256 matched for both simultaneous uploads",
+  "mediaUnitTests": 12,
+  "sharedMediaBrowserTests": 3,
+  "typecheck": "passed",
+  "build": "passed",
+  "deploymentVersion": "b02ed4ab-c775-47d8-afbc-40214df31389"
+}

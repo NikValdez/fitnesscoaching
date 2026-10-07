@@ -422,6 +422,85 @@
   display: grid;
   gap: 18px;
 }
+.content-notes-field {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.content-notes-label {
+  color: #51565b;
+  font-size: 13px;
+  font-weight: 500;
+}
+.content-editor-fields .content-notes-editor .tiptap,
+.content-editor-fields .content-notes-editor .scratch-editor-loading {
+  min-height: 220px;
+  padding: 18px;
+}
+.content-card-notes {
+  color: #757b73;
+  font-size: 11px;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+.content-card-notes p {
+  margin: 0 0 0.65em;
+}
+.content-card-notes h1,
+.content-card-notes h2,
+.content-card-notes h3 {
+  font-size: 1.2em;
+  margin: 0.6em 0 0.3em;
+}
+.content-card-notes ul,
+.content-card-notes ol {
+  padding-left: 1.5em;
+  margin: 0.6em 0;
+}
+.content-card-notes ul {
+  list-style: disc;
+}
+.content-card-notes ol {
+  list-style: decimal;
+}
+.content-card-notes blockquote {
+  margin: 0.6em 0;
+  padding-left: 1em;
+  border-left: 2px solid #2b4a7d77;
+}
+.content-card-notes code {
+  font-family: var(--mono);
+  background: var(--blue-tint);
+}
+.content-card-notes pre {
+  white-space: pre-wrap;
+}
+.content-card-notes a {
+  color: var(--navy);
+  text-decoration: underline;
+}
+.content-card-notes mark {
+  background: #f8e7a8;
+  color: inherit;
+}
+.content-card-notes ul[data-type='taskList'] {
+  list-style: none;
+  padding-left: 0;
+}
+.content-card-notes li[data-type='taskItem'] {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.content-card-notes li[data-type='taskItem'] > div {
+  min-width: 0;
+}
+.admin-workspace .content-card-notes input[type='checkbox'] {
+  width: 13px;
+  height: 13px;
+  min-height: 0;
+  padding: 0;
+}
 .content-editor-actions {
   display: flex;
   align-items: center;

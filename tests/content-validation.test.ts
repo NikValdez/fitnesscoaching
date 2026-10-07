@@ -4,6 +4,7 @@ import {
   moveContentIdeaSchema,
   deleteContentIdeaSchema,
 } from '../src/lib/content-validation'
+import { plainTextDocument } from '../src/lib/rich-text'
 
 describe('content board inputs', () => {
   const idea = {
@@ -31,6 +32,57 @@ describe('content board inputs', () => {
     ]) {
       expect(saveContentIdeaSchema.safeParse({ ...idea, ...change }).success).toBe(false)
     }
+  })
+  it('saves restricted formatting alongside readable notes and accepts legacy text', () => {
+    const document = plainTextDocument('  Keep this hook.\n<Film three exercises>  ')
+    document.content![0].content![0].marks = [{ type: 'bold' }, { type: 'underline' }]
+    expect(
+      saveContentIdeaSchema.parse({
+        ...idea,
+        notes: '  Keep this hook.\n<Film three exercises>  ',
+        notesDocument: JSON.stringify(document),
+      }).notes,
+    ).toBe('Keep this hook.\n<Film three exercises>')
+    expect(saveContentIdeaSchema.safeParse({ ...idea, notes: 'Legacy notes' }).success).toBe(true)
+    expect(saveContentIdeaSchema.safeParse({ ...idea, notesDocument: null }).success).toBe(true)
+    expect(
+      saveContentIdeaSchema.safeParse({
+        ...idea,
+        notesDocument: JSON.stringify(plainTextDocument('')),
+      }).success,
+    ).toBe(true)
+  })
+  it('rejects invalid documents, unsafe links, and formatting that disagrees with the notes', () => {
+    const link = (href: string) =>
+      JSON.stringify({
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [{ type: 'text', text: 'Hook', marks: [{ type: 'link', attrs: { href } }] }],
+          },
+        ],
+      })
+    for (const notesDocument of [
+      '{invalid JSON',
+      JSON.stringify({ type: 'doc', content: [{ type: 'script', text: 'Hook' }] }),
+      JSON.stringify(plainTextDocument('Different notes')),
+      JSON.stringify(plainTextDocument('x'.repeat(10001))),
+      link('javascript:alert(1)'),
+      link('data:text/html,<script>alert(1)</script>'),
+      'x'.repeat(1000001),
+    ]) {
+      expect(
+        saveContentIdeaSchema.safeParse({ ...idea, notes: 'Hook', notesDocument }).success,
+      ).toBe(false)
+    }
+    expect(
+      saveContentIdeaSchema.safeParse({
+        ...idea,
+        notes: 'Hook',
+        notesDocument: link('https://example.com'),
+      }).success,
+    ).toBe(true)
   })
   it('allows multiple supported platforms and rejects unknown or duplicated tags', () => {
     const platforms = ['INSTAGRAM', 'TIKTOK', 'FACEBOOK', 'YOUTUBE', 'TWITTER', 'LINKEDIN', 'BLOG']

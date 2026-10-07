@@ -1,0 +1,53 @@
+{
+  "measuredAt": "2026-10-07T22:19:23.785Z",
+  "results": [
+    {
+      "origin": "http://localhost:3000",
+      "parallelChunks": 1,
+      "bytes": 67108864,
+      "transferSeconds": 16.05,
+      "partSeconds": [
+        4.6,
+        4.11,
+        3.45,
+        3.89
+      ]
+    },
+    {
+      "origin": "http://localhost:3000",
+      "parallelChunks": 2,
+      "bytes": 67108864,
+      "transferSeconds": 13.37,
+      "partSeconds": [
+        4.26,
+        7.38,
+        6.38,
+        5.99
+      ]
+    },
+    {
+      "origin": "https://steverossiter.com",
+      "parallelChunks": 1,
+      "bytes": 67108864,
+      "transferSeconds": 18.14,
+      "partSeconds": [
+        6.21,
+        4.06,
+        3.82,
+        4.05
+      ]
+    },
+    {
+      "origin": "https://steverossiter.com",
+      "parallelChunks": 2,
+      "bytes": 67108864,
+      "transferSeconds": 11.9,
+      "partSeconds": [
+        5.85,
+        7.38,
+        4.47,
+        4.52
+      ]
+    }
+  ]
+}
