@@ -59,7 +59,9 @@ async function drag(page: Page, ideaId: string, stage: string) {
     steps: 3,
   })
   await expect(page.locator('.content-card-overlay')).toBeVisible()
-  await page.mouse.move(target.x + target.width / 2, target.y + 150, { steps: 20 })
+  // Aim inside the column padding, which stays a column drop target even when
+  // another admin has added cards in this stage.
+  await page.mouse.move(target.x + 8, Math.max(8, target.y + 150), { steps: 20 })
   await expect(column).toHaveClass(/is-over/)
   await page.mouse.up()
 }
@@ -294,7 +296,7 @@ test('admin sign-in, persistent ideas, drag and reorder, mobile, and server acce
   await expect(page.locator('.content-card-overlay')).toBeVisible()
   await touchSession.send('Input.dispatchTouchEvent', {
     type: 'touchMove',
-    touchPoints: [{ x: touchTarget.x + 45, y: touchTarget.y + 150 }],
+    touchPoints: [{ x: touchTarget.x + 8, y: Math.max(8, touchTarget.y + 150) }],
   })
   await expect(page.locator('[data-stage="PRE_PRODUCTION"]')).toHaveClass(/is-over/)
   await touchSession.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })

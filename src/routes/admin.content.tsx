@@ -27,6 +27,7 @@ import {
   GripVertical,
   Lightbulb,
   LoaderCircle,
+  Pencil,
   Plus,
   RefreshCw,
   ShieldCheck,
@@ -367,7 +368,16 @@ function ContentStudio() {
                         key={idea.id}
                         idea={idea}
                         busy={busy}
-                        onEdit={() => setEditor({ idea, stage: idea.stage })}
+                        onEdit={() => {
+                          setError('')
+                          setNotice('')
+                          setEditor({ idea, stage: idea.stage })
+                        }}
+                        onDelete={() => {
+                          setError('')
+                          setNotice('')
+                          setRemoving(idea)
+                        }}
                         onMove={(next) => void move(idea, next, null)}
                       />
                     ))}
@@ -531,11 +541,13 @@ function IdeaCard({
   idea,
   busy,
   onEdit,
+  onDelete,
   onMove,
 }: {
   idea: Idea
   busy: boolean
   onEdit: () => void
+  onDelete: () => void
   onMove: (stage: ContentStage) => void
 }) {
   const {
@@ -579,7 +591,8 @@ function IdeaCard({
         className="content-card-open"
         disabled={busy}
         onClick={onEdit}
-        aria-label={`Edit ${idea.title}`}
+        aria-label={`Open ${idea.title}`}
+        aria-haspopup="dialog"
       >
         <h3>{idea.title}</h3>
         {idea.notes ? (
@@ -604,6 +617,29 @@ function IdeaCard({
           ))}
         </select>
       </label>
+      <div className="content-card-actions" role="group" aria-label={`Actions for ${idea.title}`}>
+        <button
+          type="button"
+          disabled={busy}
+          onClick={onEdit}
+          aria-label={`Edit ${idea.title}`}
+          aria-haspopup="dialog"
+        >
+          <Pencil size={14} aria-hidden="true" />
+          Edit
+        </button>
+        <button
+          type="button"
+          className="content-card-delete"
+          disabled={busy}
+          onClick={onDelete}
+          aria-label={`Delete ${idea.title}`}
+          aria-haspopup="dialog"
+        >
+          <Trash2 size={14} aria-hidden="true" />
+          Delete
+        </button>
+      </div>
     </article>
   )
 }

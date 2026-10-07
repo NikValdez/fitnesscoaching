@@ -283,6 +283,42 @@
   font-size: 9px;
   padding: 5px 3px;
 }
+.content-card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+}
+.content-card-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 6px 10px;
+  border: 1px solid #e1dfda;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--navy);
+  font-size: 11px;
+}
+.content-card-actions button:hover:not(:disabled) {
+  background: #e8edf5;
+  border-color: #c9d4e4;
+}
+.content-card-actions .content-card-delete {
+  color: #9a4141;
+}
+.content-card-actions .content-card-delete:hover:not(:disabled) {
+  background: #f9eeee;
+  border-color: #e4c8c8;
+}
+.content-card-actions button:focus-visible,
+.content-card-open:focus-visible {
+  outline: 2px solid var(--navy);
+  outline-offset: 3px;
+}
 .content-column-empty {
   display: flex;
   flex-direction: column;
@@ -463,6 +499,11 @@
   .content-card-stage select {
     min-height: 33px;
     font-size: 11px;
+  }
+  .content-card-actions button {
+    min-height: 44px;
+    padding-inline: 12px;
+    font-size: 12px;
   }
   .content-drag-handle.icon-button {
     width: 38px;

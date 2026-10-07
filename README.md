@@ -51,6 +51,8 @@ Open `/admin/content`, or choose **Content Studio** in the coach workspace. Sign
 
 The shared board has **Concepts → Pre production → Filming → Done**. Add ideas with a title, format, and optional notes; open a card to edit or delete it. Drag its grip to change stages or reorder within a stage, or use the stage selector. The grip also supports keyboard dragging (Space, arrow keys, Space to drop; Escape to cancel). The board scrolls horizontally on small screens. Ideas and their order persist in PostgreSQL for all admins, with no account ownership or deletion cascade. Creation, edits, moves, and deletion notify every open admin session over WebSockets. Reconnect, focus, and a 15-second fallback refresh recover missed notifications without replacing an open card draft.
 
+Each card has visible **Edit** and **Delete** buttons on desktop and mobile. Edit opens the card's title, notes, format, stage, and platform tags; Delete asks for confirmation before removing the card. Clicking the card's title or notes also opens its editor.
+
 Board mutations serialize through a shared revision. A change to another card automatically reloads the revision and retries once; concurrent edits to the same card preserve the local draft and ask the admin to review the latest saved card before trying again. **Refresh board** also loads the latest shared state.
 
 Cards can have multiple social platform tags: Instagram, TikTok, Facebook, YouTube, Twitter, and LinkedIn. Choose the icons in the card editor; selected icons appear on the card and stay attached when it moves.

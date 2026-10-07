@@ -89,6 +89,37 @@ test('separate admins see live cards and keep workspace data after its creator l
     timeout: 5000,
   })
 
+  // The explicit card actions are available on mobile and synchronize edits
+  // and confirmed deletions without navigating through another card first.
+  await alicePage.setViewportSize({ width: 390, height: 844 })
+  await alicePage.getByRole('button', { name: `Edit ${second}`, exact: true }).click()
+  await alicePage.getByLabel('Notes & direction').fill('Edited using the mobile card action.')
+  await alicePage.getByRole('button', { name: 'Save changes', exact: true }).click()
+  await expect(alicePage.getByRole('dialog')).not.toBeVisible()
+  await expect(bobPage.locator('[data-idea-id]').filter({ hasText: second })).toContainText(
+    'Edited using the mobile card action.',
+    { timeout: 5000 },
+  )
+  await alicePage.screenshot({ path: 'test-results/card-actions-mobile.png', fullPage: true })
+  await bobPage.screenshot({ path: 'test-results/card-actions-desktop.png', fullPage: true })
+  await bobPage.getByRole('button', { name: `Delete ${second}`, exact: true }).click()
+  await expect(bobPage.getByRole('dialog')).toContainText(second)
+  await bobPage.getByRole('button', { name: 'Keep idea', exact: true }).click()
+  await expect(bobPage.getByRole('dialog')).not.toBeVisible()
+  await expect(
+    alicePage.getByRole('button', { name: `Delete ${second}`, exact: true }),
+  ).toBeVisible()
+  await alicePage.getByRole('button', { name: `Delete ${second}`, exact: true }).click()
+  await alicePage
+    .getByRole('dialog')
+    .getByRole('button', { name: 'Delete idea', exact: true })
+    .click()
+  await expect(alicePage.getByRole('dialog')).not.toBeVisible()
+  await expect(bobPage.getByRole('heading', { name: second, exact: true })).toHaveCount(0, {
+    timeout: 5000,
+  })
+  expect(await db.contentIdea.count({ where: { title: second } })).toBe(0)
+
   // Content belongs to the workspace, so deleting its author's account cannot
   // cascade-delete shared cards. The other admin can still edit and delete them.
   await db.user.delete({ where: { id: alice.id } })
