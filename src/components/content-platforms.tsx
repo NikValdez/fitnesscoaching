@@ -1,5 +1,6 @@
 import { SiInstagram, SiTiktok, SiFacebook, SiYoutube } from 'react-icons/si'
 import { FaTwitter, FaLinkedinIn } from 'react-icons/fa6'
+import { Newspaper } from 'lucide-react'
 import { contentPlatforms, type ContentPlatform } from '../lib/content-validation'
 
 const icons = {
@@ -9,12 +10,13 @@ const icons = {
   YOUTUBE: SiYoutube,
   TWITTER: FaTwitter,
   LINKEDIN: FaLinkedinIn,
+  BLOG: Newspaper,
 }
 
 export function PlatformTags({ platforms }: { platforms: string[] }) {
   if (!platforms.length) return null
   return (
-    <ul className="content-platform-tags" aria-label="Social platforms">
+    <ul className="content-platform-tags" aria-label="Platforms">
       {contentPlatforms
         .filter((platform) => platforms.includes(platform.id))
         .map((platform) => {
@@ -44,7 +46,7 @@ export function PlatformPicker({
   return (
     <fieldset className="platform-picker">
       <legend>
-        Social platforms <span>Choose any that fit.</span>
+        Platforms <span>Choose any that fit.</span>
       </legend>
       <div className="platform-options">
         {contentPlatforms.map((platform) => {

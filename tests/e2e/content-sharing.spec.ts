@@ -67,9 +67,7 @@ test('separate admins see live cards and keep workspace data after its creator l
   })
   const idea = await db.contentIdea.findFirstOrThrow({ where: { title } })
   const card = (page: Page) => page.locator(`[data-idea-id="${idea.id}"]`)
-  await expect(card(bobPage).getByRole('list', { name: 'Social platforms' })).toContainText(
-    'Instagram',
-  )
+  await expect(card(bobPage).getByRole('list', { name: 'Platforms' })).toContainText('Instagram')
   await expect(card(bobPage).getByRole('combobox')).toHaveCount(0)
   await expect(
     card(bobPage).getByRole('button', { name: `Edit ${title}`, exact: true }),
@@ -126,14 +124,12 @@ test('separate admins see live cards and keep workspace data after its creator l
   const secondCard = alicePage
     .locator('[data-idea-id]')
     .filter({ has: alicePage.getByRole('heading', { name: second, exact: true }) })
-  await expect(secondCard.getByRole('list', { name: 'Social platforms' })).toContainText(
-    'Instagram',
-  )
+  await expect(secondCard.getByRole('list', { name: 'Platforms' })).toContainText('Instagram')
   await alicePage.getByRole('button', { name: `Collapse ${second}`, exact: true }).click()
   await expect(
     secondCard.getByText('Edited using the mobile card action.', { exact: true }),
   ).not.toBeVisible()
-  await expect(secondCard.getByRole('list', { name: 'Social platforms' })).toBeVisible()
+  await expect(secondCard.getByRole('list', { name: 'Platforms' })).toBeVisible()
   await alicePage.getByRole('button', { name: `Expand ${second}`, exact: true }).click()
   await expect(
     secondCard.getByText('Edited using the mobile card action.', { exact: true }),

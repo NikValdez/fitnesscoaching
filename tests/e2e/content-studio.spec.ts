@@ -117,7 +117,15 @@ test('admin sign-in, persistent ideas, drag and reorder, mobile, and server acce
   titles.push(title, `${title} updated`, `${title} second`)
   await page.getByRole('button', { name: 'New idea', exact: true }).click()
   await page.getByLabel('Idea title').fill(title)
-  for (const name of ['Instagram', 'TikTok', 'Facebook', 'YouTube', 'Twitter', 'LinkedIn']) {
+  for (const name of [
+    'Instagram',
+    'TikTok',
+    'Facebook',
+    'YouTube',
+    'Twitter',
+    'LinkedIn',
+    'Website blog',
+  ]) {
     await page.getByRole('dialog').getByRole('button', { name, exact: true }).click()
   }
   await page
@@ -137,6 +145,7 @@ test('admin sign-in, persistent ideas, drag and reorder, mobile, and server acce
     'YOUTUBE',
     'TWITTER',
     'LINKEDIN',
+    'BLOG',
   ])
   await replay(clientContext, createRequest)
   await replay(anonymous, createRequest)
@@ -157,11 +166,9 @@ test('admin sign-in, persistent ideas, drag and reorder, mobile, and server acce
   await expect(
     page.locator('[data-stage="CONCEPTS"]').getByRole('heading', { name: title }),
   ).toBeVisible()
-  const tags = page
-    .locator(`[data-idea-id="${idea.id}"]`)
-    .getByRole('list', { name: 'Social platforms' })
-  await expect(tags.getByRole('listitem')).toHaveCount(6)
-  await expect(tags).toContainText('InstagramTikTokFacebookYouTubeTwitterLinkedIn')
+  const tags = page.locator(`[data-idea-id="${idea.id}"]`).getByRole('list', { name: 'Platforms' })
+  await expect(tags.getByRole('listitem')).toHaveCount(7)
+  await expect(tags).toContainText('InstagramTikTokFacebookYouTubeTwitterLinkedInWebsite blog')
   await expect(tags).toBeVisible()
   const firstCard = page.locator(`[data-idea-id="${idea.id}"]`)
   await expect(
@@ -223,6 +230,7 @@ test('admin sign-in, persistent ideas, drag and reorder, mobile, and server acce
     'FACEBOOK',
     'YOUTUBE',
     'LINKEDIN',
+    'BLOG',
   ])
   await db.contentIdea.update({ where: { id: idea.id }, data: { title } })
   await replay(clientContext, editRequest)

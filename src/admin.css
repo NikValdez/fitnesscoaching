@@ -574,6 +574,9 @@
 .platform-linkedin {
   --platform-color: #0a66c2;
 }
+.platform-blog {
+  --platform-color: var(--navy);
+}
 .platform-icon svg,
 .platform-option svg {
   color: var(--platform-color);

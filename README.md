@@ -55,7 +55,7 @@ Cards start collapsed, showing the title, social platform icons, drag grip, and 
 
 Board mutations serialize through a shared revision. A change to another card automatically reloads the revision and retries once; concurrent edits to the same card preserve the local draft and ask the admin to review the latest saved card before trying again. **Refresh board** also loads the latest shared state.
 
-Cards can have multiple social platform tags: Instagram, TikTok, Facebook, YouTube, Twitter, and LinkedIn. Choose the icons in the card editor; selected icons appear on the card and stay attached when it moves.
+Cards can have multiple platform tags: Instagram, TikTok, Facebook, YouTube, Twitter, LinkedIn, and Website blog (shown with a newspaper icon). Choose the icons in the card editor; selected icons appear on the card and stay attached when it moves.
 
 The additive `202610060001_content_studio` migration creates `rossiter_content_board`, `rossiter_content_idea`, and the content stage enum. Apply it with `npm run db:migrate` before deploying this version. Every read and mutation checks the current database role; private responses disable caching and search indexing. This first version provides the ideas and production board; automated content generation can be added later.
 

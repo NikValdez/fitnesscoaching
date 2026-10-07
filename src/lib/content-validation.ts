@@ -45,6 +45,7 @@ export const contentPlatforms = [
   { id: 'YOUTUBE', label: 'YouTube' },
   { id: 'TWITTER', label: 'Twitter' },
   { id: 'LINKEDIN', label: 'LinkedIn' },
+  { id: 'BLOG', label: 'Website blog' },
 ] as const
 export type ContentPlatform = (typeof contentPlatforms)[number]['id']
 
@@ -62,8 +63,8 @@ export const saveContentIdeaSchema = z
     format: z.enum(['VIDEO', 'POST', 'STORY', 'ARTICLE', 'OTHER']),
     stage,
     platforms: z
-      .array(z.enum(['INSTAGRAM', 'TIKTOK', 'FACEBOOK', 'YOUTUBE', 'TWITTER', 'LINKEDIN']))
-      .max(6)
+      .array(z.enum(['INSTAGRAM', 'TIKTOK', 'FACEBOOK', 'YOUTUBE', 'TWITTER', 'LINKEDIN', 'BLOG']))
+      .max(7)
       .refine((values) => new Set(values).size === values.length, 'Choose each platform once.')
       .optional(),
   })

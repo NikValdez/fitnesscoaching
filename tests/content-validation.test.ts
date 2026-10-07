@@ -33,7 +33,7 @@ describe('content board inputs', () => {
     }
   })
   it('allows multiple supported platforms and rejects unknown or duplicated tags', () => {
-    const platforms = ['INSTAGRAM', 'TIKTOK', 'FACEBOOK', 'YOUTUBE', 'TWITTER', 'LINKEDIN']
+    const platforms = ['INSTAGRAM', 'TIKTOK', 'FACEBOOK', 'YOUTUBE', 'TWITTER', 'LINKEDIN', 'BLOG']
     expect(saveContentIdeaSchema.parse({ ...idea, platforms }).platforms).toEqual(platforms)
     expect(saveContentIdeaSchema.parse({ ...idea, platforms: [] }).platforms).toEqual([])
     for (const tags of [['INSTAGRAM', 'INSTAGRAM'], ['UNSUPPORTED'], ['role:ADMIN']]) {
