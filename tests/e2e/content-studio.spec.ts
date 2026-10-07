@@ -6,11 +6,11 @@ import { waitForHydration } from './hydration'
 const base = process.env.TEST_BASE_URL || 'http://localhost:3000'
 const emails: string[] = []
 const contexts: BrowserContext[] = []
+const titles: string[] = []
 
 test.afterAll(async () => {
   await Promise.all(contexts.map((context) => context.close()))
-  const users = await db.user.findMany({ where: { email: { in: emails } }, select: { id: true } })
-  await db.contentIdea.deleteMany({ where: { authorId: { in: users.map((user) => user.id) } } })
+  await db.contentIdea.deleteMany({ where: { title: { in: titles } } })
   await db.user.deleteMany({ where: { email: { in: emails } } })
   await db.$disconnect()
 })
@@ -19,10 +19,16 @@ async function register(context: BrowserContext, name: string) {
   const email = `content-studio-test-${randomUUID()}@example.com`
   const password = `Private-${randomUUID()}!`
   emails.push(email)
-  const response = await context.request.post(`${base}/api/auth/sign-up/email`, {
+  const options = {
     data: { name, email, password, role: 'ADMIN' },
     headers: { Origin: base },
-  })
+  }
+  let response = await context.request.post(`${base}/api/auth/sign-up/email`, options)
+  for (let attempt = 0; response.status() === 429 && attempt < 3; attempt++) {
+    const delay = Math.max(1, Number(response.headers()['retry-after']) || 10)
+    await new Promise((resolve) => setTimeout(resolve, delay * 1000))
+    response = await context.request.post(`${base}/api/auth/sign-up/email`, options)
+  }
   expect(response.ok()).toBe(true)
   const user = await db.user.findUniqueOrThrow({ where: { email } })
   expect(user.role).toBe('CLIENT')
@@ -106,6 +112,7 @@ test('admin sign-in, persistent ideas, drag and reorder, mobile, and server acce
   }
 
   const title = `Build a stronger week ${randomUUID().slice(0, 8)}`
+  titles.push(title, `${title} updated`, `${title} second`)
   await page.getByRole('button', { name: 'New idea', exact: true }).click()
   await page.getByLabel('Idea title').fill(title)
   for (const name of ['Instagram', 'TikTok', 'Facebook', 'YouTube', 'Twitter', 'LinkedIn']) {
@@ -120,7 +127,7 @@ test('admin sign-in, persistent ideas, drag and reorder, mobile, and server acce
   await page.getByRole('dialog').getByRole('button', { name: 'Add idea', exact: true }).click()
   const createRequest = await createPromise
   await expect(page.getByRole('dialog')).not.toBeVisible()
-  const idea = await db.contentIdea.findFirstOrThrow({ where: { title, authorId: admin.id } })
+  const idea = await db.contentIdea.findFirstOrThrow({ where: { title } })
   expect(idea.platforms).toEqual([
     'INSTAGRAM',
     'TIKTOK',
@@ -183,11 +190,18 @@ test('admin sign-in, persistent ideas, drag and reorder, mobile, and server acce
   ).toHaveAttribute('aria-pressed', 'true')
   await page.getByRole('dialog').getByRole('button', { name: 'Twitter', exact: true }).click()
   await db.contentBoard.update({ where: { id: 'main' }, data: { revision: { increment: 1 } } })
+  await db.contentIdea.update({
+    where: { id: idea.id },
+    data: { notes: 'Another admin updated this card.' },
+  })
   await page.getByRole('button', { name: 'Save changes' }).click()
-  await expect(page.getByRole('dialog').getByRole('alert')).toContainText('board changed')
+  await expect(page.getByRole('dialog').getByRole('alert')).toContainText('card was edited')
   await expect(page.getByLabel('Idea title')).toHaveValue(`${title} updated`)
-  await page.getByRole('button', { name: 'Refresh board, keep draft' }).click()
-  await expect(page.getByRole('dialog').getByRole('alert')).toHaveCount(0)
+  await page.getByRole('button', { name: 'Cancel', exact: true }).click()
+  await page.getByRole('button', { name: `Edit ${title}`, exact: true }).click()
+  await expect(page.getByLabel('Notes & direction')).toHaveValue('Another admin updated this card.')
+  await page.getByLabel('Idea title').fill(`${title} updated`)
+  await page.getByRole('dialog').getByRole('button', { name: 'Twitter', exact: true }).click()
   const editPromise = page.waitForRequest(
     (request) => request.method() === 'POST' && request.url().includes('/_serverFn/'),
   )
@@ -214,7 +228,7 @@ test('admin sign-in, persistent ideas, drag and reorder, mobile, and server acce
   await page.getByRole('dialog').getByRole('button', { name: 'Add idea', exact: true }).click()
   await expect(page.getByRole('dialog')).not.toBeVisible()
   const second = await db.contentIdea.findFirstOrThrow({
-    where: { title: `${title} second`, authorId: admin.id },
+    where: { title: `${title} second` },
   })
   await page.getByRole('button', { name: `Drag ${title} second`, exact: true }).focus()
   await page.keyboard.press('Space')

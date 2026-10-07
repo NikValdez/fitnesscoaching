@@ -30,6 +30,7 @@ import { Route as ApiCheckoutRouteImport } from './routes/api/checkout'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as PurchaseSuccessRouteImport } from './routes/purchase.success'
+import { Route as ApiAdminLiveRouteImport } from './routes/api/admin/live'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiCoachingCheckoutRouteImport } from './routes/api/coaching/checkout'
 import { Route as ApiCoachingPortalRouteImport } from './routes/api/coaching/portal'
@@ -141,6 +142,11 @@ const PurchaseSuccessRoute = PurchaseSuccessRouteImport.update({
   path: '/purchase/success',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAdminLiveRoute = ApiAdminLiveRouteImport.update({
+  id: '/api/admin/live',
+  path: '/api/admin/live',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -189,6 +195,7 @@ export interface FileRoutesByFullPath {
   '/blog/$slug': typeof BlogSlugRoute
   '/purchase/success': typeof PurchaseSuccessRoute
   '/blog/': typeof BlogIndexRoute
+  '/api/admin/live': typeof ApiAdminLiveRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/coaching/checkout': typeof ApiCoachingCheckoutRoute
   '/api/coaching/portal': typeof ApiCoachingPortalRoute
@@ -216,6 +223,7 @@ export interface FileRoutesByTo {
   '/blog/$slug': typeof BlogSlugRoute
   '/purchase/success': typeof PurchaseSuccessRoute
   '/blog': typeof BlogIndexRoute
+  '/api/admin/live': typeof ApiAdminLiveRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/coaching/checkout': typeof ApiCoachingCheckoutRoute
   '/api/coaching/portal': typeof ApiCoachingPortalRoute
@@ -245,6 +253,7 @@ export interface FileRoutesById {
   '/blog/$slug': typeof BlogSlugRoute
   '/purchase/success': typeof PurchaseSuccessRoute
   '/blog/': typeof BlogIndexRoute
+  '/api/admin/live': typeof ApiAdminLiveRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/coaching/checkout': typeof ApiCoachingCheckoutRoute
   '/api/coaching/portal': typeof ApiCoachingPortalRoute
@@ -275,6 +284,7 @@ export interface FileRouteTypes {
     | '/blog/$slug'
     | '/purchase/success'
     | '/blog/'
+    | '/api/admin/live'
     | '/api/auth/$'
     | '/api/coaching/checkout'
     | '/api/coaching/portal'
@@ -302,6 +312,7 @@ export interface FileRouteTypes {
     | '/blog/$slug'
     | '/purchase/success'
     | '/blog'
+    | '/api/admin/live'
     | '/api/auth/$'
     | '/api/coaching/checkout'
     | '/api/coaching/portal'
@@ -330,6 +341,7 @@ export interface FileRouteTypes {
     | '/blog/$slug'
     | '/purchase/success'
     | '/blog/'
+    | '/api/admin/live'
     | '/api/auth/$'
     | '/api/coaching/checkout'
     | '/api/coaching/portal'
@@ -357,6 +369,7 @@ export interface RootRouteChildren {
   AdminLoginRoute: typeof AdminLoginRoute
   ApiCheckoutRoute: typeof ApiCheckoutRoute
   PurchaseSuccessRoute: typeof PurchaseSuccessRoute
+  ApiAdminLiveRoute: typeof ApiAdminLiveRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiCoachingCheckoutRoute: typeof ApiCoachingCheckoutRoute
   ApiCoachingPortalRoute: typeof ApiCoachingPortalRoute
@@ -513,6 +526,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PurchaseSuccessRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin/live': {
+      id: '/api/admin/live'
+      path: '/api/admin/live'
+      fullPath: '/api/admin/live'
+      preLoaderRoute: typeof ApiAdminLiveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -583,6 +603,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminLoginRoute: AdminLoginRoute,
   ApiCheckoutRoute: ApiCheckoutRoute,
   PurchaseSuccessRoute: PurchaseSuccessRoute,
+  ApiAdminLiveRoute: ApiAdminLiveRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiCoachingCheckoutRoute: ApiCoachingCheckoutRoute,
   ApiCoachingPortalRoute: ApiCoachingPortalRoute,

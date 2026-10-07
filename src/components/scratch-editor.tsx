@@ -1,10 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { EditorContent, useEditor } from '@tiptap/react'
-import StarterKit from '@tiptap/starter-kit'
-import LinkExtension from '@tiptap/extension-link'
-import TextAlign from '@tiptap/extension-text-align'
-import Highlight from '@tiptap/extension-highlight'
-import { TaskList, TaskItem } from '@tiptap/extension-list'
+import Collaboration from '@tiptap/extension-collaboration'
+import CollaborationCaret from '@tiptap/extension-collaboration-caret'
 import Placeholder from '@tiptap/extension-placeholder'
 import CharacterCount from '@tiptap/extension-character-count'
 import {
@@ -31,32 +28,19 @@ import {
 } from 'lucide-react'
 import { scratchPadLimit } from '../lib/scratch-validation'
 import { safeLink } from '../lib/rich-text'
-
-// Pasted links use the same safe attributes as links created by the toolbar.
-const ScratchLink = LinkExtension.extend({
-  addAttributes() {
-    return {
-      ...this.parent?.(),
-      target: { default: '_blank', parseHTML: () => '_blank' },
-      rel: {
-        default: 'noopener noreferrer nofollow',
-        parseHTML: () => 'noopener noreferrer nofollow',
-      },
-      class: { default: null, parseHTML: () => null },
-      title: {
-        default: null,
-        parseHTML: (element) => element.getAttribute('title')?.slice(0, 160) ?? null,
-      },
-    }
-  },
-})
+import { scratchExtensions } from '../lib/scratch-extensions'
+import type { StudioProvider } from '../lib/studio-provider'
 
 export function ScratchEditor({
-  value,
+  provider,
+  name,
+  editable = true,
   onChange,
   onSave,
 }: {
-  value: string
+  provider: StudioProvider
+  name: string
+  editable?: boolean
   onChange: (document: string) => void
   onSave: () => void
 }) {
@@ -69,36 +53,27 @@ export function ScratchEditor({
     immediatelyRender: false,
     shouldRerenderOnTransaction: true,
     extensions: [
-      StarterKit.configure({
-        heading: { levels: [1, 2, 3] },
-        trailingNode: false,
-        link: false,
+      ...scratchExtensions(),
+      Collaboration.configure({ document: provider.document }),
+      CollaborationCaret.configure({
+        provider,
+        user: {
+          name,
+          color: ['#2b4a7d', '#92518b', '#337563', '#bd6b32'][provider.document.clientID % 4],
+        },
       }),
-      ScratchLink.configure({
-        openOnClick: false,
-        defaultProtocol: 'https',
-        isAllowedUri: (url) => safeLink(url),
-        HTMLAttributes: { rel: 'noopener noreferrer nofollow', target: '_blank' },
-      }),
-      TextAlign.configure({
-        types: ['heading', 'paragraph'],
-        alignments: ['left', 'center', 'right'],
-      }),
-      Highlight,
-      TaskList,
-      TaskItem.configure({ nested: true, HTMLAttributes: { 'data-type': 'taskItem' } }),
       Placeholder.configure({
         placeholder:
           'An idea for a reel… A question clients keep asking… Something worth coming back to…',
       }),
       CharacterCount.configure({ limit: scratchPadLimit }),
     ],
-    content: JSON.parse(value),
     editorProps: {
       attributes: {
         role: 'textbox',
         'aria-label': 'Your idea',
         'aria-multiline': 'true',
+        'aria-readonly': String(!editable),
         spellcheck: 'true',
       },
     },
@@ -107,10 +82,12 @@ export function ScratchEditor({
   })
 
   useEffect(() => {
-    if (editor && JSON.stringify(editor.getJSON()) !== value) {
-      editor.commands.setContent(JSON.parse(value), { emitUpdate: false })
-    }
-  }, [editor, value])
+    if (editor) onChange(JSON.stringify(editor.getJSON()))
+  }, [editor])
+  useEffect(() => {
+    editor?.setEditable(editable)
+    if (!editable) setLinkOpen(false)
+  }, [editor, editable])
 
   function tool(
     label: string,
@@ -126,7 +103,7 @@ export function ScratchEditor({
         aria-label={label}
         title={label}
         aria-pressed={active}
-        disabled={!editor || disabled}
+        disabled={!editor || !editable || disabled}
         onMouseDown={(event) => event.preventDefault()}
         onClick={action}
       >
@@ -148,7 +125,7 @@ export function ScratchEditor({
       <div className="scratch-toolbar" role="group" aria-label="Text formatting">
         <select
           aria-label="Text style"
-          disabled={!editor}
+          disabled={!editor || !editable}
           value={
             editor?.isActive('heading') ? `h${editor.getAttributes('heading').level}` : 'paragraph'
           }

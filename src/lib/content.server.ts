@@ -34,7 +34,7 @@ export async function updateContentBoard(
   revision: number,
   change: (tx: Prisma.TransactionClient) => Promise<unknown>,
 ) {
-  return db.$transaction(
+  const result = await db.$transaction(
     async (tx) => {
       // Updating the singleton row also serializes concurrent writes. A stale tab
       // must reload instead of overwriting another admin's edits or card order.
@@ -51,4 +51,14 @@ export async function updateContentBoard(
     },
     { timeout: 15000 },
   )
+  try {
+    const { env } = await import('cloudflare:workers')
+    await env.ADMIN_STUDIO.getByName('main').fetch('https://studio/board-changed', {
+      method: 'POST',
+    })
+  } catch (error) {
+    // The database change is already committed; reconnect/focus polling recovers.
+    console.error('Could not broadcast the board update.', error)
+  }
+  return result
 }

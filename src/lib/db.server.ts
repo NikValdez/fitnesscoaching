@@ -19,6 +19,12 @@ export function getDb() {
 
 export async function withDatabaseRequest<T>(handler: () => Promise<T>): Promise<T> {
   if (requests.getStore()) return handler()
+  return withIsolatedDatabaseRequest(handler)
+}
+
+// Durable Object events may inherit the upgrade request's context. Give each
+// event its own client, which cannot outlive or reuse that HTTP request's client.
+export async function withIsolatedDatabaseRequest<T>(handler: () => Promise<T>): Promise<T> {
   return requests.run({}, async () => {
     try {
       return await handler()

@@ -636,6 +636,35 @@
   align-items: center;
   gap: 7px;
 }
+.studio-presence {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: -4px 0 16px;
+  color: #61708a;
+  font-size: 12px;
+}
+.collaboration-carets__caret {
+  border-left: 1px solid;
+  border-right: 1px solid;
+  margin-left: -1px;
+  margin-right: -1px;
+  pointer-events: none;
+  position: relative;
+  word-break: normal;
+}
+.collaboration-carets__label {
+  border-radius: 3px 3px 3px 0;
+  color: #fff;
+  font: 11px var(--mono);
+  font-weight: 500;
+  left: -1px;
+  padding: 3px 6px;
+  position: absolute;
+  top: -1.5em;
+  white-space: nowrap;
+  user-select: none;
+}
 .scratch-save-error {
   margin-top: 20px;
   padding: 18px;

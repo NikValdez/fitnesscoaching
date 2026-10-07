@@ -1,13 +1,15 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "steve-rossiter-coaching",
-  "main": "@tanstack/react-start/server-entry",
+  "main": "src/server.ts",
   "account_id": "41526feba51ca99b6c0005c25ebad09b",
   "compatibility_date": "2026-09-07",
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": true,
   "preview_urls": false,
   "observability": { "enabled": true },
+  "durable_objects": { "bindings": [{ "name": "ADMIN_STUDIO", "class_name": "AdminStudio" }] },
+  "migrations": [{ "tag": "admin-studio-v1", "new_sqlite_classes": ["AdminStudio"] }],
   "send_email": [
     {
       "name": "CONTACT_EMAIL",

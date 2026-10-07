@@ -15,13 +15,18 @@ export const saveContentIdea = createServerFn({ method: 'POST' })
   .validator(saveContentIdeaSchema)
   .handler(async ({ data }) => {
     const { requireContentAdmin, updateContentBoard } = await import('./content.server')
-    const user = await requireContentAdmin()
+    await requireContentAdmin()
     return updateContentBoard(data.revision, async (tx) => {
-      const { id, revision: _revision, ...values } = data
+      const { id, revision: _revision, expectedUpdatedAt, ...values } = data
       const existing = id
         ? await tx.contentIdea.findFirst({ where: { id, boardId: 'main' } })
         : null
       if (id && !existing) throw new Error('This idea no longer exists. Refresh the board.')
+      if (existing && expectedUpdatedAt && existing.updatedAt.toISOString() !== expectedUpdatedAt) {
+        throw new Error(
+          'This card was edited by another admin. Your draft is still here. Close it and reopen the card to review the latest changes.',
+        )
+      }
       let position = existing?.position ?? 0
       if (!existing || existing.stage !== values.stage) {
         const last = await tx.contentIdea.aggregate({
@@ -31,7 +36,7 @@ export const saveContentIdea = createServerFn({ method: 'POST' })
         position = (last._max.position ?? -1) + 1
       }
       if (id) return tx.contentIdea.update({ where: { id }, data: { ...values, position } })
-      return tx.contentIdea.create({ data: { ...values, position, authorId: user.id } })
+      return tx.contentIdea.create({ data: { ...values, position } })
     })
   })
 

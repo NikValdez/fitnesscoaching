@@ -1,14 +1,11 @@
-// Worker runtime modules used by the contact form's server-only handler.
-declare module 'cloudflare:email' {
-  export class EmailMessage {
-    constructor(from: string, to: string, raw: string)
+import type { AdminStudio } from './lib/studio-room.server'
+declare global {
+  interface CloudflareEnv {
+    ADMIN_STUDIO: DurableObjectNamespace<AdminStudio>
   }
-}
-
-declare module 'cloudflare:workers' {
-  export const env: {
-    CONTACT_EMAIL: {
-      send(message: import('cloudflare:email').EmailMessage): Promise<unknown>
+  namespace Cloudflare {
+    interface Env extends CloudflareEnv {
+      CONTACT_EMAIL: SendEmail
     }
   }
 }

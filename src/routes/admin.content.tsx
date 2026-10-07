@@ -35,6 +35,7 @@ import {
 import { WorkspaceModal, Notice } from '../components/workspace'
 import { AdminWorkspace } from '../components/admin-workspace'
 import { PlatformPicker, PlatformTags } from '../components/content-platforms'
+import { useStudio, useStudioState } from '../components/use-studio'
 import {
   getContentWorkspace,
   saveContentIdea,
@@ -106,14 +107,43 @@ function ContentStudio() {
   const [activeId, setActiveId] = useState<string | null>(null)
   const [editor, setEditor] = useState<{ idea?: Idea; stage: ContentStage } | null>(null)
   const [removing, setRemoving] = useState<Idea | null>(null)
+  const provider = useStudio('board')
+  const live = useStudioState(provider)
   useEffect(() => setBoard(data.board), [data.board])
+  useEffect(() => {
+    if (!provider || busy || activeId) return
+    let disposed = false
+    const refresh = async () => {
+      try {
+        const next = (await getContentWorkspace()).board
+        if (!disposed && !pending.current)
+          setBoard((current) => (next.revision > current.revision ? next : current))
+      } catch {
+        /* A reconnect or the next focus will retry without discarding an open card. */
+      }
+    }
+    const stop = provider.onBoard(() => void refresh())
+    const timer = setInterval(() => void refresh(), 15000)
+    window.addEventListener('focus', refresh)
+    void refresh()
+    return () => {
+      disposed = true
+      stop()
+      clearInterval(timer)
+      window.removeEventListener('focus', refresh)
+    }
+  }, [provider, busy, activeId])
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   )
 
-  async function mutate(action: () => Promise<Board>, message: string, optimistic?: Board) {
+  async function mutate(
+    action: (revision: number) => Promise<Board>,
+    message: string,
+    optimistic?: Board,
+  ) {
     if (pending.current) return false
     const previous = board
     pending.current = true
@@ -122,7 +152,16 @@ function ContentStudio() {
     setNotice('')
     if (optimistic) setBoard(optimistic)
     try {
-      setBoard(await action())
+      let next: Board
+      try {
+        next = await action(board.revision)
+      } catch (cause) {
+        if (!(cause instanceof Error) || !cause.message.includes('board changed')) throw cause
+        const latest = (await getContentWorkspace()).board
+        setBoard(latest)
+        next = await action(latest.revision)
+      }
+      setBoard(next)
       setNotice(message)
       return true
     } catch (cause) {
@@ -151,7 +190,7 @@ function ContentStudio() {
       ].sort((a, b) => a.position - b.position),
     }
     await mutate(
-      () => moveContentIdea({ data: { id: idea.id, revision: board.revision, stage, beforeId } }),
+      (revision) => moveContentIdea({ data: { id: idea.id, revision, stage, beforeId } }),
       `${idea.title} moved to ${contentStages.find((item) => item.id === stage)?.label}.`,
       optimistic,
     )
@@ -253,7 +292,7 @@ function ContentStudio() {
               ) : (
                 <>
                   <span />
-                  Saved to your workspace
+                  {live.phase === 'saved' ? 'Live shared board' : 'Connecting to shared board…'}
                 </>
               )}
             </span>
@@ -388,9 +427,14 @@ function ContentStudio() {
             }
             onSave={async (draft) => {
               const success = await mutate(
-                () =>
+                (revision) =>
                   saveContentIdea({
-                    data: { ...draft, id: editor.idea?.id, revision: board.revision },
+                    data: {
+                      ...draft,
+                      id: editor.idea?.id,
+                      expectedUpdatedAt: editor.idea?.updatedAt.toISOString(),
+                      revision,
+                    },
                   }),
                 editor.idea ? 'Idea updated.' : 'New idea added to your board.',
               )
@@ -423,8 +467,7 @@ function ContentStudio() {
                 disabled={busy}
                 onClick={async () => {
                   const success = await mutate(
-                    () =>
-                      deleteContentIdea({ data: { id: removing.id, revision: board.revision } }),
+                    (revision) => deleteContentIdea({ data: { id: removing.id, revision } }),
                     'Idea deleted.',
                   )
                   if (success) setRemoving(null)

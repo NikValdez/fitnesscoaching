@@ -57,7 +57,7 @@ it('keeps Google callbacks and secure OAuth cookies on each production host usin
     // Existing cookies make Better Auth validate the request's origin too.
     const response = await startGoogle(origin, { Cookie: 'existing-cookie=1' })
     expect(response.status).toBe(200)
-    const oauth = new URL((await response.json()).url)
+    const oauth = new URL(((await response.json()) as { url: string }).url)
     expect(oauth.searchParams.get('redirect_uri')).toBe(`${origin}/api/auth/callback/google`)
     expect(oauth.searchParams.get('code_challenge_method')).toBe('S256')
     expect(oauth.searchParams.get('state')).toBeTruthy()
@@ -112,15 +112,15 @@ it('ignores an untrusted forwarded host and preserves local development callback
     'X-Forwarded-Host': 'untrusted.example',
   })
   expect(response.status).toBe(200)
-  expect(new URL((await response.json()).url).searchParams.get('redirect_uri')).toBe(
-    'https://steverossiter.com/api/auth/callback/google',
-  )
+  expect(
+    new URL(((await response.json()) as { url: string }).url).searchParams.get('redirect_uri'),
+  ).toBe('https://steverossiter.com/api/auth/callback/google')
 
   vi.resetModules()
   vi.stubEnv('BETTER_AUTH_URL', 'http://localhost:3000')
   const local = await startGoogle('http://localhost:3000')
   expect(local.status).toBe(200)
-  expect(new URL((await local.json()).url).searchParams.get('redirect_uri')).toBe(
-    'http://localhost:3000/api/auth/callback/google',
-  )
+  expect(
+    new URL(((await local.json()) as { url: string }).url).searchParams.get('redirect_uri'),
+  ).toBe('http://localhost:3000/api/auth/callback/google')
 })

@@ -1,89 +1,79 @@
-import { test, expect, type BrowserContext, type Page, type Request } from '@playwright/test'
+import { test, expect, type BrowserContext, type Page } from '@playwright/test'
 import { randomUUID } from 'node:crypto'
 import { db } from '../../scripts/db'
-import { plainTextDocument, richTextPlainText, type RichNode } from '../../src/lib/rich-text'
 import { waitForHydration } from './hydration'
 
 const base = process.env.TEST_BASE_URL || 'http://localhost:3000'
 const emails: string[] = []
 const contexts: BrowserContext[] = []
 const markers: string[] = []
-let original: { body: string; document: string | null } | undefined
+let cleanupPage: Page | undefined
 
-function removeMarkers(node: RichNode): RichNode | null {
-  if (node.type === 'text') {
-    const text = markers.reduce((text, marker) => text.replaceAll(marker, ''), node.text ?? '')
-    return text ? { ...node, text } : null
-  }
-  if (!node.content) return node
-  const content = node.content
-    .map(removeMarkers)
-    .filter((child): child is RichNode => child !== null)
-  if (node.content.length && !content.length && node.type !== 'doc') return null
-  return { ...node, content }
+async function select(page: Page, marker: string) {
+  await page
+    .getByRole('textbox', { name: 'Your idea', exact: true })
+    .locator('p,h1,h2,h3')
+    .filter({ hasText: marker })
+    .evaluate(async (element) => {
+      ;(element.closest('[contenteditable]') as HTMLElement).focus()
+      const range = document.createRange()
+      range.selectNodeContents(element)
+      const selection = window.getSelection()!
+      selection.removeAllRanges()
+      selection.addRange(range)
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+      )
+    })
 }
 
 test.afterAll(async () => {
-  await Promise.all(contexts.map((context) => context.close()))
-  // Remove only this run's unique nodes, preserving other admin text and formatting.
-  let cleaned = false
-  for (let attempt = 0; attempt < 6; attempt++) {
-    const pad = await db.contentPad.findUniqueOrThrow({ where: { id: 'main' } })
-    if (!markers.some((marker) => pad.body.includes(marker))) {
-      cleaned = true
-      break
+  // Local Durable Object storage is isolated from production. Remove this run's
+  // nodes through the editor; never replace the production database scratch pad.
+  try {
+    if (cleanupPage && !cleanupPage.isClosed()) {
+      for (const marker of markers) {
+        if (
+          await cleanupPage
+            .getByRole('textbox', { name: 'Your idea', exact: true })
+            .locator('p,h1,h2,h3')
+            .filter({ hasText: marker })
+            .count()
+        ) {
+          await select(cleanupPage, marker)
+          await cleanupPage.keyboard.press('Backspace')
+        }
+      }
+      await expect(cleanupPage.getByRole('status')).toHaveText('All changes saved')
     }
-    const document = removeMarkers(
-      pad.document ? JSON.parse(pad.document) : plainTextDocument(pad.body),
-    )!
-    if (!document.content?.length) document.content = [{ type: 'paragraph' }]
-    const body = richTextPlainText(document)
-    const result = await db.contentPad.updateMany({
-      where: { id: pad.id, revision: pad.revision },
-      data: {
-        body,
-        document:
-          original?.document === null && body === original.body ? null : JSON.stringify(document),
-        revision: { increment: 1 },
-      },
-    })
-    if (result.count) {
-      cleaned = true
-      break
-    }
+  } finally {
+    await Promise.all(contexts.map((context) => context.close()))
+    await db.user.deleteMany({ where: { email: { in: emails } } })
+    await db.$disconnect()
   }
-  await db.user.deleteMany({ where: { email: { in: emails } } })
-  await db.$disconnect()
-  expect(cleaned, 'Remove test nodes without overwriting other writing').toBe(true)
 })
 
-async function register(context: BrowserContext) {
-  const email = `content-ideas-test-${randomUUID()}@example.com`
+async function register(context: BrowserContext, name: string) {
+  const email = `studio-collab-test-${randomUUID()}@example.com`
   emails.push(email)
-  const response = await context.request.post(`${base}/api/auth/sign-up/email`, {
-    data: { name: 'Scratch Pad Test', email, password: `Private-${randomUUID()}!` },
+  const options = {
+    data: { name, email, password: `Private-${randomUUID()}!` },
     headers: { Origin: base },
-  })
+  }
+  let response = await context.request.post(`${base}/api/auth/sign-up/email`, options)
+  for (let attempt = 0; response.status() === 429 && attempt < 3; attempt++) {
+    const delay = Math.max(1, Number(response.headers()['retry-after']) || 10)
+    await new Promise((resolve) => setTimeout(resolve, delay * 1000))
+    response = await context.request.post(`${base}/api/auth/sign-up/email`, options)
+  }
   expect(response.ok()).toBe(true)
   return db.user.findUniqueOrThrow({ where: { email } })
 }
 
-async function replay(context: BrowserContext, request: Request) {
-  return context.request.post(request.url(), {
-    data: request.postData(),
-    headers: {
-      'content-type': request.headers()['content-type'] || 'application/json',
-      'x-tsr': request.headers()['x-tsr'] || 'serverFn',
-      Origin: base,
-    },
-  })
-}
-
-async function append(page: Page, name: string) {
-  const marker = `[Scratchpad verification ${randomUUID()} / ${name}]`
+async function append(page: Page, label: string) {
+  const marker = `[Collaboration ${randomUUID()} / ${label}]`
   markers.push(marker)
-  const editor = page.getByRole('textbox', { name: 'Your idea', exact: true })
-  await editor.evaluate(async (element) => {
+  await page.getByRole('textbox', { name: 'Your idea', exact: true }).evaluate(async (element) => {
     ;(element as HTMLElement).focus()
     const range = document.createRange()
     range.selectNodeContents(element)
@@ -101,195 +91,118 @@ async function append(page: Page, name: string) {
   return marker
 }
 
-async function selectMarker(page: Page, marker: string) {
-  await page
-    .getByRole('textbox', { name: 'Your idea', exact: true })
-    .locator('p,h1,h2,h3')
-    .filter({ hasText: marker })
-    .evaluate((element) => {
-      ;(element.closest('[contenteditable]') as HTMLElement).focus()
-      const range = document.createRange()
-      range.selectNodeContents(element)
-      const selection = window.getSelection()!
-      selection.removeAllRanges()
-      selection.addRange(range)
-    })
-}
-
-test('rich scratch pad preserves formatting, autosave queues, offline recovery, and stale edits', async ({
+test('admins collaborate live with cursors, local undo, offline merging, persistence, and access control', async ({
   browser,
 }, testInfo) => {
-  test.setTimeout(180_000)
-  const adminContext = await browser.newContext({
+  test.skip(
+    base.startsWith('https:'),
+    'Use isolated local Durable Object storage for editing tests.',
+  )
+  test.setTimeout(180000)
+  const aliceContext = await browser.newContext({
     baseURL: base,
     viewport: { width: 1440, height: 1100 },
   })
-  const clientContext = await browser.newContext({ baseURL: base })
+  const bobContext = await browser.newContext({ baseURL: base })
   const anonymous = await browser.newContext({ baseURL: base })
-  contexts.push(adminContext, clientContext, anonymous)
-  const admin = await register(adminContext)
-  await register(clientContext)
-  await db.user.update({ where: { id: admin.id }, data: { role: 'ADMIN' } })
-  const page = await adminContext.newPage()
+  contexts.push(aliceContext, bobContext, anonymous)
+  const alice = await register(aliceContext, 'Alice Studio Test')
+  const bob = await register(bobContext, 'Bob Studio Test')
+  await db.user.update({ where: { id: alice.id }, data: { role: 'ADMIN' } })
+  const alicePage = await aliceContext.newPage()
+  cleanupPage = alicePage
+  const bobPage = await bobContext.newPage()
   const errors: string[] = []
-  page.on('pageerror', (error) => errors.push(error.message))
-  original = await db.contentPad.findUniqueOrThrow({ where: { id: 'main' } })
-  await page.goto('/admin/ideas')
-  await waitForHydration(page)
-  const editor = page.getByRole('textbox', { name: 'Your idea', exact: true })
-  const status = page.getByRole('status')
-  await expect(editor).toBeVisible()
-  await expect(status).toHaveText('All changes saved')
-  await expect(page.getByRole('heading', { name: 'Saved ideas' })).toHaveCount(0)
-  await expect(page.getByRole('button', { name: 'Save idea', exact: true })).toHaveCount(0)
+  alicePage.on('pageerror', (error) => errors.push(error.message))
+  bobPage.on('pageerror', (error) => errors.push(error.message))
+  const denied = await bobContext.request.get(`${base}/api/admin/live?client=12`, {
+    headers: { Origin: base, Upgrade: 'websocket' },
+  })
+  expect(denied.status()).toBe(403)
+  const signedOut = await anonymous.request.get(`${base}/api/admin/live?client=12`, {
+    headers: { Origin: base, Upgrade: 'websocket' },
+  })
+  expect(signedOut.status()).toBe(401)
+  const foreign = await aliceContext.request.get(`${base}/api/admin/live?client=12`, {
+    headers: { Origin: 'https://untrusted.example', Upgrade: 'websocket' },
+  })
+  expect(foreign.status()).toBe(403)
+  await db.user.update({ where: { id: bob.id }, data: { role: 'ADMIN' } })
+  await Promise.all([alicePage.goto('/admin/ideas'), bobPage.goto('/admin/ideas')])
+  await Promise.all([waitForHydration(alicePage), waitForHydration(bobPage)])
+  const editor = (page: Page) => page.getByRole('textbox', { name: 'Your idea', exact: true })
+  await expect(editor(alicePage)).toBeEditable()
+  await expect(editor(bobPage)).toBeEditable()
+  await expect(alicePage.getByLabel('Admins online')).toContainText('Bob Studio Test')
+  await expect(bobPage.getByLabel('Admins online')).toContainText('Alice Studio Test')
+  const first = await append(alicePage, 'live formatting')
+  await select(alicePage, first)
+  for (const name of ['Bold', 'Italic', 'Underline', 'Highlight', 'Bullet list'])
+    await alicePage.getByRole('button', { name, exact: true }).click()
+  await expect(
+    editor(bobPage).locator('ul li strong em u mark').filter({ hasText: first }),
+  ).toBeVisible()
+  await expect(
+    bobPage.locator('.collaboration-carets__label').filter({ hasText: 'Alice Studio Test' }),
+  ).toBeVisible()
 
-  const formatted = await append(page, 'formatted bullet')
-  await selectMarker(page, formatted)
-  for (const name of ['Bold', 'Italic', 'Underline', 'Highlight', 'Bullet list']) {
-    await page.getByRole('button', { name, exact: true }).click()
+  const typing = await append(alicePage, 'continuous typing')
+  await alicePage.keyboard.type(
+    ' A quick series of keystrokes should synchronize without a growing queue.',
+    { delay: 30 },
+  )
+  await expect(alicePage.getByRole('status')).toHaveText('All changes saved', { timeout: 5000 })
+  await expect(editor(bobPage)).toContainText(
+    `${typing} A quick series of keystrokes should synchronize without a growing queue.`,
+  )
+
+  // Both browsers edit from the same offline base, then reconnect concurrently.
+  await Promise.all([aliceContext.setOffline(true), bobContext.setOffline(true)])
+  const aliceOffline = await append(alicePage, 'Alice offline')
+  const bobOffline = await append(bobPage, 'Bob offline')
+  await expect(alicePage.getByRole('status')).toContainText('Offline')
+  await Promise.all([aliceContext.setOffline(false), bobContext.setOffline(false)])
+  for (const page of [alicePage, bobPage]) {
+    await expect(editor(page)).toContainText(aliceOffline)
+    await expect(editor(page)).toContainText(bobOffline)
+    await expect(page.getByRole('status')).toHaveText('All changes saved')
   }
-  const saving = page.waitForRequest(
-    (request) => request.method() === 'POST' && request.url().includes('/_serverFn/'),
-  )
-  await page.keyboard.press('ControlOrMeta+s')
-  const saveRequest = await saving
-  await expect(status).toHaveText('All changes saved')
+
+  const own = await append(alicePage, 'own undo')
+  await expect(editor(bobPage)).toContainText(own)
+  const other = await append(bobPage, 'other admin stays')
+  await expect(editor(alicePage)).toContainText(other)
+  await alicePage.getByRole('button', { name: 'Undo', exact: true }).click()
+  await expect(editor(alicePage)).not.toContainText(own)
+  await expect(editor(alicePage)).toContainText(other)
+  await expect(editor(bobPage)).toContainText(other)
+  await alicePage.getByRole('button', { name: 'Redo', exact: true }).click()
+  await expect(editor(bobPage)).toContainText(own)
+
+  await alicePage.reload()
+  await waitForHydration(alicePage)
+  await expect(editor(alicePage)).toContainText(aliceOffline)
+  await expect(editor(alicePage)).toContainText(bobOffline)
   await expect(
-    editor.locator('ul li strong em u mark').filter({ hasText: formatted }),
+    editor(alicePage).locator('ul li strong em u mark').filter({ hasText: first }),
   ).toBeVisible()
-  await page.reload()
-  await waitForHydration(page)
-  await expect(
-    editor.locator('ul li strong em u mark').filter({ hasText: formatted }),
-  ).toBeVisible()
-  const revision = (await db.contentPad.findUniqueOrThrow({ where: { id: 'main' } })).revision
-  await replay(clientContext, saveRequest)
-  await replay(anonymous, saveRequest)
-  await replay(adminContext, saveRequest)
-  expect((await db.contentPad.findUniqueOrThrow({ where: { id: 'main' } })).revision).toBe(revision)
-
-  const numbered = await append(page, 'numbered')
-  await page.getByRole('button', { name: 'Numbered list', exact: true }).click()
-  await expect(status).toHaveText('All changes saved')
-  await expect(editor.locator('ol li').filter({ hasText: numbered })).toBeVisible()
-  const task = await append(page, 'checklist')
-  await page.getByRole('button', { name: 'Checklist', exact: true }).click()
-  await editor.locator('li').filter({ hasText: task }).getByRole('checkbox').check()
-  await expect(status).toHaveText('All changes saved')
-  const heading = await append(page, 'heading with link')
-  await page.getByRole('combobox', { name: 'Text style' }).selectOption('h2')
-  await selectMarker(page, heading)
-  await page.getByRole('button', { name: 'Add or edit link' }).click()
-  await page.getByLabel('Link URL').fill('https://example.com/content-idea')
-  await page.getByRole('button', { name: 'Apply link' }).click()
-  await page.getByRole('button', { name: 'Align center', exact: true }).click()
-  await expect(status).toHaveText('All changes saved')
-  await page.reload()
-  await waitForHydration(page)
-  await expect(editor.locator('ol li').filter({ hasText: numbered })).toBeVisible()
-  await expect(editor.locator('li').filter({ hasText: task }).getByRole('checkbox')).toBeChecked()
-  await expect(editor.locator('h2 a')).toContainText(heading)
-  await expect(editor.locator('h2').filter({ hasText: heading })).toHaveCSS('text-align', 'center')
-
-  const pasted = await append(page, 'pasted formatting')
-  await selectMarker(page, pasted)
-  await editor.evaluate((element, marker) => {
-    const clipboardData = new DataTransfer()
-    clipboardData.setData(
-      'text/html',
-      `<p><strong><a href="https://example.com/pasted" class="from-another-editor" rel="noopener">${marker}</a></strong></p>`,
-    )
-    element.dispatchEvent(
-      new ClipboardEvent('paste', { clipboardData, bubbles: true, cancelable: true }),
-    )
-  }, pasted)
-  await expect(status).toHaveText('All changes saved')
-  await page.reload()
-  await waitForHydration(page)
-  const pastedLink = editor.locator('a').filter({ hasText: pasted })
-  await expect(pastedLink).toBeVisible()
-  await expect(pastedLink.locator('strong')).toBeVisible()
-  await expect(pastedLink).toHaveAttribute('rel', 'noopener noreferrer nofollow')
-  await expect(pastedLink).not.toHaveAttribute('class')
-
-  const anonPage = await anonymous.newPage()
-  await anonPage.goto('/admin/ideas')
-  await expect(anonPage).toHaveURL(/\/admin\/login/)
-  const clientPage = await clientContext.newPage()
-  await clientPage.goto('/admin/ideas')
-  await expect(clientPage).not.toHaveURL(/\/admin\//)
-
-  let release!: () => void
-  let held!: () => void
-  const responseHeld = new Promise<void>((resolve) => {
-    held = resolve
+  await alicePage.screenshot({
+    path: testInfo.outputPath('shared-pad-desktop.png'),
+    fullPage: true,
   })
-  const responseRelease = new Promise<void>((resolve) => {
-    release = resolve
-  })
-  let holdNext = true
-  await page.route('**/_serverFn/**', async (route) => {
-    if (!holdNext || route.request().method() !== 'POST') return route.continue()
-    holdNext = false
-    const response = await route.fetch()
-    held()
-    await responseRelease
-    await route.fulfill({ response })
-  })
-  await append(page, 'first queued')
-  await responseHeld
-  await expect(editor).toBeEditable()
-  const newest = await append(page, 'newest queued')
-  release()
-  await expect(status).toHaveText('All changes saved')
-  await expect(editor).toContainText(newest)
-  expect((await db.contentPad.findUniqueOrThrow({ where: { id: 'main' } })).body).toContain(newest)
-  await page.unroute('**/_serverFn/**')
-
-  const stale = await adminContext.newPage()
-  await stale.goto('/admin/ideas')
-  await waitForHydration(stale)
-  const latest = await append(page, 'another tab')
-  await expect(status).toHaveText('All changes saved')
-  const staleWriting = await append(stale, 'stale draft')
-  await expect(stale.getByRole('alert')).toContainText('Another admin changed')
-  await expect(stale.getByRole('textbox', { name: 'Your idea', exact: true })).toContainText(
-    staleWriting,
+  await alicePage.setViewportSize({ width: 390, height: 844 })
+  expect(await alicePage.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+    true,
   )
-  expect((await db.contentPad.findUniqueOrThrow({ where: { id: 'main' } })).body).not.toContain(
-    staleWriting,
-  )
-  await stale.getByRole('button', { name: 'Load saved version' }).click()
-  await expect(stale.getByRole('textbox', { name: 'Your idea', exact: true })).toContainText(latest)
-  await expect(stale.getByRole('textbox', { name: 'Your idea', exact: true })).not.toContainText(
-    staleWriting,
-  )
+  await alicePage.screenshot({ path: testInfo.outputPath('shared-pad-mobile.png'), fullPage: true })
 
-  await adminContext.setOffline(true)
-  const offline = await append(page, 'offline recovery')
-  await expect(page.getByRole('alert')).toContainText('haven’t saved yet')
-  await expect(editor).toContainText(offline)
-  await adminContext.setOffline(false)
-  await expect(status).toHaveText('All changes saved')
-  expect((await db.contentPad.findUniqueOrThrow({ where: { id: 'main' } })).body).toContain(offline)
-
-  const navigation = await append(page, 'navigation flush')
-  await page.getByRole('link', { name: 'Production board', exact: true }).click()
-  await expect(page).toHaveURL(/\/admin\/content/)
-  await page.getByRole('link', { name: 'Ideas', exact: true }).click()
-  await expect(editor).toContainText(navigation)
-  await page.screenshot({ path: testInfo.outputPath('scratch-pad-desktop.png'), fullPage: true })
-  await page.setViewportSize({ width: 390, height: 844 })
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
-  await page.screenshot({ path: testInfo.outputPath('scratch-pad-mobile.png'), fullPage: true })
-
-  await db.user.update({ where: { id: admin.id }, data: { role: 'CLIENT' } })
-  const beforeRevoke = await db.contentPad.findUniqueOrThrow({ where: { id: 'main' } })
-  await replay(adminContext, saveRequest)
-  expect((await db.contentPad.findUniqueOrThrow({ where: { id: 'main' } })).document).toBe(
-    beforeRevoke.document,
-  )
-  await page.goto('/admin/ideas')
-  await expect(page).not.toHaveURL(/\/admin\//)
+  await append(bobPage, 'access revocation')
+  await expect(bobPage.getByRole('status')).toHaveText('All changes saved')
+  await db.user.update({ where: { id: bob.id }, data: { role: 'CLIENT' } })
+  const forbidden = `revoked-${randomUUID()}`
+  await bobPage.keyboard.insertText(forbidden)
+  await expect(bobPage.getByRole('alert')).toContainText('admin session ended')
+  await expect(editor(bobPage)).not.toBeEditable()
+  await expect(editor(alicePage)).not.toContainText(forbidden)
   expect(errors).toEqual([])
 })

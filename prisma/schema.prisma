@@ -49,8 +49,6 @@ model User {
   nutritionLogs    NutritionLog[]
   intake           ClientIntake?
   billingAccounts  CoachingBillingAccount[]
-  contentIdeas     ContentIdea[]
-  scratchIdeas     ContentScratch[]
 
   @@map("rossiter_user")
 }
@@ -82,8 +80,6 @@ model ContentIdea {
   platforms String[]     @default([])
   stage     ContentStage @default(CONCEPTS)
   position  Int          @default(0)
-  authorId  String?
-  author    User?        @relation(fields: [authorId], references: [id], onDelete: SetNull)
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
   scratch   ContentScratch?
@@ -98,8 +94,6 @@ model ContentScratch {
   revision  Int          @default(0)
   cardId    String?      @unique
   card      ContentIdea? @relation(fields: [cardId], references: [id], onDelete: SetNull)
-  authorId  String?
-  author    User?        @relation(fields: [authorId], references: [id], onDelete: SetNull)
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
 

@@ -55,6 +55,7 @@ const stage = z.enum(['CONCEPTS', 'PRE_PRODUCTION', 'FILMING', 'DONE'])
 export const saveContentIdeaSchema = z
   .object({
     id: id.optional(),
+    expectedUpdatedAt: z.string().datetime().optional(),
     revision,
     title: z.string().trim().min(1, 'Give your idea a title.').max(160),
     notes: z.string().trim().max(10000),
