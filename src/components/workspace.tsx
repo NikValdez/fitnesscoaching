@@ -192,12 +192,14 @@ export function WorkspaceModal({
   onClose,
   busy,
   children,
+  className = '',
 }: {
   title: string
   label: string
   onClose: () => void
   busy?: boolean
   children: ReactNode
+  className?: string
 }) {
   const ref = useRef<HTMLDialogElement>(null)
   useEffect(() => {
@@ -212,7 +214,7 @@ export function WorkspaceModal({
   return (
     <dialog
       ref={ref}
-      className="modal workspace-modal"
+      className={`modal workspace-modal ${className}`.trim()}
       aria-labelledby="workspace-dialog-title"
       onCancel={(e) => {
         e.preventDefault()

@@ -73,11 +73,13 @@ Apply database migrations through `202610060005_shared_admin_studio`, and deploy
 
 ## Shared content library
 
-The **Content library** tab at `/admin/library` saves Instagram Reels/video posts and TikTok video/share links for inspiration. Paste a link, optionally add a title and notes, and open the original video in a new tab. The platform is detected automatically. Search titles, notes, and URLs, or filter by Instagram and TikTok. Every entry has Edit and Delete controls; deletion requires confirmation.
+The **Content library** tab at `/admin/library` saves Instagram Reels/video posts and TikTok video/share links for inspiration. Paste a link and optionally add a title and notes. **Preview video** opens an in-page Instagram or TikTok player; the original link remains available if the video cannot be embedded. Players load only when opened and stop when closed. TikTok share links resolve through bounded, validated redirects on the server. The platform is detected automatically. Search titles, notes, and URLs, or filter by Instagram and TikTok. Every entry has Edit and Delete controls; deletion requires confirmation.
 
 The library is shared by all admins and updates across open sessions through the authenticated `library` WebSocket channel, with reconnect/focus recovery and a 15-second fallback refresh. Entries have no user ownership. Concurrent changes to different entries retry against the latest library revision; stale edits to the same entry retain the local draft for review. The server accepts only HTTPS video/share URLs on the supported platform hosts, removes sharing trackers, and prevents duplicate normalized links.
 
 Apply the additive `202610060006_content_library` migration before deployment. It creates the singleton `rossiter_content_library` and its `rossiter_content_library_entry` records without changing existing accounts, cards, or scratch-pad data. `tests/library-validation.test.ts` checks URL safety, normalization, and mutation inputs. `tests/e2e/content-library.spec.ts` verifies sharing, CRUD, search/filtering, duplicate detection, stale drafts, access controls, persistence, and mobile navigation.
+
+`tests/video-preview.test.ts` checks platform player URLs and safe, bounded TikTok share-link resolution. The library browser test also covers opening/closing previews, platform errors, preview access controls, and mobile layout. Embedded playback depends on the original platform's availability and restrictions; Instagram may show a poster that opens the original Reel.
 
 ## Client questionnaire
 

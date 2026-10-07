@@ -5,6 +5,7 @@ import {
   Library,
   LoaderCircle,
   Pencil,
+  PlayCircle,
   Plus,
   RefreshCw,
   Search,
@@ -14,6 +15,7 @@ import { SiInstagram, SiTiktok } from 'react-icons/si'
 import { AdminWorkspace } from '../components/admin-workspace'
 import { Notice, WorkspaceModal } from '../components/workspace'
 import { useStudio, useStudioState } from '../components/use-studio'
+import { LibraryVideoPreview } from '../components/library-video-preview'
 import { getLibraryWorkspace, saveLibraryEntry, deleteLibraryEntry } from '../lib/library'
 import { libraryPlatforms, parseVideoLink, type LibraryPlatform } from '../lib/library-validation'
 import adminStylesheet from '../admin.css?url'
@@ -56,6 +58,7 @@ function ContentLibrary() {
   const [platform, setPlatform] = useState<LibraryPlatform | 'ALL'>('ALL')
   const [editor, setEditor] = useState<{ entry?: Entry } | null>(null)
   const [removing, setRemoving] = useState<Entry | null>(null)
+  const [previewId, setPreviewId] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const pending = useRef(false)
   const [error, setError] = useState('')
@@ -124,6 +127,7 @@ function ContentLibrary() {
   }
 
   const query = search.trim().toLowerCase()
+  const preview = library.entries.find((entry) => entry.id === previewId)
   const entries = library.entries.filter(
     (entry) =>
       (platform === 'ALL' || entry.platform === platform) &&
@@ -228,6 +232,16 @@ function ContentLibrary() {
                 <p className="library-entry-url" title={entry.url}>
                   {entry.url.replace('https://', '')}
                 </p>
+                <button
+                  type="button"
+                  className="library-preview-button"
+                  aria-label={`Preview ${entry.title}`}
+                  aria-haspopup="dialog"
+                  onClick={() => setPreviewId(entry.id)}
+                >
+                  <PlayCircle size={18} aria-hidden="true" />
+                  Preview video
+                </button>
                 <a
                   className="library-watch"
                   href={entry.url}
@@ -301,6 +315,16 @@ function ContentLibrary() {
         </div>
       )}
 
+      {preview && (
+        <WorkspaceModal
+          title="Video preview."
+          label={preview.platform === 'INSTAGRAM' ? 'Instagram' : 'TikTok'}
+          className="library-preview-modal"
+          onClose={() => setPreviewId(null)}
+        >
+          <LibraryVideoPreview key={`${preview.id}:${preview.url}`} entry={preview} />
+        </WorkspaceModal>
+      )}
       {editor && (
         <LibraryEditor
           initial={editor.entry}

@@ -79,6 +79,22 @@ test('admins share, find, edit, and delete inspiration links with private access
   const a = await aliceContext.newPage(),
     b = await bobContext.newPage()
   const errors: string[] = []
+  // Isolate player UI checks from external platform availability. The real
+  // preview endpoint still validates the saved entry and the admin session.
+  for (const page of [a, b]) {
+    await page.route('https://www.instagram.com/**/embed/', (route) =>
+      route.fulfill({
+        contentType: 'text/html',
+        body: '<html><body style="background:#faf8f5;display:grid;place-items:center;height:90vh;font:16px sans-serif">Instagram player fixture</body></html>',
+      }),
+    )
+    await page.route('https://www.tiktok.com/player/v1/**', (route) =>
+      route.fulfill({
+        contentType: 'text/html',
+        body: `<html><body style="background:#111;color:white;display:grid;place-items:center;height:90vh;font:16px sans-serif">TikTok player fixture<button onclick="parent.postMessage({'x-tiktok-player':true,type:'onPlayerError',value:{errorCode:1001}}, '*')">Simulate unavailable video</button></body></html>`,
+      }),
+    )
+  }
   a.on('pageerror', (error) => errors.push(error.message))
   b.on('pageerror', (error) => errors.push(error.message))
   for (const page of [a, b])
@@ -106,7 +122,8 @@ test('admins share, find, edit, and delete inspiration links with private access
   }
   const suffix = randomUUID().replaceAll('-', '')
   const instagram = `https://www.instagram.com/reel/LibraryTest${suffix}/`
-  const tiktok = `https://vm.tiktok.com/LibraryTest${suffix}/`
+  const tiktokId = (7000000000000000000n + BigInt(`0x${suffix.slice(0, 15)}`)).toString()
+  const tiktok = `https://www.tiktok.com/@library_test/video/${tiktokId}/`
   urls.push(instagram, tiktok)
   const title = `Hook inspiration ${suffix.slice(0, 8)}`
   const updated = `${title} updated`
@@ -125,6 +142,30 @@ test('admins share, find, edit, and delete inspiration links with private access
     'target',
     '_blank',
   )
+  await expect(a.locator('iframe')).toHaveCount(0)
+  const previewRequest = a.waitForRequest(
+    (request) =>
+      request.method() === 'GET' &&
+      request.url().includes('/_serverFn/') &&
+      decodeURIComponent(request.url()).includes(entry.id),
+  )
+  await card(a)
+    .getByRole('button', { name: `Preview ${title}`, exact: true })
+    .click()
+  const previewRead = await previewRequest
+  const instagramEmbed = `${instagram}embed/`
+  await expect(a.getByRole('dialog').locator('iframe')).toHaveAttribute('src', instagramEmbed)
+  await expect(
+    a.getByRole('dialog').getByRole('link', { name: /Open on Instagram/ }),
+  ).toHaveAttribute('href', instagram)
+  await a.getByRole('dialog').screenshot({ path: 'test-results/library-preview-desktop.png' })
+  await a.keyboard.press('Escape')
+  await expect(a.getByRole('dialog')).not.toBeVisible()
+  await expect(a.locator('iframe')).toHaveCount(0)
+  const previewAs = (context: BrowserContext) =>
+    context.request.get(previewRead.url(), { headers: { Origin: base, 'x-tsr': 'serverFn' } })
+  for (const context of [clientContext, anonymous])
+    expect(await (await previewAs(context)).text()).not.toContain(instagramEmbed)
   await replay(clientContext, request)
   await replay(anonymous, request)
   expect((await replay(aliceContext, request, 'https://untrusted.example')).status()).toBe(403)
@@ -143,6 +184,31 @@ test('admins share, find, edit, and delete inspiration links with private access
   await expect(b.getByRole('heading', { name: updated, exact: true })).toBeVisible({
     timeout: 5000,
   })
+  await a.getByRole('button', { name: `Preview ${second}`, exact: true }).click()
+  const tiktokFrame = a.getByRole('dialog').locator('iframe')
+  await expect(tiktokFrame).toHaveAttribute(
+    'src',
+    `https://www.tiktok.com/player/v1/${tiktokId}?autoplay=0&rel=0`,
+  )
+  // Messages from the parent page cannot impersonate the embedded player.
+  await a.evaluate(() =>
+    window.postMessage({ 'x-tiktok-player': true, type: 'onPlayerError' }, '*'),
+  )
+  await expect(tiktokFrame).toBeVisible()
+  await a.getByRole('dialog').screenshot({ path: 'test-results/library-preview-tiktok.png' })
+  await a
+    .frameLocator('.library-preview-frame iframe')
+    .getByRole('button', { name: 'Simulate unavailable video' })
+    .click()
+  await expect(a.getByRole('dialog').getByRole('status')).toContainText(
+    'cannot play this video here',
+  )
+  await expect(a.getByRole('dialog').locator('iframe')).toHaveCount(0)
+  await expect(a.getByRole('dialog').getByRole('link', { name: /Open on TikTok/ })).toHaveAttribute(
+    'href',
+    tiktok,
+  )
+  await a.getByRole('button', { name: 'Close dialog', exact: true }).click()
 
   // Validation and duplicate detection preserve the existing shared entry.
   await a.getByRole('button', { name: 'Save link', exact: true }).click()
@@ -190,6 +256,13 @@ test('admins share, find, edit, and delete inspiration links with private access
   await expect(a.getByRole('link', { name: 'Content library', exact: true })).toBeInViewport()
   expect(await a.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   await a.screenshot({ path: 'test-results/content-library-mobile.png', fullPage: true })
+  await a.getByRole('button', { name: `Preview ${updated}`, exact: true }).click()
+  await expect(a.getByRole('dialog').locator('iframe')).toHaveAttribute('src', instagramEmbed)
+  expect(
+    await a.getByRole('dialog').evaluate((element) => element.scrollWidth <= element.clientWidth),
+  ).toBe(true)
+  await a.getByRole('dialog').screenshot({ path: 'test-results/library-preview-mobile.png' })
+  await a.getByRole('button', { name: 'Close dialog', exact: true }).click()
 
   await a.getByRole('button', { name: `Delete ${updated}`, exact: true }).click()
   await a.getByRole('button', { name: 'Keep link', exact: true }).click()
@@ -210,6 +283,7 @@ test('admins share, find, edit, and delete inspiration links with private access
   await replay(anonymous, deleteRequest)
   expect(await db.contentLibraryEntry.count({ where: { id: entry.id } })).toBe(1)
   await db.user.update({ where: { id: alice.id }, data: { role: 'CLIENT' } })
+  expect(await (await previewAs(aliceContext)).text()).not.toContain(instagramEmbed)
   await replay(aliceContext, deleteRequest)
   expect(await db.contentLibraryEntry.count({ where: { id: entry.id } })).toBe(1)
   await b.reload()
