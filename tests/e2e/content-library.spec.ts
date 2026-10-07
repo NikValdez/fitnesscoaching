@@ -81,6 +81,14 @@ test('admins share, find, edit, and delete inspiration links with private access
   const errors: string[] = []
   a.on('pageerror', (error) => errors.push(error.message))
   b.on('pageerror', (error) => errors.push(error.message))
+  for (const page of [a, b])
+    page.on('websocket', (socket) => {
+      if (!socket.url().includes('/api/admin/live')) return
+      socket.on('framereceived', (frame) => {
+        const message = JSON.parse(String(frame.payload))
+        if (message.type === 'error') errors.push(message.message)
+      })
+    })
   const clientPage = await clientContext.newPage(),
     anonymousPage = await anonymous.newPage()
   await clientPage.goto('/admin/library')

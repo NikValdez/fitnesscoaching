@@ -52,6 +52,7 @@ export class StudioProvider {
         origin: unknown,
       ) => {
         if (
+          this.channel === 'pad' &&
           origin !== this &&
           this.connected &&
           [...added, ...updated, ...removed].includes(this.document.clientID)
