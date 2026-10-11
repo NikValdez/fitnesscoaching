@@ -63,7 +63,7 @@ export function SocialLinks({ className, onClick }: SocialLinksProps) {
         </svg>
       </a>
       <a
-        href="https://www.facebook.com/profile.php?id=61595255605683"
+        href="https://www.facebook.com/profile.php?id=61595143955478"
         aria-label="Steve Rossiter on Facebook"
         title="Facebook"
         target="_blank"
