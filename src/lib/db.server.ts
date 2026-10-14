@@ -1,11 +1,13 @@
 import 'dotenv/config'
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { PrismaClient } from '../generated/prisma/client'
+import { configureLocalNeon } from './neon-local'
 import { PrismaNeon } from '@prisma/adapter-neon'
 
 const requests = new AsyncLocalStorage<{ client?: PrismaClient }>()
 
 function createClient() {
+  configureLocalNeon(process.env.DATABASE_URL, process.env.NEON_LOCAL_PROXY)
   return new PrismaClient({
     adapter: new PrismaNeon({ connectionString: process.env.DATABASE_URL }),
   })

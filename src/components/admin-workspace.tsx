@@ -3,6 +3,7 @@ import { Link, useNavigate } from '@tanstack/react-router'
 import {
   ArrowUpRight,
   Clapperboard,
+  ChartNoAxesCombined,
   Film,
   Library,
   Lightbulb,
@@ -19,7 +20,7 @@ export function AdminWorkspace({
   children,
 }: {
   name: string
-  current: 'content' | 'ideas' | 'library' | 'media'
+  current: 'content' | 'ideas' | 'library' | 'media' | 'analytics'
   children: ReactNode
 }) {
   const navigate = useNavigate()
@@ -94,6 +95,13 @@ export function AdminWorkspace({
               aria-current={current === 'media' ? 'page' : undefined}
             >
               <Film size={17} /> Shared media
+            </Link>
+            <Link
+              to="/admin/analytics"
+              className={current === 'analytics' ? 'active' : ''}
+              aria-current={current === 'analytics' ? 'page' : undefined}
+            >
+              <ChartNoAxesCombined size={17} /> Analytics
             </Link>
           </nav>
         </div>

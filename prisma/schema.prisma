@@ -465,3 +465,40 @@ model NutritionLog {
   @@unique([userId, date])
   @@map("rossiter_nutrition_log")
 }
+
+// Shared social analytics; independent of account ownership and social APIs.
+model AnalyticsItem {
+  id            String   @id
+  kind          String
+  identity      String?
+  payload       Json
+  version       Int      @default(1)
+  updatedAt     DateTime @default(now()) @map("updated_at") @db.Timestamptz
+  nextRefreshAt DateTime @default(now()) @map("next_refresh_at") @db.Timestamptz
+  leaseUntil    DateTime? @map("lease_until") @db.Timestamptz
+  snapshots     AnalyticsSnapshot[]
+  @@unique([kind, identity])
+  @@map("rossiter_analytics_items")
+}
+model AnalyticsSnapshot {
+  itemId     String   @map("item_id")
+  item       AnalyticsItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  capturedAt DateTime @map("captured_at") @db.Timestamptz
+  metrics    Json
+  source     String
+  @@id([itemId, capturedAt])
+  @@index([capturedAt], map: "rossiter_analytics_snapshot_date")
+  @@map("rossiter_analytics_snapshots")
+}
+model AnalyticsSettings {
+  id            Int @id
+  automatic     Boolean @default(true)
+  intervalHours Int @default(24) @map("interval_hours")
+  dailyLimit    Int @default(500) @map("daily_limit")
+  @@map("rossiter_analytics_settings")
+}
+model AnalyticsUsage {
+  day      DateTime @id @db.Date
+  requests Int @default(0)
+  @@map("rossiter_analytics_usage")
+}

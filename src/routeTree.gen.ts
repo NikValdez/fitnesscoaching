@@ -23,6 +23,7 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ProgramRouteImport } from './routes/program'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as WorkWithMeRouteImport } from './routes/work-with-me'
+import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
 import { Route as AdminContentRouteImport } from './routes/admin.content'
 import { Route as AdminIdeasRouteImport } from './routes/admin.ideas'
 import { Route as AdminLibraryRouteImport } from './routes/admin.library'
@@ -109,6 +110,11 @@ const SignupRoute = SignupRouteImport.update({
 const WorkWithMeRoute = WorkWithMeRouteImport.update({
   id: '/work-with-me',
   path: '/work-with-me',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
+  id: '/admin/analytics',
+  path: '/admin/analytics',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminContentRoute = AdminContentRouteImport.update({
@@ -212,6 +218,7 @@ export interface FileRoutesByFullPath {
   '/program': typeof ProgramRoute
   '/signup': typeof SignupRoute
   '/work-with-me': typeof WorkWithMeRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/content': typeof AdminContentRoute
   '/admin/ideas': typeof AdminIdeasRoute
   '/admin/library': typeof AdminLibraryRoute
@@ -244,6 +251,7 @@ export interface FileRoutesByTo {
   '/program': typeof ProgramRoute
   '/signup': typeof SignupRoute
   '/work-with-me': typeof WorkWithMeRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/content': typeof AdminContentRoute
   '/admin/ideas': typeof AdminIdeasRoute
   '/admin/library': typeof AdminLibraryRoute
@@ -278,6 +286,7 @@ export interface FileRoutesById {
   '/program': typeof ProgramRoute
   '/signup': typeof SignupRoute
   '/work-with-me': typeof WorkWithMeRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/content': typeof AdminContentRoute
   '/admin/ideas': typeof AdminIdeasRoute
   '/admin/library': typeof AdminLibraryRoute
@@ -313,6 +322,7 @@ export interface FileRouteTypes {
     | '/program'
     | '/signup'
     | '/work-with-me'
+    | '/admin/analytics'
     | '/admin/content'
     | '/admin/ideas'
     | '/admin/library'
@@ -345,6 +355,7 @@ export interface FileRouteTypes {
     | '/program'
     | '/signup'
     | '/work-with-me'
+    | '/admin/analytics'
     | '/admin/content'
     | '/admin/ideas'
     | '/admin/library'
@@ -378,6 +389,7 @@ export interface FileRouteTypes {
     | '/program'
     | '/signup'
     | '/work-with-me'
+    | '/admin/analytics'
     | '/admin/content'
     | '/admin/ideas'
     | '/admin/library'
@@ -412,6 +424,7 @@ export interface RootRouteChildren {
   ProgramRoute: typeof ProgramRoute
   SignupRoute: typeof SignupRoute
   WorkWithMeRoute: typeof WorkWithMeRoute
+  AdminAnalyticsRoute: typeof AdminAnalyticsRoute
   AdminContentRoute: typeof AdminContentRoute
   AdminIdeasRoute: typeof AdminIdeasRoute
   AdminLibraryRoute: typeof AdminLibraryRoute
@@ -526,6 +539,13 @@ declare module '@tanstack/react-router' {
       path: '/work-with-me'
       fullPath: '/work-with-me'
       preLoaderRoute: typeof WorkWithMeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/analytics': {
+      id: '/admin/analytics'
+      path: '/admin/analytics'
+      fullPath: '/admin/analytics'
+      preLoaderRoute: typeof AdminAnalyticsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/content': {
@@ -689,6 +709,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProgramRoute: ProgramRoute,
   SignupRoute: SignupRoute,
   WorkWithMeRoute: WorkWithMeRoute,
+  AdminAnalyticsRoute: AdminAnalyticsRoute,
   AdminContentRoute: AdminContentRoute,
   AdminIdeasRoute: AdminIdeasRoute,
   AdminLibraryRoute: AdminLibraryRoute,
