@@ -353,7 +353,7 @@ export class AnalyticsService {
         break
       case 'refresh-all': {
         const rows = await this.db.query<Row>(
-          "SELECT * FROM rossiter_analytics_items WHERE kind IN ('account','video') AND COALESCE((payload->>'archived')::boolean,false) = false ORDER BY next_refresh_at LIMIT 10",
+          "SELECT * FROM rossiter_analytics_items WHERE kind IN ('account','video') AND COALESCE(payload->>'collectionRunner','cloudflare') = 'cloudflare' AND COALESCE((payload->>'archived')::boolean,false) = false ORDER BY next_refresh_at LIMIT 10",
         )
         let ok = 0
         for (const row of rows) {
@@ -368,6 +368,11 @@ export class AnalyticsService {
         break
       }
       case 'discover':
+        if ((await this.get(action.id)).collectionRunner === 'mac')
+          throw new AnalyticsError(
+            'This profile is collected by your Mac. New posts will appear after its next daily run.',
+            409,
+          )
         try {
           notice = await this.discover(action.id)
         } catch (error) {
@@ -404,11 +409,18 @@ export class AnalyticsService {
     if (!row) throw new AnalyticsError('This item is archived or is already refreshing.', 409)
     return unpack(row)
   }
-  async refresh(id: string, discover = false) {
+  async refresh(id: string, discover = false, runner: 'cloudflare' | 'mac' = 'cloudflare') {
+    if ((await this.get(id)).collectionRunner === 'mac' && runner !== 'mac')
+      throw new AnalyticsError(
+        'This item is collected by your Mac. Its next daily run will refresh these metrics.',
+        409,
+      )
     const item = await this.lease(id)
     let limited = false
+    let failed = false
     try {
       const result = await publicPage(item, () => this.budget())
+      if (item.collectionRunner === 'mac') result.source = 'mac-public-page'
       await this.db.transaction(async () => {
         const current = await this.get(id)
         const { metrics, ...details } = result
@@ -426,6 +438,7 @@ export class AnalyticsService {
           })
       })
     } catch (error) {
+      failed = true
       limited = error instanceof AnalyticsError && error.status === 429
       await this.db.transaction(async () => {
         const current = await this.get(id)
@@ -442,6 +455,7 @@ export class AnalyticsService {
         try {
           await this.discover(id)
         } catch (error) {
+          failed = true
           limited = error instanceof AnalyticsError && error.status === 429
           await this.db.transaction(async () =>
             this.update(await this.get(id), {
@@ -453,11 +467,33 @@ export class AnalyticsService {
           )
         }
       }
-      await this.db.query(
-        "UPDATE rossiter_analytics_items SET lease_until = NULL, next_refresh_at = CASE WHEN $2 THEN date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC' + interval '1 day' ELSE now() + interval '24 hours' END WHERE id = $1",
-        id,
-        limited,
-      )
+      await this.db.transaction(async () => {
+        const current = await this.get(id)
+        const mac = current.collectionRunner === 'mac'
+        const day = new Intl.DateTimeFormat('en-CA', {
+          timeZone: 'America/Vancouver',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+        }).format(new Date())
+        const failures = failed
+          ? (current.collectionAttemptDay === day ? (current.collectionFailures ?? 0) : 0) + 1
+          : 0
+        if (mac)
+          await this.update(current, { collectionAttemptDay: day, collectionFailures: failures })
+        await this.db.query(
+          `UPDATE rossiter_analytics_items SET lease_until = NULL, next_refresh_at = CASE
+            WHEN $2 THEN date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC' + interval '1 day'
+            WHEN $3 AND $4 AND $5 < 3 THEN now() + interval '1 hour'
+            WHEN $3 THEN (date_trunc('day', now() AT TIME ZONE 'America/Vancouver') + interval '1 day 9 hours') AT TIME ZONE 'America/Vancouver'
+            ELSE now() + interval '24 hours' END WHERE id = $1`,
+          id,
+          limited,
+          mac,
+          failed,
+          failures,
+        )
+      })
     }
   }
   private async discover(id: string) {
@@ -465,6 +501,8 @@ export class AnalyticsService {
     if (item.kind !== 'account' || item.archived)
       throw new AnalyticsError('Choose an active tracked profile.')
     const discovered = await publicDiscovery(item, () => this.budget())
+    if (item.collectionRunner === 'mac')
+      for (const row of discovered.rows) row.source = 'mac-public-page'
     let added = 0
     await this.db.transaction(async () => {
       for (const row of discovered.rows) {
@@ -492,15 +530,17 @@ export class AnalyticsService {
             campaignId: item.campaignId,
             accountId: item.id,
             autoRefresh: true,
+            collectionRunner: item.collectionRunner,
           },
           parsed.identity,
         )
         if (inserted) added++
-        else if (row.remoteId)
+        else
           await this.update(await this.get(video.id), {
-            remoteId: row.remoteId,
+            ...(row.remoteId ? { remoteId: row.remoteId } : {}),
             accountId: item.id,
             handle: item.handle,
+            collectionRunner: item.collectionRunner,
           })
         if (Object.values(row.metrics).some((v) => v != null))
           await this.snapshot(video.id, new Date().toISOString(), row.metrics, row.source)
@@ -513,18 +553,27 @@ export class AnalyticsService {
     })
     return `${added} new posts tracked (${discovered.rows.length} returned). ${discovered.cursor ? 'Import older posts again for the next page.' : 'This feed may not include every post; you can also add individual URLs.'}`
   }
-  async scheduled() {
+  async scheduled(runner: 'cloudflare' | 'mac' = 'cloudflare') {
     const s = await this.settings()
-    if (!s.automatic) return
+    const report = { attempted: 0, refreshed: 0, failed: 0, limited: false, paused: !s.automatic }
+    if (!s.automatic) return report
     const rows = await this.db.query<{ id: string }>(
-      "SELECT id FROM rossiter_analytics_items WHERE kind IN ('account','video') AND COALESCE((payload->>'archived')::boolean,false) = false AND COALESCE((payload->>'autoRefresh')::boolean,true) = true AND next_refresh_at <= now() AND (lease_until IS NULL OR lease_until < now()) ORDER BY next_refresh_at LIMIT 10",
+      "SELECT id FROM rossiter_analytics_items WHERE kind IN ('account','video') AND COALESCE(payload->>'collectionRunner','cloudflare') = $1 AND COALESCE((payload->>'archived')::boolean,false) = false AND COALESCE((payload->>'autoRefresh')::boolean,true) = true AND next_refresh_at <= now() AND (lease_until IS NULL OR lease_until < now()) ORDER BY CASE WHEN kind = 'account' THEN 0 ELSE 1 END, next_refresh_at LIMIT 10",
+      runner,
     )
     for (const row of rows) {
+      report.attempted++
       try {
-        await this.refresh(row.id, true)
+        await this.refresh(row.id, true, runner)
+        report.refreshed++
       } catch (error) {
-        if (error instanceof AnalyticsError && [429, 503].includes(error.status)) break
+        report.failed++
+        if (error instanceof AnalyticsError && [429, 503].includes(error.status)) {
+          report.limited = true
+          break
+        }
       }
     }
+    return report
   }
 }

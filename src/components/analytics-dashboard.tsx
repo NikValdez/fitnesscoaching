@@ -64,6 +64,7 @@ const when = (value?: string | null) =>
     : 'Awaiting first snapshot'
 const sourceNames: Record<string, string> = {
   'public-page': 'Public page',
+  'mac-public-page': 'Public page · Mac scrape',
   'tiktok-embed': 'TikTok public embed',
   manual: 'Manual snapshot',
   csv: 'CSV import',
@@ -1080,6 +1081,7 @@ export default function Analytics({
                                 {a.lastFetched
                                   ? `Updated ${when(a.lastFetched)}`
                                   : 'No metrics yet'}
+                                {a.collectionRunner === 'mac' ? ' · Daily Mac scrape' : ''}
                               </small>
                               {(a.error || a.discoveryError) && (
                                 <span className="analytics-item-error">
@@ -1095,7 +1097,12 @@ export default function Analytics({
                               <div className="analytics-toolbar">
                                 <button
                                   className="icon-button"
-                                  disabled={busy}
+                                  disabled={busy || a.collectionRunner === 'mac'}
+                                  title={
+                                    a.collectionRunner === 'mac'
+                                      ? 'Collected daily from your Mac'
+                                      : undefined
+                                  }
                                   aria-label={`Refresh ${a.title}`}
                                   onClick={() => void run({ action: 'refresh', id: a.id })}
                                 >
@@ -1103,7 +1110,12 @@ export default function Analytics({
                                 </button>
                                 <button
                                   className="studio-button secondary small"
-                                  disabled={busy}
+                                  disabled={busy || a.collectionRunner === 'mac'}
+                                  title={
+                                    a.collectionRunner === 'mac'
+                                      ? 'New posts are collected daily from your Mac'
+                                      : undefined
+                                  }
                                   onClick={() => void run({ action: 'discover', id: a.id })}
                                 >
                                   Import posts
@@ -1878,7 +1890,8 @@ function VideoDetail({
         <div className="analytics-toolbar">
           <button
             className="studio-button small"
-            disabled={busy || item.archived}
+            disabled={busy || item.archived || item.collectionRunner === 'mac'}
+            title={item.collectionRunner === 'mac' ? 'Collected daily from your Mac' : undefined}
             onClick={onRefresh}
           >
             <RefreshCw size={14} />
@@ -2268,9 +2281,18 @@ function ScrapeSettings({
         <span className="studio-eyebrow">KEEP THE NUMBERS MOVING</span>
         <h2>Refresh preferences</h2>
         <p>
-          Enabled profiles and posts are scraped once every 24 hours. New posts found on tracked
-          profiles are added automatically.
+          Enabled profiles and posts are scraped daily. New posts found on tracked profiles are
+          added automatically.
         </p>
+        {data.items.some(
+          (item) => item.kind === 'account' && !item.archived && item.collectionRunner === 'mac',
+        ) && (
+          <p className="analytics-fineprint">
+            Instagram runs from your Mac at 9 a.m. Vancouver time, with catch-up checks after sleep
+            or login. Your Mac needs to be online; saved metrics remain available here while it is
+            offline.
+          </p>
+        )}
         <form
           className="analytics-form"
           key={`${data.settings.automatic}-${data.settings.dailyLimit}`}

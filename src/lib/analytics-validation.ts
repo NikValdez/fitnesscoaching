@@ -53,6 +53,9 @@ export type AnalyticsItem = {
   discoveryError?: string | null
   lastDiscovered?: string | null
   autoRefresh?: boolean
+  collectionRunner?: 'cloudflare' | 'mac'
+  collectionFailures?: number
+  collectionAttemptDay?: string
   archived?: boolean
   cpm?: number
   budget?: number

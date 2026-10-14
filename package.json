@@ -14,7 +14,9 @@
     "db:studio": "prisma studio",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "admin:grant": "tsx scripts/grant-coach.ts"
+    "admin:grant": "tsx scripts/grant-coach.ts",
+    "analytics:mac": "tsx scripts/mac-instagram.ts",
+    "analytics:mac:install": "node scripts/install-mac-instagram.mjs"
   },
   "engines": {
     "node": ">=22.12.0"
@@ -60,6 +62,7 @@
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
     "@vitejs/plugin-react": "^6.1.1",
+    "esbuild": "0.28.2",
     "prettier": "^3.9.6",
     "prisma": "^7.10.0",
     "tsx": "^4.23.13",
