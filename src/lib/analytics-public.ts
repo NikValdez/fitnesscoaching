@@ -191,7 +191,10 @@ export function publicProfile(item: AnalyticsItem, objects: Data[]) {
     422,
   )
 }
-export function publicVideo(item: AnalyticsItem, objects: Data[]) {
+type CollectedPost = { source: string; metrics: Metrics } & Partial<
+  Omit<ReturnType<typeof normalizeVideo>, 'metrics'>
+>
+export function publicVideo(item: AnalyticsItem, objects: Data[]): CollectedPost {
   const identity = parseAnalyticsUrl(item.url!).identity.split(':').slice(1).join(':')
   const platform = item.platform!
   if (platform === 'youtube') {
@@ -306,11 +309,12 @@ async function bounded(response: Response, limit = 2 * 1024 * 1024) {
 async function publicObjects(
   item: AnalyticsItem,
   budget: () => Promise<void>,
-  tab?: 'videos' | 'shorts',
+  tab?: 'videos' | 'shorts' | 'reels',
 ) {
   // The URL is canonical and host-allowlisted. Redirects never leave its platform.
   let url = parseAnalyticsUrl(item.url!).url
   if (tab && item.platform === 'youtube' && item.kind === 'account') url += `/${tab}`
+  if (tab === 'reels' && item.platform === 'instagram' && item.kind === 'account') url += 'reels/'
   for (let hop = 0; hop < 3; hop++) {
     let response: Response
     await budget()
@@ -379,14 +383,79 @@ async function tiktokEmbedObjects(item: AnalyticsItem, budget: () => Promise<voi
   }
   return embeddedObjects(await bounded(response))
 }
+// Reels-grid owners can be references containing only a numeric ID. Resolve
+// those references against this profile's identified user, never recommendations
+// or another account's posts embedded in the same public page.
+function instagramPosts(item: AnalyticsItem, objects: Data[]): Data[] {
+  const handle = item.handle?.toLowerCase()
+  if (!handle) return []
+  const ownerIds = new Set(
+    objects
+      .filter(
+        (value) => typeof value.username === 'string' && value.username.toLowerCase() === handle,
+      )
+      .flatMap((value) => [value.pk, value.id])
+      .filter(
+        (value) =>
+          (typeof value === 'string' && /^\d+$/.test(value)) ||
+          (Number.isSafeInteger(value) && value >= 0),
+      )
+      .map(String),
+  )
+  return objects
+    .filter((value) => {
+      if (!(value.code || value.shortcode) || !(value.media_type || value.product_type === 'clips'))
+        return false
+      const owner = value.user ?? value.owner
+      const username =
+        typeof owner?.username === 'string' ? owner.username.toLowerCase() : undefined
+      return username
+        ? username === handle
+        : [owner?.pk, owner?.id].some((id) => id != null && ownerIds.has(String(id)))
+    })
+    .map((value) => ({ ...value, user: { ...value.user, username: item.handle } }))
+}
 export async function publicPage(item: AnalyticsItem, budget = async () => {}) {
   if (item.platform === 'tiktok' && item.kind === 'video')
     return { ...publicVideo(item, await tiktokEmbedObjects(item, budget)), source: 'tiktok-embed' }
   const objects = await publicObjects(item, budget)
-  return item.kind === 'account' ? publicProfile(item, objects) : publicVideo(item, objects)
+  if (item.kind === 'account') return publicProfile(item, objects)
+  const result = publicVideo(item, objects)
+  if (
+    item.platform === 'instagram' &&
+    (result.mediaType ?? item.mediaType) === 'video' &&
+    result.metrics.views == null
+  ) {
+    const handle = result.handle ?? item.handle
+    if (handle) {
+      const profile: AnalyticsItem = {
+        ...item,
+        ...parseAnalyticsUrl(`https://www.instagram.com/${handle}/`),
+        kind: 'account',
+      }
+      const reels = instagramPosts(profile, await publicObjects(profile, budget, 'reels'))
+      const identity = parseAnalyticsUrl(item.url!).identity
+      const match = reels.find(
+        (value) =>
+          parseAnalyticsUrl(`https://www.instagram.com/p/${value.code ?? value.shortcode}/`)
+            .identity === identity,
+      )
+      if (match) result.metrics.views = normalizeVideo('instagram', match).metrics.views
+    }
+  }
+  return result
 }
 export async function publicDiscovery(item: AnalyticsItem, budget = async () => {}) {
   let objects = await publicObjects(item, budget)
+  if (item.platform === 'instagram') {
+    const reels = await publicObjects(item, budget, 'reels')
+    const merged = new Map<string, Data>()
+    for (const post of [...instagramPosts(item, objects), ...instagramPosts(item, reels)]) {
+      const code = post.code ?? post.shortcode
+      merged.set(code, { ...merged.get(code), ...post })
+    }
+    objects = [...merged.values()]
+  }
   if (item.platform === 'youtube') {
     const metadata = youtubeChannel(item, objects)
     if (!metadata)
@@ -463,6 +532,7 @@ export async function publicDiscovery(item: AnalyticsItem, budget = async () => 
     thumbnail: string | null
     publishedAt: string | null
     metrics: Metrics
+    mediaType?: AnalyticsItem['mediaType']
     source: string
   }[] = []
   const seen = new Set<string>()
@@ -477,7 +547,7 @@ export async function publicDiscovery(item: AnalyticsItem, budget = async () => 
     let thumbnail: string | undefined
     if (
       item.platform === 'instagram' &&
-      value.media_type &&
+      (value.media_type || value.product_type === 'clips') &&
       value.code &&
       handle?.toLowerCase() === item.handle?.toLowerCase()
     ) {
@@ -555,6 +625,7 @@ export async function publicDiscovery(item: AnalyticsItem, budget = async () => 
       thumbnail: thumbnail ?? normalized?.thumbnail ?? null,
       publishedAt: normalized?.publishedAt ?? null,
       metrics: normalized?.metrics ?? {},
+      mediaType: normalized?.mediaType,
       source,
     })
     if (rows.length >= 100) break

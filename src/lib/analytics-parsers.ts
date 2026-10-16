@@ -39,6 +39,7 @@ export function normalizeVideo(platform: AnalyticsPlatform, data: Data) {
   let publishedAt: string | null
   let handle: unknown
   let metrics: Metrics
+  let mediaType: AnalyticsItem['mediaType']
   switch (platform) {
     case 'tiktok':
       p = data.itemInfos ?? data.aweme_detail ?? data
@@ -66,9 +67,21 @@ export function normalizeVideo(platform: AnalyticsPlatform, data: Data) {
       p = data.data?.xdt_shortcode_media ?? data
       if (!p.id && !p.code && !p.shortcode)
         throw new AnalyticsError('The public page did not return this Instagram post.', 502)
+      mediaType =
+        p.media_type === 8
+          ? 'carousel'
+          : p.media_type === 1
+            ? 'image'
+            : p.media_type === 2 || p.product_type === 'clips'
+              ? 'video'
+              : undefined
       metrics = {
-        views: count(p.video_play_count ?? p.play_count ?? p.video_view_count),
-        likes: count(p.edge_media_preview_like?.count ?? p.like_count),
+        views: p.like_and_view_counts_disabled
+          ? null
+          : count(p.video_play_count ?? p.play_count ?? p.ig_play_count ?? p.video_view_count),
+        likes: p.like_and_view_counts_disabled
+          ? null
+          : count(p.edge_media_preview_like?.count ?? p.like_count),
         comments: count(p.edge_media_to_parent_comment?.count ?? p.comment_count),
         shares: count(p.share_count),
         saves: count(p.save_count),
@@ -161,6 +174,7 @@ export function normalizeVideo(platform: AnalyticsPlatform, data: Data) {
   }
   return {
     metrics,
+    mediaType,
     title: typeof title === 'string' && title.trim() ? title.trim().slice(0, 240) : undefined,
     thumbnail: image(thumbnail),
     publishedAt,

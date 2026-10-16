@@ -240,7 +240,13 @@ suite('analytics database and daily collection', () => {
                       play_count: 99,
                     },
                   ]
-                : { shortcode: 'MacIntegrationA', like_count: 23, comment_count: 3 },
+                : {
+                    shortcode: 'MacIntegrationA',
+                    media_type: 2,
+                    user: { username: 'mactestuser' },
+                    like_count: 23,
+                    comment_count: 3,
+                  },
             )}</script>`,
           ),
       ),
@@ -302,5 +308,8 @@ suite('analytics database and daily collection', () => {
     expect(
       (await service.workspace()).items.find((item) => item.id === video.id)?.metrics?.likes,
     ).toBe(23)
+    expect(
+      (await service.workspace()).items.find((item) => item.id === video.id)?.metrics?.views,
+    ).toBe(99)
   })
 })

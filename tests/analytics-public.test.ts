@@ -124,6 +124,133 @@ describe('public social collection', () => {
       metrics: { likes: 12, views: null },
     })
   })
+  it('combines the Instagram main feed with owned Reels-grid play counts and resolves numeric owner references', async () => {
+    const profile = { username: 'coach', pk: '123', id: '456', follower_count: 400 }
+    const main = {
+      media_type: 2,
+      code: 'ONE',
+      user: { username: 'coach' },
+      caption: { text: 'Training' },
+    }
+    const reel = {
+      product_type: 'clips',
+      code: 'ONE',
+      user: { pk: '123' },
+      play_count: 1249,
+      like_count: 12,
+    }
+    const older = { ...reel, code: 'TWO', user: { id: '456' }, play_count: 2172 }
+    const request = vi.fn(
+      async (url: string) =>
+        new Response(
+          html({
+            data: url.endsWith('/reels/')
+              ? [
+                  profile,
+                  reel,
+                  older,
+                  { ...reel, code: 'OTHER', user: { pk: '999' }, play_count: 99999 },
+                  { ...reel, code: 'MISMATCH', user: { pk: '123', username: 'other' } },
+                ]
+              : [profile, main],
+          }),
+        ),
+    )
+    vi.stubGlobal('fetch', request)
+    const budget = vi.fn(async () => {})
+    const result = await publicDiscovery(item('https://instagram.com/coach/'), budget)
+    expect(request.mock.calls.map((call) => call[0])).toEqual([
+      'https://www.instagram.com/coach/',
+      'https://www.instagram.com/coach/reels/',
+    ])
+    expect(budget).toHaveBeenCalledTimes(2)
+    expect(result.rows).toHaveLength(2)
+    expect(result.rows[0]).toMatchObject({
+      url: 'https://www.instagram.com/p/ONE/',
+      title: 'Training',
+      mediaType: 'video',
+      metrics: { views: 1249, likes: 12 },
+    })
+    expect(result.rows[1]).toMatchObject({
+      url: 'https://www.instagram.com/p/TWO/',
+      metrics: { views: 2172 },
+    })
+  })
+  it('fills missing individual Reel views from the exact owned Reels-grid entry without credentials', async () => {
+    const request = vi.fn(
+      async (url: string, _options: RequestInit) =>
+        new Response(
+          html(
+            url.endsWith('/reels/')
+              ? [
+                  { username: 'coach', pk: '123' },
+                  { code: 'ONE', product_type: 'clips', user: { pk: '123' }, play_count: 1249 },
+                  { code: 'OTHER', product_type: 'clips', user: { pk: '123' }, play_count: 99999 },
+                ]
+              : {
+                  code: 'ONE',
+                  media_type: 2,
+                  user: { username: 'coach' },
+                  like_count: 12,
+                  comment_count: 4,
+                },
+          ),
+        ),
+    )
+    vi.stubGlobal('fetch', request)
+    const result = await publicPage(item('https://instagram.com/reel/ONE/'))
+    expect(result).toMatchObject({
+      mediaType: 'video',
+      metrics: { views: 1249, likes: 12, comments: 4 },
+    })
+    expect(request.mock.calls.map((call) => call[0])).toEqual([
+      'https://www.instagram.com/p/ONE/',
+      'https://www.instagram.com/coach/reels/',
+    ])
+    expect(request.mock.calls[1][1].headers).not.toHaveProperty('Cookie')
+    expect(request.mock.calls[1][1].headers).not.toHaveProperty('Authorization')
+  })
+  it('keeps photo/carousel views unavailable and never substitutes another Reel or a disabled count', async () => {
+    const request = vi.fn(
+      async () =>
+        new Response(
+          html({ code: 'PHOTO', media_type: 8, user: { username: 'coach' }, like_count: 12 }),
+        ),
+    )
+    vi.stubGlobal('fetch', request)
+    expect(await publicPage(item('https://instagram.com/p/PHOTO/'))).toMatchObject({
+      mediaType: 'carousel',
+      metrics: { views: null, likes: 12 },
+    })
+    expect(request).toHaveBeenCalledTimes(1)
+    request.mockImplementation(
+      async () =>
+        new Response(
+          html([
+            { username: 'coach', pk: '123' },
+            { code: 'ONE', media_type: 2, user: { username: 'coach' }, like_count: 10 },
+            { code: 'OTHER', product_type: 'clips', user: { pk: '123' }, play_count: 99999 },
+          ]),
+        ),
+    )
+    expect((await publicPage(item('https://instagram.com/p/ONE/'))).metrics).toHaveProperty(
+      'views',
+      null,
+    )
+    expect(
+      normalizeVideo('instagram', {
+        code: 'HIDDEN',
+        product_type: 'clips',
+        like_and_view_counts_disabled: true,
+        play_count: 0,
+        like_count: 0,
+      }).metrics,
+    ).toMatchObject({ views: null, likes: null })
+    expect(
+      normalizeVideo('instagram', { code: 'ZERO', product_type: 'clips', play_count: 0 }).metrics
+        .views,
+    ).toBe(0)
+  })
   it('rejects login and off-platform redirects before making another request', async () => {
     for (const location of [
       'https://evil.test/steverossiter_/',

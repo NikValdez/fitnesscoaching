@@ -524,6 +524,7 @@ export class AnalyticsService {
             platform: parsed.platform,
             thumbnail: row.thumbnail,
             publishedAt: row.publishedAt,
+            mediaType: row.mediaType,
             tags: item.tags,
             notes: '',
             creatorId: item.creatorId,
@@ -538,6 +539,7 @@ export class AnalyticsService {
         else
           await this.update(await this.get(video.id), {
             ...(row.remoteId ? { remoteId: row.remoteId } : {}),
+            ...(row.mediaType ? { mediaType: row.mediaType } : {}),
             accountId: item.id,
             handle: item.handle,
             collectionRunner: item.collectionRunner,

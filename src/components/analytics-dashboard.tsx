@@ -1510,6 +1510,13 @@ function VideoTable({
                       {creators.find((c) => c.id === v.creatorId)?.title ??
                         (v.handle ? `@${v.handle}` : 'Unassigned creator')}
                       {v.tags.length ? ` · ${v.tags.slice(0, 2).join(', ')}` : ''}
+                      {v.mediaType === 'image'
+                        ? ' · Photo'
+                        : v.mediaType === 'carousel'
+                          ? ' · Carousel'
+                          : v.platform === 'instagram' && v.mediaType === 'video'
+                            ? ' · Reel'
+                            : ''}
                     </small>
                     {v.error && <em className="analytics-item-error">Refresh needs attention</em>}
                   </span>
@@ -1518,7 +1525,19 @@ function VideoTable({
               <td>
                 <Badge platform={v.platform} />
               </td>
-              <td>{compact(v.metrics?.views)}</td>
+              <td
+                title={
+                  v.platform === 'instagram' && v.metrics?.views == null
+                    ? 'Instagram does not expose a public view count for this post.'
+                    : undefined
+                }
+              >
+                {v.platform === 'instagram' &&
+                v.metrics?.views == null &&
+                ['image', 'carousel'].includes(v.mediaType ?? '')
+                  ? 'Not public'
+                  : compact(v.metrics?.views)}
+              </td>
               <td>{compact(v.metrics?.likes)}</td>
               <td>{compact(v.metrics?.comments)}</td>
               <td>{engagement(v) == null ? '—' : `${engagement(v)!.toFixed(2)}%`}</td>
@@ -1862,6 +1881,16 @@ function VideoDetail({
           'Awaiting data'}{' '}
         · Last recorded {when(item.lastFetched)}
       </p>
+      {item.platform === 'instagram' &&
+        item.kind === 'video' &&
+        item.metrics?.views == null &&
+        ['image', 'carousel'].includes(item.mediaType ?? '') && (
+          <p className="analytics-fineprint">
+            Instagram does not expose public views for this{' '}
+            {item.mediaType === 'carousel' ? 'carousel' : 'photo'}. Likes and comments are collected
+            daily.
+          </p>
+        )}
       {item.error && (
         <p className="form-error" role="alert">
           {item.error}

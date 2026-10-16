@@ -61,6 +61,7 @@ export type AnalyticsItem = {
   budget?: number
   cursor?: string | null
   remoteId?: string
+  mediaType?: 'video' | 'image' | 'carousel'
   source?: string
 }
 export type Snapshot = {
