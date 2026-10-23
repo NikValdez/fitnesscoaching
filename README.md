@@ -4,9 +4,11 @@ A full-stack coaching website built with **TanStack Start**, React, TypeScript, 
 
 ## Run locally
 
-Requires Node.js 22.12 or later.
+Use Node.js 22.23.4, pinned in `.node-version` and `.nvmrc`. The minimum supported version is 22.23.4, which includes the October 21, 2026 Node.js security fixes.
 
 ```sh
+nvm install
+nvm use
 npm ci
 cp .env.example .env # Only for a fresh checkout; preserve your existing .env.
 # Add your database URL, direct database URL, and a random auth secret.
